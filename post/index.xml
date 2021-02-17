@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on My New Hugo Site</title>
+    <link>https://wu-yikun.github.io/post/</link>
+    <description>Recent content in Posts on My New Hugo Site</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 17 Feb 2021 11:58:17 +0800</lastBuildDate><atom:link href="https://wu-yikun.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Blog</title>
+      <link>https://wu-yikun.github.io/post/blog/</link>
+      <pubDate>Wed, 17 Feb 2021 11:58:17 +0800</pubDate>
+      
+      <guid>https://wu-yikun.github.io/post/blog/</guid>
+      <description>个人简介 基本信息 姓名： Paradox 年龄： 19岁 职业： 攻城狮
+爱好：
+ 看电影、听音乐、喝咖啡 抽烟、喝酒、烫头  人生格言：
+ 机会总是留给有准备的人。
+ 代码：
+def main(): print(&amp;#34;机会总是留给有准备的人。&amp;#34;)# 人生格言！ if_name_=&amp;#39;_main_&amp;#39;: main() 联系方式  博客:http://blog.csdn.net/wirelessqa 微博:http://www.weibo.com/wirelessqa  待办事项 2021年要读的书籍:
+ 《时间简史》 《未来简史》 《今日简史》  修订记录：
+   时 间 内 容 版 本     2021 年 07 月 26 日 修 订 完 毕 v0.1    </description>
+    </item>
+    
+  </channel>
+</rss>
