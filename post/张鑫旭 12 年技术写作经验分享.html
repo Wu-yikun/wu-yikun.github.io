@@ -17,37 +17,29 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
   <meta name="theme-color" content="#f9fafb">
   
-  <title>内网穿透 · 最佳实践 - Yikun Wu</title>
+  <title>张鑫旭 12 年技术写作经验分享 - Yikun Wu</title>
 
   
-    <meta name="description" content="内网穿透概念内网穿透，又称 NAT 穿透，进行 NAT 穿透是为了使数据包不被 NAT 设备屏蔽而正确路由到内网主机。 ⭐简单来说，内网穿透就是将私有（保留）地址转化为合法 IP 地址的转换技术。 巧妙地利用 NAT 原理实现 NAT 内网穿透技术，就可以使内网服务器接收到外网数据包。 内网穿透工具 在外网演示内网 Web 站点  常见的内网穿透工具数不胜数，这里枚举几个：  NATAPP: 基于">
+    <meta name="description" content="几日前有幸能参与【创作者训练营】第四期，在直播中也 Get 到不少有用的写作技巧，现在第二次直播回放，现帮大家归纳总结下张鑫旭前辈写作经验的几大要素。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="内网穿透 · 最佳实践">
-<meta property="og:url" content="https://wu-yikun.github.io/post/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%20%C2%B7%20%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.html">
+<meta property="og:title" content="张鑫旭 12 年技术写作经验分享">
+<meta property="og:url" content="https://wu-yikun.github.io/post/%E5%BC%A0%E9%91%AB%E6%97%AD%2012%20%E5%B9%B4%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB.html">
 <meta property="og:site_name" content="Yikun Wu">
-<meta property="og:description" content="内网穿透概念内网穿透，又称 NAT 穿透，进行 NAT 穿透是为了使数据包不被 NAT 设备屏蔽而正确路由到内网主机。 ⭐简单来说，内网穿透就是将私有（保留）地址转化为合法 IP 地址的转换技术。 巧妙地利用 NAT 原理实现 NAT 内网穿透技术，就可以使内网服务器接收到外网数据包。 内网穿透工具 在外网演示内网 Web 站点  常见的内网穿透工具数不胜数，这里枚举几个：  NATAPP: 基于">
+<meta property="og:description" content="几日前有幸能参与【创作者训练营】第四期，在直播中也 Get 到不少有用的写作技巧，现在第二次直播回放，现帮大家归纳总结下张鑫旭前辈写作经验的几大要素。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747698.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747349.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747069.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747942.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747595.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747167.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747846.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747960.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141748841.png">
-<meta property="article:published_time" content="2021-12-15T15:59:59.000Z">
-<meta property="article:modified_time" content="2024-12-09T07:25:25.704Z">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141738629.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141738812.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141738208.png">
+<meta property="article:published_time" content="2022-02-20T15:59:59.000Z">
+<meta property="article:modified_time" content="2025-01-20T14:22:34.185Z">
 <meta property="article:author" content="Yikun Wu">
-<meta property="article:tag" content="内网穿透">
-<meta property="article:tag" content="NAT">
-<meta property="article:tag" content="Sunny-Ngrok">
+<meta property="article:tag" content="程序员">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747698.png">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141738629.png">
   
   
   
-  <meta name="keywords" content="内网穿透,NAT,Sunny-Ngrok">
+  <meta name="keywords" content="程序员">
 
   <!-- feed -->
   
@@ -78,7 +70,7 @@
 <div class="widgets">
 
 
-<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">Recent Update</span></div><div class="widget-body fs14"><a class="item title" href="/post/%E3%80%8C2024%20%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93%E3%80%8D%E4%B8%96%E7%95%8C%E6%8C%87%E5%90%91%E4%BB%BB%E4%BD%95%E6%88%91%E6%83%B3%E5%8E%BB%E7%9A%84%E5%9C%B0%E6%96%B9.html"><span class="title">「2024 年终总结」世界指向任何我想去的地方</span></a><a class="item title" href="/post/Hexo%20Blog%20%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97.html"><span class="title">Yikun Wu's Blog</span></a><a class="item title" href="/post/%E3%80%8C2023%20%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93%E3%80%8D%E5%88%AB%E6%80%A5%E7%9D%80%E8%B5%B6%E8%B7%AF%EF%BC%8C%E5%8E%BB%E6%84%9F%E5%8F%97%E8%B7%AF.html"><span class="title">「2023 年终总结」别急着赶路，去感受路</span></a><a class="item title" href="/post/%E3%80%8C2021%20%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93%E3%80%8D%E5%94%AF%E6%9C%89%E7%83%AD%E7%88%B1%EF%BC%8C%E5%8F%AF%E6%8A%B5%E6%BC%AB%E9%95%BF%E5%B2%81%E6%9C%88.html"><span class="title">「2021 年终总结」唯有热爱，可抵漫长岁月</span></a><a class="item title" href="/post/%E3%80%8C2022%20%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93%E3%80%8D%E4%BA%BA%E7%94%9F%E6%98%AF%E4%B8%80%E7%89%87%E5%8E%9F%E9%87%8E%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E8%BD%A8%E9%81%93.html"><span class="title">「2022 年终总结」人生是一片原野，而不是轨道</span></a><a class="item title" href="/post/Go%20%E8%AF%AD%E8%A8%80%E6%8C%87%E5%8D%97%20&%20%E5%AE%9E%E6%88%98%EF%BC%8C%E8%B7%9F%E6%88%91%E4%B8%80%E8%B5%B7%E6%8B%A5%E6%8A%B1%20Golang%EF%BC%81.html"><span class="title">Golang Wiki</span></a><a class="item title" href="/post/%E6%81%95%E6%88%91%E7%9B%B4%E8%A8%80%EF%BC%8C%E4%BD%A0%E5%8F%AF%E8%83%BD%E8%BF%9E%20GitHub%20%E6%90%9C%E7%B4%A2%E9%83%BD%E4%B8%8D%E4%BC%9A%E7%94%A8%EF%BC%81.html"><span class="title">恕我直言，你可能连 GitHub 搜索都不会用！</span></a><a class="item title" href="/post/Git%20%E5%90%84%E5%BC%8F%E5%90%8E%E6%82%94%E8%8D%AF.html"><span class="title">Git 各式后悔药</span></a><a class="item title" href="/post/%E4%B8%80%E6%96%87%E5%B8%A6%E4%BD%A0%E8%AE%A4%E8%AF%86%20Docker%20%E4%B8%8E%20k8s.html"><span class="title">一文带你认识 Docker 与 k8s</span></a><a class="item title" href="/post/%E9%87%8D%E5%90%AF%E5%B0%B1%E6%98%AF%E5%85%B3%E6%9C%BA%E5%86%8D%E5%BC%80%E6%9C%BA%EF%BC%9F.html"><span class="title">重启就是关机再开机？</span></a></div></widget>
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">Recent Update</span></div><div class="widget-body fs14"><a class="item title" href="/post/Golang%20Wiki.html"><span class="title">Golang Wiki</span></a><a class="item title" href="/post/%E3%80%8C2024%20%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93%E3%80%8D%E4%B8%96%E7%95%8C%E6%8C%87%E5%90%91%E4%BB%BB%E4%BD%95%E6%88%91%E6%83%B3%E5%8E%BB%E7%9A%84%E5%9C%B0%E6%96%B9.html"><span class="title">「2024 年终总结」世界指向任何我想去的地方</span></a><a class="item title" href="/post/Hexo%20Stellar%20%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97.html"><span class="title">Hexo Stellar 开发指南</span></a><a class="item title" href="/post/Git%20%E5%90%84%E5%BC%8F%E5%90%8E%E6%82%94%E8%8D%AF.html"><span class="title">Git 各式后悔药</span></a><a class="item title" href="/post/%E3%80%8C2021%20%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93%E3%80%8D%E5%94%AF%E6%9C%89%E7%83%AD%E7%88%B1%EF%BC%8C%E5%8F%AF%E6%8A%B5%E6%BC%AB%E9%95%BF%E5%B2%81%E6%9C%88.html"><span class="title">「2021 年终总结」唯有热爱，可抵漫长岁月</span></a><a class="item title" href="/post/IIS%20%E9%99%90%E5%88%B6%E3%80%81CPU%20%E9%99%90%E5%88%B6%E4%B8%8E%E6%B5%81%E9%87%8F%E9%99%90%E5%88%B6.html"><span class="title">IIS 限制、CPU 限制与流量限制</span></a><a class="item title" href="/post/%E4%B8%80%E6%96%87%E5%B8%A6%E4%BD%A0%E8%AE%A4%E8%AF%86%20Docker%20%E4%B8%8E%20k8s.html"><span class="title">一文带你认识 Docker 与 k8s</span></a><a class="item title" href="/post/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F.html"><span class="title">内网穿透</span></a><a class="item title" href="/post/%E5%BC%A0%E9%91%AB%E6%97%AD%2012%20%E5%B9%B4%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB.html"><span class="title">张鑫旭 12 年技术写作经验分享</span></a><a class="item title" href="/post/%E6%81%95%E6%88%91%E7%9B%B4%E8%A8%80%EF%BC%8C%E4%BD%A0%E5%8F%AF%E8%83%BD%E8%BF%9E%20GitHub%20%E6%90%9C%E7%B4%A2%E9%83%BD%E4%B8%8D%E4%BC%9A%E7%94%A8%EF%BC%81.html"><span class="title">恕我直言，你可能连 GitHub 搜索都不会用！</span></a></div></widget>
 </div>
 
 </div></aside><div class="l_main" id="main">
@@ -89,49 +81,138 @@
 
 <div class="article banner top">
   <div class="content">
-    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><div id="tag"> <span>&nbsp标签：</span><a class="cap breadcrumb-link" href="/tags/NAT/">NAT</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Sunny-Ngrok/">Sunny-Ngrok</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/">内网穿透</a>&nbsp</div><a class="cap breadcrumb" href="/">Home</a>
-<span class="sep"></span><a class="cap breadcrumb" href="/">Blog</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Toolkit/">Toolkit</a></div>
-<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2021-12-15T15:59:59.000Z">2021-12-15</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2024-12-09T07:25:25.704Z">2024-12-09</time></span></div></div></div>
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><div id="tag"> <span>&nbsp标签：</span><a class="cap breadcrumb-link" href="/tags/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>&nbsp</div><a class="cap breadcrumb" href="/">Home</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">Blog</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB/">经验分享</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2022-02-20T15:59:59.000Z">2022-02-20</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-01-20T14:22:34.185Z">2025-01-20</time></span></div></div></div>
     
     <div class="bottom only-title">
       
       <div class="text-area">
-        <h1 class="text title"><span>内网穿透 · 最佳实践</span></h1>
+        <h1 class="text title"><span>张鑫旭 12 年技术写作经验分享</span></h1>
         
       </div>
     </div>
     
   </div>
-  </div><article class="md-text content"><h2 id="内网穿透概念"><a href="#内网穿透概念" class="headerlink" title="内网穿透概念"></a>内网穿透概念</h2><p>内网穿透，又称 NAT 穿透，进行 NAT 穿透是为了使数据包不被 NAT 设备屏蔽而正确路由到内网主机。</p>
-<p>⭐简单来说，内网穿透就是将私有（保留）地址转化为合法 IP 地址的转换技术。</p>
-<p>巧妙地利用 NAT 原理实现 NAT 内网穿透技术，就可以使内网服务器接收到外网数据包。</p>
-<h2 id="内网穿透工具"><a href="#内网穿透工具" class="headerlink" title="内网穿透工具"></a>内网穿透工具</h2><blockquote>
-<p>在外网演示内网 Web 站点</p>
-</blockquote>
-<p>常见的内网穿透工具数不胜数，这里枚举几个：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://natapp.cn/">NATAPP</a>: 基于 ngrok 的国内收费内网穿透工具。</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/fatedier/frp/blob/master/README_zh.md/">Frp</a>: frp 是一个专注于内网穿透的高性能的反向代理应用，支持 TCP、UDP、HTTP、HTTPS 等多种协议。可以将内网服务以安全、便捷的方式通过具有公网 IP 节点的中转暴露到公网。</li>
-<li><a target="_blank" rel="noopener" href="https://ngrok.com/">ngrok</a>: 通过一条命令，即可通过任何 NAT 或者防火墙到达 LocalHost 服务器。</li>
-<li><a target="_blank" rel="noopener" href="https://hsk.oray.com/">花生壳</a>：内网穿透、远程访问、动态域名解析</li>
-<li><a target="_blank" rel="noopener" href="https://ngrok.cc/">Sunny-Ngrok</a>: 提供免费内网穿透服务，免费服务器支持绑定自定义域名，管理内网服务器，内网 web 进行演示，快速开发微信程序和第三方支付平台调试，本地WEB外网访问、本地开发微信、TCP端口转发。</li>
+  </div><article class="md-text content"><p>几日前有幸能参与【创作者训练营】第四期，在直播中也 Get 到不少有用的写作技巧，现在第二次直播回放，现帮大家归纳总结下张鑫旭前辈写作经验的几大要素。</p>
+<span id="more"></span>
+
+<p>写作像我这个掘金新人一样毫无头绪？那本文也许能帮助到你。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141738629.png"></p>
+<p>几日前有幸能参与<a target="_blank" rel="noopener" href="https://juejin.cn/post/7064192649523101726">【创作者训练营】第四期</a>，在直播中也 Get 到不少有用的写作技巧，现在第二次直播回放，现帮大家归纳总结下张鑫旭前辈写作经验的几大要素。</p>
+<p>⭐不论是没时间或者错过直播，还是想要复习的掘友们，希望本文对你们有所帮助。</p>
+<p><strong>直播讲师</strong>：张鑫旭</p>
+<p><strong>直播主题</strong>：12 年技术写作经验分享</p>
+<p><strong>讲师介绍</strong>：阅文集团前端技术专家，同时也是鑫空间鑫生活博主，十几年来一直笔耕不缀，创作了接近 800 篇前端技术原创文章，并著有书籍《CSS世界》《CSS选择器世界》和《CSS新世界》，在与用户体验相关的前端领域有较多的研究心得。</p>
+<p><strong>直播回放</strong>：<a target="_blank" rel="noopener" href="https://live.juejin.cn/4354/5299555">张鑫旭 12 年技术写作经验分享</a></p>
+<h2 id="1-前言：为什么会想不到分享的东西？"><a href="#1-前言：为什么会想不到分享的东西？" class="headerlink" title="1. 前言：为什么会想不到分享的东西？"></a>1. 前言：为什么会想不到分享的东西？</h2><ul>
+<li>总想搞波大事件<ul>
+<li>要稀缺</li>
+<li>要精致</li>
+<li>要干货</li>
 </ul>
-<h2 id="Sunny-Ngrok-演示"><a href="#Sunny-Ngrok-演示" class="headerlink" title="Sunny-Ngrok 演示"></a>Sunny-Ngrok 演示</h2><p>首先需要开通隧道（官方教程，不再赘述）：<a target="_blank" rel="noopener" href="https://www.ngrok.cc/_book/general/open.html">Sunny-Ngrok 开通隧道</a></p>
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747698.png"></p>
-<p>然后修改隧道要映射的本地端口号（即要让本地哪个服务穿透到公网）：</p>
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747349.png"></p>
-<p>⭐记住该隧道对应的 id，待会启动 sunny-ngrok 需要用到：</p>
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747069.png"></p>
-<p><a target="_blank" rel="noopener" href="https://ngrok.cc/download.html">下载 sunny-ngrok 客户端</a>，有如下两种方式启动 Sunny-Ngrok 客户端：</p>
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747942.png"></p>
-<h3 id="方式一：sunny-exe"><a href="#方式一：sunny-exe" class="headerlink" title="方式一：sunny.exe"></a>方式一：sunny.exe</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747595.png"></p>
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747167.png"></p>
-<h3 id="方式二：Sunny-Ngrok-启动工具-bat"><a href="#方式二：Sunny-Ngrok-启动工具-bat" class="headerlink" title="方式二：Sunny-Ngrok 启动工具.bat"></a>方式二：Sunny-Ngrok 启动工具.bat</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747846.png"></p>
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141747960.png"></p>
-<h2 id="Invalid-Host-Header"><a href="#Invalid-Host-Header" class="headerlink" title="Invalid Host Header"></a><code>Invalid Host Header</code></h2><p>当使用 <code>vue-cli</code> 搭建 web 服务并进行内网穿透时，可能会出现 <code>Invalid Host Header</code> 问题：</p>
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141748841.png"></p>
-<p>这是因为新版的 <code>webpack-dev-server</code> 出于安全考虑，默认检查 hostname，如果 hostname 不是配置内的就不能访问，这里我们直接设置 <code>vue.config.js</code> <strong>跳过 host 检查</strong>：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 跳过 Host 检查: vue.config.js 文件若无则创建</span></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="attr">devServer</span>: &#123;</span><br><span class="line">    <span class="attr">disableHostCheck</span>: <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li>害怕带来的不安全感<ul>
+<li>害怕内容不行</li>
+<li>害怕版式糟糕</li>
+<li>害怕暴露菜鸟水平</li>
+</ul>
+</li>
+</ul>
+<p>⭐其实不能让这些因素造成我们写作困难，<strong>我们更应该考虑的是“我有什么”</strong>？！</p>
+<ul>
+<li>我是谁？</li>
+<li>我的精力怎样？</li>
+<li>我的水平如何？</li>
+<li>我的优势是什么？</li>
+<li>我的突破口又在哪里？</li>
+</ul>
+<h2 id="2-关于写作选题"><a href="#2-关于写作选题" class="headerlink" title="2. 关于写作选题"></a>2. 关于写作选题</h2><h3 id="写作选题方向"><a href="#写作选题方向" class="headerlink" title="写作选题方向"></a>写作选题方向</h3><p><strong>01 新特性、新方法介绍</strong>（适合新人）：推荐 <a target="_blank" rel="noopener" href="https://caniuse.com/">Can I Use</a> 网站</p>
+<p>02 自认为厉害的小技巧、小创造</p>
+<p>03 原理剖析、深入理解</p>
+<p><strong>04 技术方案汇总</strong>（适合新人）</p>
+<p>05 棘手问题解决经验分享</p>
+<p><strong>06 优秀框架、项目、工具的体验指南</strong>（适合新人）</p>
+<h3 id="建议"><a href="#建议" class="headerlink" title="建议"></a>建议</h3><h4 id="1-选题与自己学习相关"><a href="#1-选题与自己学习相关" class="headerlink" title="(1) 选题与自己学习相关"></a>(1) 选题与自己学习相关</h4><ul>
+<li>写作是学习的辅助手段</li>
+<li>容易坚持，就算没人看，自己也收获了成长</li>
+</ul>
+<h4 id="2-不要写雷同内容"><a href="#2-不要写雷同内容" class="headerlink" title="(2) 不要写雷同内容"></a>(2) 不要写雷同内容</h4><ul>
+<li>同一个知识点可以从不同点切入</li>
+</ul>
+<h4 id="3-迷茫时候写写个人故事、感悟与困惑"><a href="#3-迷茫时候写写个人故事、感悟与困惑" class="headerlink" title="(3) 迷茫时候写写个人故事、感悟与困惑"></a>(3) 迷茫时候写写个人故事、感悟与困惑</h4><ul>
+<li>既能寻找答案，又能获得访问</li>
+</ul>
+<h2 id="3-关于内容结构"><a href="#3-关于内容结构" class="headerlink" title="3. 关于内容结构"></a>3. 关于内容结构</h2><p>🙄你的写作目的决定了你的内容结构！</p>
+<h3 id="功利写作"><a href="#功利写作" class="headerlink" title="功利写作"></a>功利写作</h3><p>🌈如果你是为了升职加薪，为了换工作，为了出名而写作。那么你的写作需要更加有<strong>套路</strong>一点，体现在两点：<strong>重点突出</strong> &amp; <strong>有闭环有递进</strong>。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141738812.png"></p>
+<h4 id="重点突出"><a href="#重点突出" class="headerlink" title="重点突出"></a>重点突出</h4><blockquote>
+<p>一眼扫过去知道你在讲什么</p>
+</blockquote>
+<ul>
+<li>讲结论的：结论先行</li>
+<li>讲交互的：效果先放</li>
+<li>罗列知识的：需要清晰的目录</li>
+</ul>
+<h4 id="有闭环有递进"><a href="#有闭环有递进" class="headerlink" title="有闭环有递进"></a>有闭环有递进</h4><blockquote>
+<p>完整的故事化表达</p>
+</blockquote>
+<ul>
+<li>背景，思考，尝试，困难，解决与结果</li>
+<li>困难分1, 2, 3，解决后又出现了什么新问题</li>
+</ul>
+<h3 id="日常写作"><a href="#日常写作" class="headerlink" title="日常写作"></a>日常写作</h3><p>👨‍💻如果是为了学习与自我成长，个人展现。那么<strong>遵从自己的内心</strong>最重要，少一点套路，多一点真诚。因为真心想分享的心比什么乱七八糟的技巧都管用。</p>
+<p>🚀记住：<strong>写文章不要指望着让所有人都满意，让所有人都满意的文章一定是中庸的文章，即枯燥与乏味</strong>。否则最后的文章一定是平平无奇，无法脱颖而出！</p>
+<blockquote>
+<p>看看张鑫旭大佬的文章结构（各式各样，随心而记）</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141738208.png"></p>
+<h2 id="4-关于语言表达"><a href="#4-关于语言表达" class="headerlink" title="4. 关于语言表达"></a>4. 关于语言表达</h2><h3 id="换位思考"><a href="#换位思考" class="headerlink" title="换位思考"></a>换位思考</h3><p>🤔先抛出一个问题：<strong>技术文章</strong>的语言表达，什么最重要？</p>
+<ul>
+<li>简洁的语句？❌</li>
+<li>华丽的辞藻？❌</li>
+<li>搞笑的段子？❌</li>
+</ul>
+<p>都不是！最重要的是<strong>换位思考</strong>的能力。</p>
+<ul>
+<li>如果我是小白，这些术语懂吗？</li>
+<li>如果我是读者，好理解吗？<ul>
+<li>是不是有个耳熟能详的东西类比下？</li>
+<li>是不是代码要简化下，加注释？</li>
+<li>是不是这里应该放个图？</li>
+<li>是不是这里应该加个演示？</li>
+</ul>
+</li>
+</ul>
+<p><strong>观点</strong>：除了是工作汇报、团队账号这样的严肃场景，否则一定是融入了个人感情的文章更有价值！</p>
+<h3 id="展现真实的自己"><a href="#展现真实的自己" class="headerlink" title="展现真实的自己"></a>展现真实的自己</h3><p>例如：我遇到了什么样的问题？我是怎么思考的？我又是怎么解决的？</p>
+<p>又例如：我觉得这个技术如何？我不太喜欢某某设计？我的建议是什么？</p>
+<h4 id="你是什么样的人，就用什么样的风格"><a href="#你是什么样的人，就用什么样的风格" class="headerlink" title="你是什么样的人，就用什么样的风格"></a>你是什么样的人，就用什么样的风格</h4><blockquote>
+<p>拒绝模板，展现出真实的自我！</p>
+</blockquote>
+<p>我话痨，喜欢扯东扯西，你就这么干，想到什么说什么！</p>
+<p>我御宅族，文章可以体现各种宅元素。</p>
+<p>我喜欢晒自己，那文章配图就多多展示。</p>
+<p>我是穷酸小透明，文章就不必强颜欢笑，透露出忧郁挺好！</p>
+<hr>
+<p>😶真实的自我更容易让人产生共鸣！并且保持一致的风格和特色有诸多好处：</p>
+<ul>
+<li>糟糕的风格好过于毫无风格</li>
+<li>让别人记住你，提高影响力</li>
+<li>防盗版的手段之一</li>
+</ul>
+<h2 id="5-关于文章质量"><a href="#5-关于文章质量" class="headerlink" title="5. 关于文章质量"></a>5. 关于文章质量</h2><p>🔮10 篇水文不如 1 篇高质量好文！</p>
+<h3 id="配图和演示"><a href="#配图和演示" class="headerlink" title="配图和演示"></a>配图和演示</h3><p>正所谓 “一例胜千图，一图胜千言”</p>
+<h3 id="对每一句话负责"><a href="#对每一句话负责" class="headerlink" title="对每一句话负责"></a>对每一句话负责</h3><p>出现了不确信的结论，一定要自己验证一遍</p>
+<p>例如：在桌面端 <code>document.scrollingElement</code> 就是 <code>document.documentElement</code>；在移动端 <code>document.scrollingElement</code> 就是 <code>document.body</code>。</p>
+<p>🥴对还是不是？Android 和 iOS 都是吗？</p>
+<h3 id="追求内心而不是热门"><a href="#追求内心而不是热门" class="headerlink" title="追求内心而不是热门"></a>追求内心而不是热门</h3><p>文章质量和访问量并不正相关</p>
+<p>例如：”面试技巧，N个特性汇总”这样的文章容易获得高赞，但它不一定能带给你影响力。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>01 关于文章选题</strong>：与学习相关、不同切入点、感悟与困惑</p>
+<p><strong>02 关于内容结构</strong>：重点突出、闭环与递进、遵照内心</p>
+<p><strong>03 关于语言表达</strong>：换位思考、展示自我、保持风格</p>
+<p><strong>04 关于文章质量</strong>：配图与实例、对结论负责、追寻内心</p>
+<p>💖大部分文字源于直播内容，直播回放地址已在文章开头贴出。</p>
 
 <div class="article-footer fs14">
     <section id="license">
@@ -143,20 +224,18 @@
     <section id="share">
       <div class="header"><span>Share</span></div>
       <div class="body">
-        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.github.io/post/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%20%C2%B7%20%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.html" /></div>
-        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.github.io/post/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%20%C2%B7%20%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.html&title=内网穿透 · 最佳实践 - Yikun Wu&pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311150147001.jpg&summary=内网穿透概念内网穿透，又称 NAT 穿透，进行 NAT 穿透是为了使数据包不被 NAT 设备屏蔽而正确路由到内网主机。
-⭐简单来说，内网穿透就是将私有（保留）地址转化为合法 IP 地址的转换技术。
-巧妙地利用 NAT 原理实现 NAT..."><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=内网穿透 · 最佳实践 - Yikun Wu&amp;body=https://wu-yikun.github.io/post/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%20%C2%B7%20%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.html"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;Copied!&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.github.io/post/%E5%BC%A0%E9%91%AB%E6%97%AD%2012%20%E5%B9%B4%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB.html" /></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg" /></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.github.io/post/%E5%BC%A0%E9%91%AB%E6%97%AD%2012%20%E5%B9%B4%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB.html&title=张鑫旭 12 年技术写作经验分享 - Yikun Wu&pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141740397.png&summary=几日前有幸能参与【创作者训练营】第四期，在直播中也 Get 到不少有用的写作技巧，现在第二次直播回放，现帮大家归纳总结下张鑫旭前辈写作经验的几大要素。"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg" /></a><a class="social share-item email" href="mailto:?subject=张鑫旭 12 年技术写作经验分享 - Yikun Wu&amp;body=https://wu-yikun.github.io/post/%E5%BC%A0%E9%91%AB%E6%97%AD%2012%20%E5%B9%B4%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB.html"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg" /></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;Copied!&quot;)"><img class="lazy"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg" /></a></div>
         
         <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
-          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://wu-yikun.github.io/post/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%20%C2%B7%20%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.html"/>
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://wu-yikun.github.io/post/%E5%BC%A0%E9%91%AB%E6%97%AD%2012%20%E5%B9%B4%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB.html"/>
         </div>
         
       </div>
     </section>
     </div>
 </article>
-<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">Newer</div><a href="/post/%E5%BC%A0%E9%91%AB%E6%97%AD12%E5%B9%B4%E6%8A%80%E6%9C%AF%E5%86%99%E4%BD%9C%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB.html">张鑫旭12年技术写作经验分享</a></div><div class="item" id="next"><div class="note">Older</div><a href="/post/%E5%A6%82%E4%BD%95%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BC%98%E9%9B%85%E5%9C%B0%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99.html">如何用服务器优雅地搭建个人博客网站</a></div></section></div>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">Newer</div><a href="/post/Golang%20Wiki.html">Golang Wiki</a></div><div class="item" id="next"><div class="note">Older</div><a href="/post/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F.html">内网穿透</a></div></section></div>
 
 
 
@@ -183,7 +262,7 @@
 
 
 
-<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E6%A6%82%E5%BF%B5"><span class="toc-text">内网穿透概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%B7%A5%E5%85%B7"><span class="toc-text">内网穿透工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sunny-Ngrok-%E6%BC%94%E7%A4%BA"><span class="toc-text">Sunny-Ngrok 演示</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9Asunny-exe"><span class="toc-text">方式一：sunny.exe</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9ASunny-Ngrok-%E5%90%AF%E5%8A%A8%E5%B7%A5%E5%85%B7-bat"><span class="toc-text">方式二：Sunny-Ngrok 启动工具.bat</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Invalid-Host-Header"><span class="toc-text">Invalid Host Header</span></a></li></ol></div><div class="widget-footer">
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%89%8D%E8%A8%80%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E6%83%B3%E4%B8%8D%E5%88%B0%E5%88%86%E4%BA%AB%E7%9A%84%E4%B8%9C%E8%A5%BF%EF%BC%9F"><span class="toc-text">1. 前言：为什么会想不到分享的东西？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%85%B3%E4%BA%8E%E5%86%99%E4%BD%9C%E9%80%89%E9%A2%98"><span class="toc-text">2. 关于写作选题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E4%BD%9C%E9%80%89%E9%A2%98%E6%96%B9%E5%90%91"><span class="toc-text">写作选题方向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BB%BA%E8%AE%AE"><span class="toc-text">建议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E9%80%89%E9%A2%98%E4%B8%8E%E8%87%AA%E5%B7%B1%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3"><span class="toc-text">(1) 选题与自己学习相关</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%B8%8D%E8%A6%81%E5%86%99%E9%9B%B7%E5%90%8C%E5%86%85%E5%AE%B9"><span class="toc-text">(2) 不要写雷同内容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E8%BF%B7%E8%8C%AB%E6%97%B6%E5%80%99%E5%86%99%E5%86%99%E4%B8%AA%E4%BA%BA%E6%95%85%E4%BA%8B%E3%80%81%E6%84%9F%E6%82%9F%E4%B8%8E%E5%9B%B0%E6%83%91"><span class="toc-text">(3) 迷茫时候写写个人故事、感悟与困惑</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%85%B3%E4%BA%8E%E5%86%85%E5%AE%B9%E7%BB%93%E6%9E%84"><span class="toc-text">3. 关于内容结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%9F%E5%88%A9%E5%86%99%E4%BD%9C"><span class="toc-text">功利写作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E7%82%B9%E7%AA%81%E5%87%BA"><span class="toc-text">重点突出</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%89%E9%97%AD%E7%8E%AF%E6%9C%89%E9%80%92%E8%BF%9B"><span class="toc-text">有闭环有递进</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%B8%B8%E5%86%99%E4%BD%9C"><span class="toc-text">日常写作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%85%B3%E4%BA%8E%E8%AF%AD%E8%A8%80%E8%A1%A8%E8%BE%BE"><span class="toc-text">4. 关于语言表达</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8D%A2%E4%BD%8D%E6%80%9D%E8%80%83"><span class="toc-text">换位思考</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%95%E7%8E%B0%E7%9C%9F%E5%AE%9E%E7%9A%84%E8%87%AA%E5%B7%B1"><span class="toc-text">展现真实的自己</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%A0%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%B7%E7%9A%84%E4%BA%BA%EF%BC%8C%E5%B0%B1%E7%94%A8%E4%BB%80%E4%B9%88%E6%A0%B7%E7%9A%84%E9%A3%8E%E6%A0%BC"><span class="toc-text">你是什么样的人，就用什么样的风格</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%85%B3%E4%BA%8E%E6%96%87%E7%AB%A0%E8%B4%A8%E9%87%8F"><span class="toc-text">5. 关于文章质量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E5%9B%BE%E5%92%8C%E6%BC%94%E7%A4%BA"><span class="toc-text">配图和演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E6%AF%8F%E4%B8%80%E5%8F%A5%E8%AF%9D%E8%B4%9F%E8%B4%A3"><span class="toc-text">对每一句话负责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%BD%E6%B1%82%E5%86%85%E5%BF%83%E8%80%8C%E4%B8%8D%E6%98%AF%E7%83%AD%E9%97%A8"><span class="toc-text">追求内心而不是热门</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></div><div class="widget-footer">
 
 <a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>Scroll to Top</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"/><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"/></svg><span>Join Discussion</span></a></div></widget>
 </div></aside><div class='float-panel blur'>
@@ -674,4 +753,4 @@
 <!-- inject -->
 
 </div></body></html>
-<script>var posts=["/post/Git 各式后悔药.html","/post/Hexo Blog 使用指南.html","/post/Go 语言指南 & 实战，跟我一起拥抱 Golang！.html","/post/ISS 限制、CPU 限制与流量限制.html","/post/「2023 年终总结」别急着赶路，去感受路.html","/post/「2022 年终总结」人生是一片原野，而不是轨道.html","/post/「2024 年终总结」世界指向任何我想去的地方.html","/post/「2021 年终总结」唯有热爱，可抵漫长岁月.html","/post/一文带你认识 Docker 与 k8s.html","/post/内网穿透 · 最佳实践.html","/post/不要以你现在的能力，束缚对未来的想象力.html","/post/张鑫旭12年技术写作经验分享.html","/post/恕我直言，你可能连 GitHub 搜索都不会用！.html","/post/本科生如何才能进入 BAT 等一流互联网大厂.html","/post/如何用服务器优雅地搭建个人博客网站.html","/post/让你选一句话裱起来，你会选什么？.html","/post/重启就是关机再开机？.html","/post/探秘 .git 文件夹，理解 git 运作机制.html"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>
+<script>var posts=["/post/Git 各式后悔药.html","/post/「2023 年终总结」别急着赶路，去感受路.html","/post/「2022 年终总结」人生是一片原野，而不是轨道.html","/post/「2024 年终总结」世界指向任何我想去的地方.html","/post/「2021 年终总结」唯有热爱，可抵漫长岁月.html","/post/一文带你认识 Docker 与 k8s.html","/post/不要以你现在的能力，束缚对未来的想象力.html","/post/恕我直言，你可能连 GitHub 搜索都不会用！.html","/post/本科生如何才能进入 BAT 等一流互联网大厂.html","/post/如何用服务器优雅地搭建个人博客网站.html","/post/让你选一句话裱起来，你会选什么？.html","/post/重启就是关机再开机？.html","/post/探秘 .git 文件夹，理解 git 运作机制.html","/post/张鑫旭 12 年技术写作经验分享.html","/post/内网穿透.html","/post/Hexo Stellar 开发指南.html","/post/Golang Wiki.html","/post/IIS 限制、CPU 限制与流量限制.html"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>
