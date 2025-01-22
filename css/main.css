@@ -4659,7 +4659,6 @@ details.toc[open] >div.body section .header+.doc_tree {
   display: inline-block;
   padding: 6px;
   border-radius: 32px;
-  filter: grayscale(100%);
   overflow: hidden;
   background: transparent;
   transition: box-shadow 0.2s ease-out, background 0.2s ease-out, transform 0.2s ease-out;
@@ -6924,4 +6923,20 @@ a[data-fancybox] {
     font-size: 1.25em;
     color: #fff;
   }
+}
+/* 默认的浅色模式颜色 */
+:root {
+  --tag-bg-color: #f2eefd;
+  --tag-text-color: #835eec;
+}
+/* 暗黑模式下的颜色 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tag-bg-color: #282433;
+    --tag-text-color: #a28bf2;
+  }
+}
+#post-meta {
+  font-size: 12px;
+  color: var(--text-p4); /* 或 --text-p2，设置为灰色 */
 }
