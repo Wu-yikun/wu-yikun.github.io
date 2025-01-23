@@ -5813,10 +5813,10 @@ details.toc[open] >div.body section .header+.doc_tree {
 }
 .widget-wrapper {
   display: block;
-  padding-bottom: 32px;
+  padding-bottom: 10px;
 }
 .l_left .widgets .widget-wrapper:first-child {
-  margin-top: 32px;
+  margin-top: 0px;
 }
 .l_right .widgets:empty {
   display: none;
@@ -6081,7 +6081,7 @@ details.toc[open] >div.body section .header+.doc_tree {
 }
 .l_body .l_left {
   justify-self: right;
-  top: 8px;
+  top: 0px;
 }
 .l_body .l_right {
   justify-self: left;
