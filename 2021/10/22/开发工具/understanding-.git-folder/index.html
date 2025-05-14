@@ -1,0 +1,1007 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>探秘 .git 文件夹，理解 git 运作机制 - Yikun Wu</title>
+
+  
+    <meta name="description" content="近期需要给 git 仓库制作一个 commit-msg 钩子，进入 .git/hooks 文件夹正准备干活，突然想知道其它 git hooks 都是干啥的？.git 文件夹里面那么多文件，又都是干什么的呢？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="探秘 .git 文件夹，理解 git 运作机制">
+<meta property="og:url" content="https://wu-yikun.github.io/2021/10/22/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/understanding-.git-folder/index.html">
+<meta property="og:site_name" content="Yikun Wu">
+<meta property="og:description" content="近期需要给 git 仓库制作一个 commit-msg 钩子，进入 .git/hooks 文件夹正准备干活，突然想知道其它 git hooks 都是干啥的？.git 文件夹里面那么多文件，又都是干什么的呢？">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635995.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635306.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635588.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635138.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141636474.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141636088.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141636779.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141636686.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141637712.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141637576.png">
+<meta property="article:published_time" content="2021-10-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-05-13T19:47:56.213Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="git">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635995.png">
+  
+  
+  
+  <meta name="keywords" content="git">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140357298.svg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar" src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">人的梦想是不会结束的</div><div class="sub hover cap" style="opacity:0"> 不是吗</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+    <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">人工智能 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%8D%9A%E5%AE%A2%E5%BC%80%E5%8F%91/">博客开发 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具 (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%94%9F%E6%B4%BB%E6%80%9D%E8%80%83/">生活思考 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%AE%97%E6%B3%95/">算法 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言 (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E9%9D%A2%E7%BB%8F/">面经 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB/">经验分享 (3)</a></div></div></widget>
+
+<widget class="widget-wrapper tagcloud"><div class="widget-header dis-select"><span class="name">标签索引</span></div><div class="widget-body fs14"><a href="/tags/ACPI/" style="font-size: 12px;" class="tag -0">ACPI</a> <a href="/tags/ART/" style="font-size: 12px;" class="tag -0">ART</a> <a href="/tags/All-Flash-Array/" style="font-size: 12px;" class="tag -0">All-Flash Array</a> <a href="/tags/C/" style="font-size: 22px;" class="tag -8">C++</a> <a href="/tags/COW/" style="font-size: 12px;" class="tag -0">COW</a> <a href="/tags/Ceph/" style="font-size: 12px;" class="tag -0">Ceph</a> <a href="/tags/ChatGPT/" style="font-size: 16px;" class="tag -3">ChatGPT</a> <a href="/tags/DP/" style="font-size: 12px;" class="tag -0">DP</a> <a href="/tags/DPDK/" style="font-size: 12px;" class="tag -0">DPDK</a> <a href="/tags/Difference-Array/" style="font-size: 12px;" class="tag -0">Difference Array</a> <a href="/tags/Docker/" style="font-size: 14px;" class="tag -2">Docker</a> <a href="/tags/DuckDB/" style="font-size: 12px;" class="tag -0">DuckDB</a> <a href="/tags/EX4/" style="font-size: 12px;" class="tag -0">EX4</a> <a href="/tags/Embedding/" style="font-size: 12px;" class="tag -0">Embedding</a> <a href="/tags/File-System/" style="font-size: 12px;" class="tag -0">File System</a> <a href="/tags/GitHub/" style="font-size: 12px;" class="tag -0">GitHub</a> <a href="/tags/Golang/" style="font-size: 12px;" class="tag -0">Golang</a> <a href="/tags/Graph/" style="font-size: 12px;" class="tag -0">Graph</a> <a href="/tags/Halo/" style="font-size: 12px;" class="tag -0">Halo</a> <a href="/tags/Hexo/" style="font-size: 12px;" class="tag -0">Hexo</a> <a href="/tags/IP/" style="font-size: 12px;" class="tag -0">IP</a> <a href="/tags/JWT/" style="font-size: 12px;" class="tag -0">JWT</a> <a href="/tags/Kubernetes/" style="font-size: 12px;" class="tag -0">Kubernetes</a> <a href="/tags/LeetCode/" style="font-size: 24px;" class="tag -10">LeetCode</a> <a href="/tags/LinkList/" style="font-size: 12px;" class="tag -0">LinkList</a> <a href="/tags/Linux/" style="font-size: 20px;" class="tag -7">Linux</a> <a href="/tags/Linux-Kernel/" style="font-size: 14px;" class="tag -2">Linux Kernel</a> <a href="/tags/Markdown/" style="font-size: 12px;" class="tag -0">Markdown</a> <a href="/tags/Modulo/" style="font-size: 12px;" class="tag -0">Modulo</a> <a href="/tags/Monotonic-Stack/" style="font-size: 12px;" class="tag -0">Monotonic Stack</a> <a href="/tags/NAT/" style="font-size: 12px;" class="tag -0">NAT</a> <a href="/tags/NVM/" style="font-size: 14px;" class="tag -2">NVM</a> <a href="/tags/Optane-DIMMs/" style="font-size: 12px;" class="tag -0">Optane DIMMs</a> <a href="/tags/PMDK/" style="font-size: 14px;" class="tag -2">PMDK</a> <a href="/tags/POSIX/" style="font-size: 12px;" class="tag -0">POSIX</a> <a href="/tags/Page-Cache/" style="font-size: 12px;" class="tag -0">Page Cache</a> <a href="/tags/Paxos/" style="font-size: 14px;" class="tag -2">Paxos</a> <a href="/tags/Python/" style="font-size: 12px;" class="tag -0">Python</a> <a href="/tags/RAID/" style="font-size: 12px;" class="tag -0">RAID</a> <a href="/tags/Raft/" style="font-size: 14px;" class="tag -2">Raft</a> <a href="/tags/SSD/" style="font-size: 12px;" class="tag -0">SSD</a> <a href="/tags/STL/" style="font-size: 12px;" class="tag -0">STL</a> <a href="/tags/Search/" style="font-size: 12px;" class="tag -0">Search</a> <a href="/tags/Self-Attention/" style="font-size: 14px;" class="tag -2">Self-Attention</a> <a href="/tags/Sieve-of-Prime-Number/" style="font-size: 12px;" class="tag -0">Sieve of Prime Number</a> <a href="/tags/Stellar/" style="font-size: 12px;" class="tag -0">Stellar</a> <a href="/tags/Storage/" style="font-size: 12px;" class="tag -0">Storage</a> <a href="/tags/Sunny-Ngrok/" style="font-size: 12px;" class="tag -0">Sunny-Ngrok</a> <a href="/tags/Syscall/" style="font-size: 12px;" class="tag -0">Syscall</a> <a href="/tags/Tokenizer/" style="font-size: 12px;" class="tag -0">Tokenizer</a> <a href="/tags/Transformer/" style="font-size: 14px;" class="tag -2">Transformer</a> <a href="/tags/Tree/" style="font-size: 16px;" class="tag -3">Tree</a> <a href="/tags/Trie/" style="font-size: 12px;" class="tag -0">Trie</a> <a href="/tags/UCloud/" style="font-size: 12px;" class="tag -0">UCloud</a> <a href="/tags/Union-Search/" style="font-size: 12px;" class="tag -0">Union Search</a> <a href="/tags/VFS/" style="font-size: 14px;" class="tag -2">VFS</a> <a href="/tags/Vector/" style="font-size: 12px;" class="tag -0">Vector</a> <a href="/tags/WAL/" style="font-size: 12px;" class="tag -0">WAL</a> <a href="/tags/Zero-Copy/" style="font-size: 12px;" class="tag -0">Zero Copy</a> <a href="/tags/builtin/" style="font-size: 12px;" class="tag -0">__builtin</a> <a href="/tags/df/" style="font-size: 12px;" class="tag -0">df</a> <a href="/tags/du/" style="font-size: 12px;" class="tag -0">du</a> <a href="/tags/fdisk/" style="font-size: 12px;" class="tag -0">fdisk</a> <a href="/tags/fio/" style="font-size: 12px;" class="tag -0">fio</a> <a href="/tags/fsck/" style="font-size: 12px;" class="tag -0">fsck</a> <a href="/tags/fstab/" style="font-size: 14px;" class="tag -2">fstab</a> <a href="/tags/g/" style="font-size: 12px;" class="tag -0">g++</a> <a href="/tags/gcc/" style="font-size: 12px;" class="tag -0">gcc</a> <a href="/tags/gdb/" style="font-size: 12px;" class="tag -0">gdb</a> <a href="/tags/git/" style="font-size: 16px;" class="tag -3">git</a> <a href="/tags/grub/" style="font-size: 12px;" class="tag -0">grub</a> <a href="/tags/iostat/" style="font-size: 12px;" class="tag -0">iostat</a> <a href="/tags/libpmemobj/" style="font-size: 12px;" class="tag -0">libpmemobj</a> <a href="/tags/lsblk/" style="font-size: 12px;" class="tag -0">lsblk</a> <a href="/tags/mdadm/" style="font-size: 12px;" class="tag -0">mdadm</a> <a href="/tags/mkfs/" style="font-size: 12px;" class="tag -0">mkfs</a> <a href="/tags/mmaloc/" style="font-size: 12px;" class="tag -0">mmaloc</a> <a href="/tags/mmap/" style="font-size: 16px;" class="tag -3">mmap</a> <a href="/tags/mount/" style="font-size: 14px;" class="tag -2">mount</a> <a href="/tags/move/" style="font-size: 12px;" class="tag -0">move</a> <a href="/tags/qpow/" style="font-size: 12px;" class="tag -0">qpow</a> <a href="/tags/ranges/" style="font-size: 12px;" class="tag -0">ranges</a> <a href="/tags/read/" style="font-size: 14px;" class="tag -2">read</a> <a href="/tags/smartctl/" style="font-size: 12px;" class="tag -0">smartctl</a> <a href="/tags/token/" style="font-size: 12px;" class="tag -0">token</a> <a href="/tags/trace/" style="font-size: 12px;" class="tag -0">trace</a> <a href="/tags/wipefs/" style="font-size: 12px;" class="tag -0">wipefs</a> <a href="/tags/write/" style="font-size: 14px;" class="tag -2">write</a> <a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" style="font-size: 12px;" class="tag -0">内网穿透</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/" style="font-size: 18px;" class="tag -5">分布式系统</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 14px;" class="tag -2">博客</a> <a href="/tags/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/" style="font-size: 12px;" class="tag -0">反向代理</a> <a href="/tags/%E5%AE%89%E5%85%A8/" style="font-size: 12px;" class="tag -0">安全</a> <a href="/tags/%E5%B4%A9%E6%BA%83%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 12px;" class="tag -0">崩溃一致性</a> <a href="/tags/%E5%B9%82%E7%AD%89%E6%80%A7/" style="font-size: 12px;" class="tag -0">幂等性</a> <a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/" style="font-size: 18px;" class="tag -5">年终总结</a> <a href="/tags/%E6%8B%9C%E5%8D%A0%E5%BA%AD/" style="font-size: 12px;" class="tag -0">拜占庭</a> <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 14px;" class="tag -2">排序</a> <a href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" style="font-size: 12px;" class="tag -0">服务器</a> <a href="/tags/%E6%9C%AA%E6%9D%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%B9%B8%E5%AD%98%E8%80%85/" style="font-size: 12px;" class="tag -0">未来世界的幸存者</a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Wu-yikun" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418811.svg"></a><a class="social" href="https://leetcode.cn/u/wu-yikun/" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419535.svg"></a><a class="social" href="https://juejin.cn/user/1654082381026734" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419245.svg"></a><a class="social" href="https://www.zhihu.com/people/JayChou" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419020.svg"></a><a class="social" href="https://music.163.com/#/user/home?id=1479129382" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419025.svg"></a><a class="social" href="https://space.bilibili.com/441384986?spm_id_from=333.1007.0.0" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418494.svg"></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635758.jpg">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/git/">git</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2021-10-21T16:00:00.000Z">2021-10-22</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-05-13T19:47:56.213Z">2025-05-14</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>探秘 .git 文件夹，理解 git 运作机制</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>近期需要给 git 仓库制作一个 <code>commit-msg</code> 钩子，进入 <code>.git/hooks</code> 文件夹正准备干活，突然想知道其它 <strong>git hooks</strong> 都是干啥的？<code>.git</code> 文件夹里面那么多文件，又都是干什么的呢？</p>
+<span id="more"></span>
+
+<blockquote>
+<p><strong>前言：</strong> 近期需要给 git 仓库制作一个 <code>commit-msg</code> 钩子，进入 <code>.git/hooks</code> 文件夹正准备干活，突然想知道其它 <strong>git hooks</strong> 都是干啥的？<code>.git</code> 文件夹里面那么多文件，又都是干什么的呢？于是写了这篇文章。</p>
+<p>另外，想要 <code>git</code> 进阶，了解 <code>.git</code> 文件夹也是最佳切入点，关于 <code>git</code> 运作机制的线索都可以在这里找到。</p>
+</blockquote>
+<h2 id="1-git-文件夹创建"><a href="#1-git-文件夹创建" class="headerlink" title="1. .git 文件夹创建"></a>1. <code>.git</code> 文件夹创建</h2><p>任意文件夹中，用 <code>git init</code> 命令初始化仓库，即可在此文件夹下创建 <code>.git</code> 文件夹（<code>.</code>打头为隐藏文件夹，所以平时可能看不到）。这个文件夹之外的部分叫做工作区（Working Directory），<code>.git</code> 文件夹我们称做 Git 仓库 (Git Repository)。</p>
+<p>如果出于某种原因，想要重新来过，<code>rm -rf .git &amp;&amp; git init</code>，此仓库的 git 记录会归零！（<strong>提醒：慎用！！！</strong>）</p>
+<h2 id="2-git-结构"><a href="#2-git-结构" class="headerlink" title="2. .git 结构"></a>2. <code>.git</code> 结构</h2><p>随便初始化一个仓库，<code>git init temp</code>，运行 <code>cd temp &amp;&amp; ls -F1 .git</code>，可以看到基本的 <code>.git</code> 目录结构：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">HEAD</span><br><span class="line">config</span><br><span class="line">description</span><br><span class="line">hooks/</span><br><span class="line">info/</span><br><span class="line">objects/</span><br><span class="line">refs/</span><br></pre></td></tr></tbody></table></figure>
+
+<p>但这里面没有实质性内容，研究意义不大。我们找一个有过几次提交的仓库，运行 <code>ls -F1 .git</code> 可以看到更丰富的 <code>.git</code> 目录结构（通常会有 7 个文件 5 个目录）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">COMMIT_EDITMSG</span><br><span class="line">HEAD</span><br><span class="line">ORIG_HEAD</span><br><span class="line">FETCH_HEAD</span><br><span class="line">config</span><br><span class="line">description</span><br><span class="line">index</span><br><span class="line">hooks/</span><br><span class="line">info/</span><br><span class="line">logs/</span><br><span class="line">objects/</span><br><span class="line">refs/</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635995.png"></p>
+<p><strong>重要：动手之前，请做好整个仓库的备份！！！</strong></p>
+<p><strong>重要：动手之前，请做好整个仓库的备份！！！</strong></p>
+<p><strong>重要：动手之前，请做好整个仓库的备份！！！</strong></p>
+<h3 id="2-1-文件-COMMIT-EDITMSG"><a href="#2-1-文件-COMMIT-EDITMSG" class="headerlink" title="2.1. 文件 COMMIT_EDITMSG"></a>2.1. 文件 COMMIT_EDITMSG</h3><p>此文件是一个临时文件，<strong>存储最后一次提交的信息内容</strong>，<code>git commit</code> 命令之后打开的编辑器就是在编辑此文件，而你退出编辑器后，<code>git</code> 会把此文件内容写入 commit 记录。</p>
+<p>⭐<strong>实际应用</strong>： <code>git pull</code> 远程仓库后，新增了很多提交，淹没了本地提交记录，直接 <code>cat .git/COMMIT_EDITMSG</code> 就可以弄清楚最后工作的位置了，是不是很实用？</p>
+<h3 id="2-2-文件-HEAD"><a href="#2-2-文件-HEAD" class="headerlink" title="2.2 文件 HEAD"></a>2.2 文件 HEAD</h3><p>此文件<strong>永远</strong>存储当前位置指针，就像 linux 中的 <code>$PWD</code> 变量和命令提示符的箭头一样，永远指向当前位置，表明当前的工作位置。在 <code>git</code> 中 <code>HEAD</code> 永远指向当前正在工作的那个 <code>commit</code>。</p>
+<h4 id="分支-HEAD"><a href="#分支-HEAD" class="headerlink" title="分支 HEAD"></a>分支 HEAD</h4><p>HEAD 存储一个分支的 <strong>ref</strong>，运行：<code>cat .git/HEAD</code> 通常会显示：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ref: refs/heads/master</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635306.png"></p>
+<p>这说明你目前正在 <code>master</code> 分支工作。此时你的任何 commit，默认自动附加到 <code>master</code> 分支之上。</p>
+<p>执行 <code>git cat-file -p HEAD</code>, 显示详细的提交信息：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git cat-file -p HEAD</span></span><br><span class="line">tree 95a4c1cd778ad62586c47afc06d2a1b5dff1bdec</span><br><span class="line">parent bfdec30d39951b49fa8964863bd801058878f3b2</span><br><span class="line">author Wu-Yikun &lt;577159462@qq.com&gt; 1634876894 +0800</span><br><span class="line">committer Wu-Yikun &lt;577159462@qq.com&gt; 1634876894 +0800</span><br><span class="line"></span><br><span class="line">?</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635588.png"></p>
+<h4 id="孤立-HEAD"><a href="#孤立-HEAD" class="headerlink" title="孤立 HEAD"></a>孤立 HEAD</h4><p>HEAD 不关联任何分支，只指向某个 commit，运行 <code>git checkout bfdec30d</code>，你会看到如下信息：</p>
+<blockquote>
+<p>You are in ‘detached HEAD’ state. You can look around, make experimental<br>changes and commit them, and you can discard any commits you make in this<br>state without impacting any branches by performing another checkout.</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635138.png"></p>
+<p>相信很多人一开始使用 git 都会对这段信息头大，其实它只是告诉你 <code>HEAD</code> 这个文件中存储的信息已不再是一个分支信息，运行：<code>cat .git/HEAD</code>，看到：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> .git/HEAD</span></span><br><span class="line">bfdec30d39951b49fa8964863bd801058878f3b2</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141636474.png"></p>
+<p>看到区别了吗？HEAD 指向一个40字符的 SHA-1 提交记录，<strong>git 已经不知道你在哪个分支工作了，所以你如果生成新的 commit，git 不知道往哪里 <code>push</code>，你只能做些实验性代码自嗨一把，无法影响到任何分支，也无法与人协同</strong>。这就是所谓的 <strong><code>'detached HEAD' state</code></strong>。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141636088.png"></p>
+<p>(由分支HEAD 变为 孤立HEAD)</p>
+<p>关于 <code>HEAD</code> 的用法示例：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git push origin HEAD</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git checkout HEAD~1</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="2-3-文件-ORIG-HEAD"><a href="#2-3-文件-ORIG-HEAD" class="headerlink" title="2.3 文件 ORIG_HEAD"></a>2.3 文件 ORIG_HEAD</h3><p>正因为 <code>HEAD</code> 比较重要，此文件会在你进行<strong>危险操作</strong>时备份 <code>HEAD</code>，如以下操作时会<strong>触发备份</strong>：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git reset</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git merge</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git rebase</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git pull</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>此文件的应用示例：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">回滚到上一次的状态(慎用!!!)</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git reset --hard ORIG_HEAD</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="2-4-文件-FETCH-HEAD"><a href="#2-4-文件-FETCH-HEAD" class="headerlink" title="2.4 文件 FETCH_HEAD"></a>2.4 文件 FETCH_HEAD</h3><p>这个文件作用在于追踪远程分支的拉取与合并，与其相关的命令有 <code>git pull/fetch/merge</code>，</p>
+<p>而 <code>git pull</code> 命令相当于执行以下两条命令 (<code>pull</code> = <code>fetch</code> &amp; <code>merge</code>)：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git fetch</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git merge FETCH_HEAD</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">显示如下&gt;&gt;&gt;</span></span><br><span class="line">From https://github.com/xxx/xxxx</span><br><span class="line">* branch            master     -&gt; FETCH_HEAD</span><br><span class="line">Updating f785638..59db1b2</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>并且，此时会默默备份 <code>HEAD</code> 到 <code>ORIG_HEAD</code></strong>。</p>
+<p>看看 <code>FETCH_HEAD</code> 里面有什么内容：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> .git/FETCH_HEAD</span></span><br><span class="line">848d7701250d5fee1449c5355158f629f6564484        branch 'master' of https://github.com/xxxx/xxx</span><br></pre></td></tr></tbody></table></figure>
+
+<p>最前面是 hash 值，最后面是需要 <code>fetch</code> 的分支信息。</p>
+<p>此文件可能不止一行，比如：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> .git/FETCH_HEAD</span></span><br><span class="line">848d7701250d5fee1449c5355158f629f6564484        	branch 'master' of https://github.com/xxxx/xxx</span><br><span class="line">81d84ed74fc2b29c73d6ac82d681e5819b4d35d3        	branch 'next' of https://github.com/xxxx/xxx</span><br><span class="line">a25f5f1615a479e717a82bc4a10d816a44de6cd1		not-for-merge   branch 'add-i18n' of https://github.com/xxxx/xxx</span><br><span class="line">065c1b268386d533be65f4ae34742b2f1780d589        not-for-merge   branch 'add-sche-catch' of https://github.com/xxxx/xxx</span><br></pre></td></tr></tbody></table></figure>
+
+<p>⭐其中会有关键字 <strong><code>not-for-merge</code></strong>，由于 <code>git pull</code> 其实就是 <code>fetch + merge</code>，<strong>有这个标志就表明 <code>git pull</code> 时只 <code>fetch</code>，不 <code>merge</code></strong>。</p>
+<p>此特性在 2015 年 <a target="_blank" rel="noopener" href="https://github.com/git/git/blob/53f9a3e157dbbc901a02ac2c73346d375e24978c/Documentation/RelNotes/2.5.0.txt#L64">git 2.5 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 之后被加入，可以看看 <a target="_blank" rel="noopener" href="https://github.com/git/git/blame/6a6c0f10a70a6eb101c213b09ae82a9cad252743/builtin/pull.c#L378">源码 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>，当 <code>git pull</code> 时，<code>not-for-merge</code> 会做为 <em>magic string</em> 来判定是否要从远程合并到本地分支。上面这段源码的注释写得恰到好处：</p>
+<blockquote>
+<p>“Appends merge candidates from FETCH_HEAD that are not marked not-for-merge into merge_heads.”</p>
+</blockquote>
+<h3 id="2-5-文件-config"><a href="#2-5-文件-config" class="headerlink" title="2.5 文件 config"></a>2.5 文件 config</h3><p>此文件存储项目本地的 git 设置，典型内容如下：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[core]</span><br><span class="line">        repositoryformatversion = 0</span><br><span class="line">        filemode = true</span><br><span class="line">        bare = false</span><br><span class="line">        logallrefupdates = true</span><br><span class="line">        ignorecase = true</span><br><span class="line">[remote "origin"]</span><br><span class="line">        url = git@gitlab.xxxx.com/xxx.git</span><br><span class="line">        fetch = +refs/heads/*:refs/remotes/origin/*</span><br><span class="line">[branch "master"]</span><br><span class="line">        remote = origin</span><br><span class="line">        merge = refs/heads/master</span><br><span class="line">[branch "v2.6.0"]</span><br><span class="line">        remote = origin</span><br><span class="line">        merge = refs/heads/v2.6.0</span><br><span class="line">[branch "v2.8.0"]</span><br><span class="line">        remote = origin</span><br><span class="line">        merge = refs/heads/v2.8.0</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这是典型的 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/INI_file"><code>INI</code> 配置文件 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>，每个 <code>section</code> 可包含多个 <code>variable = value</code>，其中 <code>[core]</code> 字段包含各种 git 的参数设置，如 <code>ignorecase = true</code> 表示忽略文件名大小写。</p>
+<p>⭐<code>git config --global</code> 影响的则是全局配置文件 <code>~/.gitconfig</code>；可执行以下命令对该文件进行修改：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git config --global -e</span></span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><code>[core]</code> 段的内容跟 <code>git config</code> 命令对应</li>
+</ul>
+<p>执行以下命令：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git config user.name abc</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git config user.email abc@abc.com</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>会在 <code>config</code> 文件中追加以下内容：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">... ...</span><br><span class="line">[user]</span><br><span class="line">        name = abc</span><br><span class="line">        email = abc@abc.com</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><code>[remote]</code> 段表示远程仓库配置</li>
+</ul>
+<p>详见 <a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Internals-The-Refspec">Git Internals - The Refspec <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>，注意这里的 <code>+</code> 与 <code>*</code> 的含义。</p>
+<ul>
+<li><code>[branch]</code> 段表示分支同步设置</li>
+</ul>
+<p>假设当前在 <code>master</code> 分支，执行 <code>git pull</code> 若出现以下提示：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">There is no tracking information for the current branch.</span><br><span class="line">Please specify which branch you want to merge with.</span><br><span class="line">See git-pull(1) for details.</span><br><span class="line"></span><br><span class="line">   git pull &lt;remote&gt; &lt;branch&gt;</span><br></pre></td></tr></tbody></table></figure>
+
+<p>就说明 <code>.git/config</code> 文件缺少对应的 <code>[branch "master"]</code> 字段。</p>
+<p>解决方案为：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git branch -u origin/master master</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">或者执行一次 push</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git push -u origin master</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">或者根据如下命令设置远程分支与本地分支的关联(如下命令表示本地分支的master与远程分支的master分支关联)</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git push --set-upstream origin master:master</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>会出现提示：</p>
+<blockquote>
+<p>Branch ‘master’ set up to track remote branch ‘master’ from ‘origin’.</p>
+</blockquote>
+<p>其实就是生成以下内容在 <code>.git/config</code>中：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[branch "master"]</span><br><span class="line">        remote = origin</span><br><span class="line">        merge = refs/heads/master</span><br></pre></td></tr></tbody></table></figure>
+
+<p>你去手动编辑 <code>.git/config</code>，效果一样。这就是 <code>upstream</code> 的真正含义，即生成 <code>config</code> 中的这段配置。</p>
+<h3 id="2-6-文件-description"><a href="#2-6-文件-description" class="headerlink" title="2.6 文件 description"></a>2.6 文件 description</h3><p>看到<a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain">文档 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>中有如下一段描述：</p>
+<blockquote>
+<p>The description file is used only by the GitWeb program, so don’t worry about it.</p>
+</blockquote>
+<p>说明这个文件主要用于 <code>GitWeb</code> 的描述，如果我们要启动 <code>GitWeb</code> 可用如下命令：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">确保lighttpd已安装: brew install lighttpd</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git instaweb --start</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>默认会启动 <code>lighttpd</code> 服务并打开浏览器 <code>http://127.0.0.1:1234</code> (试着改成对外IP并分享给别人？)</p>
+<p>以下显示当前的 git 仓库名称以及描述，默认的描述如下：</p>
+<blockquote>
+<p>Unnamed repository; edit this file ‘description’ to name the repository.</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141636779.png"></p>
+<p>上面这段话就是默认的 <code>description</code> 文件的内容，编辑这个文件来让你 <code>GitWeb</code> 描述更友好。除此之外没发现其它用处。</p>
+<h3 id="2-7-文件夹-hooks"><a href="#2-7-文件夹-hooks" class="headerlink" title="2.7 文件夹 hooks/"></a>2.7 文件夹 hooks/</h3><p>存放 <code>git hooks</code>，<strong>用于在 git 命令前后做检查或做些自定义动作</strong>。运行 <code>ls -F1 .git/hooks</code></p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">prepare-commit-msg.sample  # git commit 之前，编辑器启动之前触发，传入 COMMIT_FILE，COMMIT_SOURCE，SHA1</span><br><span class="line">commit-msg.sample          # git commit 之前，编辑器退出后触发，传入 COMMIT_EDITMSG 文件名</span><br><span class="line">pre-commit.sample          # git commit 之前，commit-msg 通过后触发，譬如校验文件名是否含中文</span><br><span class="line">pre-push.sample            # git push 之前触发</span><br><span class="line"></span><br><span class="line">pre-receive.sample         # git push 之后，服务端更新 ref 前触发</span><br><span class="line">update.sample              # git push 之后，服务端更新每一个 ref 时触发，用于针对每个 ref 作校验等</span><br><span class="line">post-update.sample         # git push 之后，服务端更新 ref 后触发</span><br><span class="line"></span><br><span class="line">pre-rebase.sample          # git rebase 之前触发，传入 rebase 分支作参数</span><br><span class="line">applypatch-msg.sample      # 用于 git am 命令提交信息校验</span><br><span class="line">pre-applypatch.sample      # 用于 git am 命令执行前动作</span><br><span class="line">fsmonitor-watchman.sample  # 配合 core.fsmonitor 设置来更好监测文件变化</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141636686.png"></p>
+<blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://git-scm.com/docs/githooks?spm=a2c6h.12873639.0.0.59246941Acahcx">https://git-scm.com/docs/githooks <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+</blockquote>
+<p>如果要启用某个 hook，只需把 <code>.sample</code> 删除即可，然后编辑其内容来实现相应的逻辑。</p>
+<p>比如我们要校验每个 <em>commit message</em> 至少要包含两个单词，否则就提示并拒绝提交，将 <code>commit-msg.sample</code> 改为 <code>commit-msg</code> 后，编辑如下：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span></span><br><span class="line">grep -q '\S\s\+\S' $1 || { echo '提交信息至少为两个单词' &amp;&amp; exit 1; }</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这样当提交一个 commit 时，会执行 bash 命令： <code>.git/hooks/commit-msg .git/COMMIT_EDITMSG</code>，退出值不为 <code>0</code>，就拒绝提交。</p>
+<h3 id="2-8-文件夹-info"><a href="#2-8-文件夹-info" class="headerlink" title="2.8 文件夹 info/"></a>2.8 文件夹 info/</h3><p>此文件夹基本就有两个文件：</p>
+<ol>
+<li>文件 <code>info/exclude</code> 用于排除规则，与 <code>.gitignore</code> 功能类似。</li>
+<li>可能会包含文件 <code>info/refs</code> ，用于跟踪各分支的信息。此文件一般通过命令 <a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-update-server-info?spm=a2c6h.12873639.0.0.59246941Acahcx">git update-server-info <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 生成，里面的内容：</li>
+</ol>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">94e1a0d952f577fe1348d828d145507d3709e11e    refs/heads/master</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">object <span class="built_in">hash</span>                                   <span class="comment"># branch reference</span></span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>这表示 master 分支所指向的文件对象 hash 值为：<code>94e1a0d952f577fe1348d828d145507d3709e11e</code>，</p>
+<p>运行 <code>git cat-file -p 94e1a0d952f577fe1348d828d145507d3709e11e</code>，可以看到 master 分支最后提交的记录信息。</p>
+<p>同时：<code>cat .git/objects/94/e1a0d952f577fe1348d828d145507d3709e11e</code> 可以看到最后提交文件的二进制内容表示。</p>
+<p>文件 <code>info/refs</code> 对于 <a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Internals-Transfer-Protocols?spm=a2c6h.12873639.0.0.59246941Acahcx">搭建 git 服务器 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 来说至关重要。</p>
+<h3 id="2-9-文件夹-logs"><a href="#2-9-文件夹-logs" class="headerlink" title="2.9 文件夹 logs/"></a>2.9 文件夹 logs/</h3><p>记录了操作信息，<code>git reflog</code> 命令以及像 <code>HEAD@{1}</code> 形式的路径会用到。如果删除此文件夹（危险！），那么依赖于 <a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-reflog">reflog <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 的命令就会报错。</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">mv</span> .git/logs .git/logs_bak</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git checkout HEAD@{1}</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>报错信息如下：</p>
+<blockquote>
+<p>error: pathspec ‘HEAD@{1}’ did not match any file(s) known to git</p>
+</blockquote>
+<h3 id="2-10-文件夹-objects"><a href="#2-10-文件夹-objects" class="headerlink" title="2.10 文件夹 objects/"></a>2.10 文件夹 objects/</h3><p>此文件夹简单说，就是 <code>git的数据库</code>，运行 <code>tree .git/objects</code>，可以看到目录结构：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">.git/objects/</span><br><span class="line">|-- 0c</span><br><span class="line">|   `-- d370696b581c38ee01e62b148a759f80facc2d</span><br><span class="line">|-- 59</span><br><span class="line">|   `-- 3d5b490556791212acd5a516a37bbfa05d44dd</span><br><span class="line">|-- 61</span><br><span class="line">|   `-- be44eedde61d723e5761577a2b420ba0fc2794</span><br><span class="line">|-- 64</span><br><span class="line">|   `-- c0aed8ddcbb546bdcec2848938fc82348db227</span><br><span class="line">|-- d4</span><br><span class="line">|   `-- 9904676ce8ddde276bdbfa9bbec313e90e0f50</span><br><span class="line">|-- info</span><br><span class="line">`-- pack</span><br><span class="line">    |-- pack-75e3f2aa378752ec93a8e9f375f01204d498605b.idx</span><br><span class="line">    `-- pack-75e3f2aa378752ec93a8e9f375f01204d498605b.pack</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这些文件分两种形式：<strong><a target="_blank" rel="noopener" href="https://github.com/git/git/blob/master/Documentation/technical/pack-format.txt?spm=a2c6h.12873639.0.0.59246941Acahcx&amp;file=pack-format.txt">pack压缩包 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 形式放在 <code>pack/</code> 目录下，除此之外都是 <code>hash文件</code> 形式，被叫做 <code>loost objects</code></strong>。</p>
+<p>这个文件夹以及相应的算法，我没找到独立的名称，就叫它 <code>hash-object</code> 体系吧。因为确实有个 <code>git hash-object</code> 命令存在，是一个底层的负责生成这些 <code>loost objects</code> 文件，如果要看到这些文件各自的含义，执行以下命令：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git cat-file --batch-check --batch-all-objects</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以看到</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">04c87c65f142f33945f2f5951cf7801a32dfa240 commit 194</span><br><span class="line">098217953a6ca169bed33d2be8a07d584fcdaf30 tree 31</span><br><span class="line">0cd370696b581c38ee01e62b148a759f80facc2d commit 245</span><br><span class="line">2a810017bfc85d7db2627f4aabdaa1583212bda3 blob 19</span><br><span class="line">3920a07c1d5694df6b8658592b0939241d70e9e5 tree 93</span><br><span class="line">593d5b490556791212acd5a516a37bbfa05d44dd tag 148</span><br><span class="line">61be44eedde61d723e5761577a2b420ba0fc2794 tree 154</span><br><span class="line">... ...</span><br></pre></td></tr></tbody></table></figure>
+
+<p>但你会发现这个列表里有些值在文件夹中并不存在，因为除了 <code>loost objects</code> 它还汇总了 <code>pack</code> 文件中的内容。</p>
+<h4 id="hash-文件"><a href="#hash-文件" class="headerlink" title="hash 文件"></a>hash 文件</h4><p>又称为 <code>loose object</code>，文件名称共由 40 字符的 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/SHA-1">SHA-1 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> hash 值组成，其中前两个字符为文件夹分桶，后 38 个字符为文件名称。</p>
+<p>按文件内容可分为四种类型：<strong>commit</strong>, <strong>tree</strong>, <strong>blob</strong>, <strong>tag</strong>，若执行以下命令会生成所有四种类型：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">echo</span> -en <span class="string">'xx\n'</span> &gt; xx  <span class="comment"># 共 3 个字符</span></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git add .</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git commit -m <span class="string">'update xx'</span></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git tag -a <span class="string">'v1.0'</span> -m <span class="string">'release: 1.0.0'</span></span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>经过以上操作后，对比一下文件树，发现多了四个 <code>hash文件</code>：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">|-- 0c</span><br><span class="line">|   `-- d370696b581c38ee01e62b148a759f80facc2d</span><br><span class="line">|-- 18</span><br><span class="line">|   `-- 143661f96845f11e0b4ab7312bdc0f356834ce</span><br><span class="line">|-- 30</span><br><span class="line">|   `-- 20feea86d222d83218eb3eb5aa9f58f73df04d</span><br><span class="line">|-- 59</span><br><span class="line">|   `-- 3d5b490556791212acd5a516a37bbfa05d44dd</span><br><span class="line">|-- 61</span><br><span class="line">|   `-- be44eedde61d723e5761577a2b420ba0fc2794</span><br><span class="line">|-- 64</span><br><span class="line">|   `-- c0aed8ddcbb546bdcec2848938fc82348db227</span><br><span class="line">|-- ad</span><br><span class="line">|   `-- f4c9afac7afae3ff3e95e6c4eefe009d547f00</span><br><span class="line">|-- cc</span><br><span class="line">|   `-- c9bd67dc5c467859102d53d54c5ce851273bdd</span><br><span class="line">|-- d4</span><br><span class="line">|   `-- 9904676ce8ddde276bdbfa9bbec313e90e0f50</span><br><span class="line">|-- info</span><br><span class="line">`-- pack</span><br><span class="line">    |-- pack-75e3f2aa378752ec93a8e9f375f01204d498605b.idx</span><br><span class="line">    `-- pack-75e3f2aa378752ec93a8e9f375f01204d498605b.pack</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这四个 <code>hash文件</code> 分别是：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cc/c9bd67dc5c467859102d53d54c5ce851273bdd  # blob</span><br><span class="line">30/20feea86d222d83218eb3eb5aa9f58f73df04d  # commit</span><br><span class="line">ad/f4c9afac7afae3ff3e95e6c4eefe009d547f00  # tree</span><br><span class="line">18/143661f96845f11e0b4ab7312bdc0f356834ce  # tag</span><br></pre></td></tr></tbody></table></figure>
+
+<p>我们想看下里面到底存的什么？其实这些文件都经过了压缩，压缩形式为 <a target="_blank" rel="noopener" href="https://www.zlib.net/">zlib <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>。先安装一下解压工具 macOS 版 <code>brew install pigz</code> 或 windows 版 <a target="_blank" rel="noopener" href="https://blog.kowalczyk.info/software/pigz-for-windows.html?spm=a2c6h.12873639.0.0.59246941Acahcx">pigz <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>，后执行：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">pigz -d &lt; .git/objects/cc/c9bd67dc5c467859102d53d54c5ce851273bdd</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">BLOB类型，显示结果为&gt;&gt;&gt;&gt;(注意xx后有个\n)</span></span><br><span class="line">blob 3xx</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">pigz -d &lt; .git/objects/30/20feea86d222d83218eb3eb5aa9f58f73df04d</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">COMMIT类型，显示结果为&gt;&gt;&gt;&gt;</span></span><br><span class="line">commit 248tree adf4c9afac7afae3ff3e95e6c4eefe009d547f00</span><br><span class="line">parent 0cd370696b581c38ee01e62b148a759f80facc2d</span><br><span class="line">author jamesyang.yjm &lt;jamesyang.yjm@alibaba-inc.com&gt; 1562044880 +0800</span><br><span class="line">committer jamesyang.yjm &lt;jamesyang.yjm@alibaba-inc.com&gt; 1562044880 +0800</span><br><span class="line"></span><br><span class="line">update xx</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">pigz -d &lt; .git/objects/ad/f4c9afac7afae3ff3e95e6c4eefe009d547f00</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">TREE类型，显示结果为&gt;&gt;&gt;&gt;</span></span><br><span class="line">tree 154100644 abc*???]}?bJ?ڡX2??100644 asdf???CK?)?wZ???S?100644 iou???CK?)?wZ???S?100644 xx?ɽg?\FxY-S?L\?Q';?100644 yy???CK?)?wZ???S?</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">pigz -d &lt; .git/objects/18/143661f96845f11e0b4ab7312bdc0f356834ce</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">TAG类型，显示结果为&gt;&gt;&gt;&gt;</span></span><br><span class="line">tag 155object 3020feea86d222d83218eb3eb5aa9f58f73df04d</span><br><span class="line">type commit</span><br><span class="line">tag v1.0</span><br><span class="line">tagger jamesyang.yjm &lt;jamesyang.yjm@alibaba-inc.com&gt; 1562045942 +0800</span><br><span class="line"></span><br><span class="line">release: 1.0.0</span><br></pre></td></tr></tbody></table></figure>
+
+<p>会发现，显示结果都是 <code>type size+内容</code> 形式，这就是 object 文件的存储格式：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[type] [size][NULL][content]</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>type</code> 可选值：commit, tree, blob, tag，<code>NULL</code> 就是C语言里的字符结束符：<code>\0</code>，<code>size</code> 就是 <code>NULL</code>后内容的字节长度。</p>
+<p><code>type</code> 的几种类型可以使用 <code>git cat-file -t hash</code> 看到，内容可以用 <code>git cat-file -p hash</code> 看到。</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git cat-file -t ccc9bd67dc5c467859102d53d54c5ce851273bdd</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">显示结果为&gt;&gt;&gt;&gt;</span></span><br><span class="line">blob</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git cat-file -p ccc9bd67dc5c467859102d53d54c5ce851273bdd</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">显示结果为&gt;&gt;&gt;&gt;</span></span><br><span class="line">xx</span><br></pre></td></tr></tbody></table></figure>
+
+<p>所以 <code>blob</code> 文件就是对原文件内容的<strong>全量拷贝</strong>，同时前面加了 <code>blob size\0</code>，而文件名称的 <code>hash</code> 值计算是计算整体字符的 <code>SHA-1</code> 值：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">echo</span> -en <span class="string">'blob 3\0xx\n'</span> | shasum</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">显示结果为&gt;&gt;&gt;&gt;</span></span><br><span class="line">ccc9bd67dc5c467859102d53d54c5ce851273bdd  -</span><br></pre></td></tr></tbody></table></figure>
+
+<p>知道原理后，其它类型格式请自行参考 <a target="_blank" rel="noopener" href="http://www-cs-students.stanford.edu/~blynn/gitmagic/ch08.html#_the_object_database">斯坦福 Ben Lynn 所著的 GitMagic <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>。</p>
+<p>所以，当我们 <code>git show 3020feea86d222d83218eb3eb5aa9f58f73df04d</code> 时，会发生些什么？</p>
+<ol>
+<li>找到 <code>3020feea86d222d83218eb3eb5aa9f58f73df04d</code> 这个 <code>commit</code>，显示出来</li>
+<li>找到此 <code>commit</code> 关联的 <code>tree object</code>: <code>adf4c9afac7afae3ff3e95e6c4eefe009d547f00</code>，拉取相应的 <code>blob</code> 文件，并与当前工作区内的文件做 <code>diff</code>，然后显示出来</li>
+</ol>
+<p>这就是 <code>objects/</code> 文件夹作为 <code>git数据库</code> 被使用的真实例子。</p>
+<h4 id="pack-文件"><a href="#pack-文件" class="headerlink" title="pack 文件"></a>pack 文件</h4><p>为什么会有 <code>.pack</code> 文件？</p>
+<p>由于每次 <code>commit</code> 都会生成许多 <code>hash文件</code>，并且由于 <code>blob</code> 文件都是全量存储的，导致 git 效率下降，于是有了 <a target="_blank" rel="noopener" href="https://github.com/git/git/blob/master/Documentation/technical/pack-format.txt">pack-format <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>，优势：</p>
+<ol>
+<li>对于大仓库存储效率高</li>
+<li>利于网络传输，便于备份</li>
+<li>增量存储，优化磁盘空间</li>
+</ol>
+<p>将 <code>.git/objects</code> 下的部分文件打包成 <a target="_blank" rel="noopener" href="https://github.com/git/git/blob/master/Documentation/technical/pack-format.txt">pack格式 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tree .git/objects/ | <span class="built_in">wc</span> -l</span></span><br><span class="line">311</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git gc</span></span><br><span class="line">Enumerating objects: 288, done.</span><br><span class="line">Counting objects: 100% (288/288), done.</span><br><span class="line">Delta compression using up to 4 threads</span><br><span class="line">Compressing objects: 100% (287/287), done.</span><br><span class="line">Writing objects: 100% (288/288), done.</span><br><span class="line">Total 288 (delta 131), reused 90 (delta 0)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tree .git/objects/ | <span class="built_in">wc</span> -l</span></span><br><span class="line">12</span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以看到文件数量减小了不少，其中<strong>大部分</strong>文件被打到一个 <code>.pack</code> 包中，并且是增量存储，有部分变更的文件只存储 <strong>基础hash</strong> ＋ <strong>变更内容</strong>，磁盘空间优化很明显。</p>
+<p>⭐<strong><code>git gc</code> 其实运行了两条命令：<code>git repack</code> 用来打包 和 <code>git prune-packed</code> 用来移除已打包的 <code>hash文件</code></strong></p>
+<ul>
+<li>如果你想打包<strong>所有</strong>文件，并不推荐，但可以用以下命令：</li>
+</ul>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git repack -a -d -f --depth=250 --window=250</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>具体可见：<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/28720151/git-gc-aggressive-vs-git-repack">此问题 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+<ul>
+<li>如果想看一下包里有啥，运行：</li>
+</ul>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git verify-pack -v .git/objects/pack/pack-5963b552193021791c1a0ab9136c272f07124c98.pack</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>显示如下：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 commit 245 153 12</span><br><span class="line">2305588a632214f266462260428c4395f936b5b0 commit 252 156 165</span><br><span class="line">1fa9735670eb952b6468d17b418525717c8e3527 commit 248 156 321</span><br><span class="line">3ffb7fb9830e232669c95b3b65f0f8f3fc7a6027 commit 248 155 477</span><br><span class="line">86a5912f97d7dd8f90a28cab6bffc8ee78997e2c commit 244 151 632</span><br><span class="line">94e1a0d952f577fe1348d828d145507d3709e11e commit 249 156 783</span><br><span class="line">86903f8f5024485afa8480020a04cc00f228d23c commit 243 150 939</span><br><span class="line">6efdffad4fb725aa8d0f4d7d29feb5aee7ea5dff commit 242 151 1089</span><br><span class="line">04c87c65f142f33945f2f5951cf7801a32dfa240 commit 73 85 1240 1 6efdffad4fb725aa8d0f4d7d29feb5aee7ea5dff</span><br><span class="line">2a810017bfc85d7db2627f4aabdaa1583212bda3 blob   19 27 1325</span><br><span class="line">e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 blob   0 9 1352</span><br><span class="line">b5e810691433cf8a2960c27c1b33546fa96e2bef blob   16 26 1361</span><br><span class="line">2f36e957afc2b3bcda988cb29a86e3a1490e8cc2 tree   153 106 1387</span><br><span class="line">2ed6130bd33afa26817418308e29c4081ea056ec tree   5 15 1493 1 2f36e957afc2b3bcda988cb29a86e3a1490e8cc2</span><br><span class="line">9df301ad27294a62ba1ae65aaed489072d778c79 tree   123 103 1508</span><br><span class="line">7d48a14b9ca1dca2f6a593eef19633ce45f81bee blob   12 21 1611</span><br><span class="line">a448b4d6450de854dcc6fe658bdb72e22c726cbb tree   123 102 1632</span><br><span class="line">9e56fd51f52d8b9d242c50c24a4cae586d76ec7e blob   7 16 1734</span><br><span class="line">bde15b851f135327ada02c9deac0fb1ee01cf343 tree   123 102 1750</span><br><span class="line">58c9bdf9d017fcd178dc8c073cbfcbb7ff240d6c blob   4 13 1852</span><br><span class="line">3920a07c1d5694df6b8658592b0939241d70e9e5 tree   7 17 1865 1 bde15b851f135327ada02c9deac0fb1ee01cf343</span><br><span class="line">16729e3b94f19bc95cb6f563f776bfb4694a6e5b tree   4 14 1882 2 3920a07c1d5694df6b8658592b0939241d70e9e5</span><br><span class="line">b72c74792528892694c395b2c9a3d6af740f3fb2 tree   63 50 1896</span><br><span class="line">098217953a6ca169bed33d2be8a07d584fcdaf30 tree   31 42 1946</span><br><span class="line">non delta: 20 objects</span><br><span class="line">chain length = 1: 3 objects</span><br><span class="line">chain length = 2: 1 object</span><br><span class="line">.git/objects/pack/pack-5963b552193021791c1a0ab9136c272f07124c98.pack: ok</span><br></pre></td></tr></tbody></table></figure>
+
+<p>后面那串数字说明文档里很详细：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">When specifying the -v option the format used is:</span><br><span class="line"></span><br><span class="line">        SHA-1 type size size-in-packfile offset-in-packfile</span><br><span class="line"></span><br><span class="line">for objects that are not deltified in the pack, and</span><br><span class="line"></span><br><span class="line">        SHA-1 type size size-in-packfile offset-in-packfile depth base-SHA-1</span><br><span class="line"></span><br><span class="line">for objects that are deltified.</span><br></pre></td></tr></tbody></table></figure>
+
+<p>以上最后有 hash 的条目，说明是增量存储的 <strong>基础hash</strong>，其前是增量深度。</p>
+<h3 id="2-11-文件夹-refs"><a href="#2-11-文件夹-refs" class="headerlink" title="2.11 文件夹 refs/"></a>2.11 文件夹 refs/</h3><p><code>refs</code> 可以理解成文件系统中的 <code>symbol link</code>，看下结构：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tree .git/refs/</span></span><br><span class="line"></span><br><span class="line">.git/refs</span><br><span class="line">|-- heads</span><br><span class="line">|   `-- master</span><br><span class="line">`-- tags</span><br><span class="line">    `-- v1.0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> .git/refs/heads/master</span> </span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> .git/refs/tags/v1.0</span>    </span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git cat-file -t 5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5</span></span><br><span class="line">commit</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141637712.png"></p>
+<p>可以看到 <code>master</code> 和 <code>v1.0</code> 都指向 <code>5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5</code> 这个 <code>commit</code>。</p>
+<p><code>refs/heads/</code> 文件夹内的 <code>ref</code> 一般通过 <code>git branch</code> 生成。<code>git show-ref --heads</code> 可以查看。</p>
+<p><code>refs/tags/</code> 文件夹内的 <code>ref</code> 一般通过 <code>git tag</code> 生成。<code>git show-ref --tags</code> 可以查看。</p>
+<p>如下：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git branch abc</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tree .git/refs/</span></span><br><span class="line"></span><br><span class="line">.git/refs/</span><br><span class="line">|-- heads</span><br><span class="line">|   |-- abc</span><br><span class="line">|   `-- master</span><br><span class="line">`-- tags</span><br><span class="line">    `-- v1.0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> .git/refs/heads/abc</span> </span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5</span><br></pre></td></tr></tbody></table></figure>
+
+<p>说明新建分支其实就是生成了一个指向某个 <code>commit</code> 的 <code>symbol link</code>，当然在这里叫做 <code>ref</code>。</p>
+<p>而 <code>git tag</code> 命令本质与 <code>git branch</code> 相同，只生成一个 <code>ref</code> 放在 <code>tags</code> 目录下，所以被称为 <code>lightweight tag</code>。</p>
+<p>而 <code>git tag -a xx</code> 命令会首先生成一个类型为 <code>tag</code> 的 <code>hash文件</code> 放到 <code>objects/</code> 目录，然后生成 <code>ref</code> 放到 <code>tags</code> 目录下指向那个文件。这就叫做 <code>annotated tag</code>，好处是可包含一些元信息如 <code>tagger</code> 和 <code>message</code>，被 git 的 <code>hash-object</code> 算法管理，可被 GPG 签名等，所以<strong>更稳定，更安全</strong>。</p>
+<p>使用以下命令来拿到 <code>refs</code> 文件夹存储的信息：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git show-ref --<span class="built_in">head</span> --dereference</span></span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 HEAD</span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 refs/heads/abc</span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 refs/heads/master</span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 refs/tags/v1.0</span><br><span class="line">5e84371048faa20412f5492e6af264a7e1edfec1 refs/tags/xx</span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 refs/tags/xx^{}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>我们来看这些信息如何变化的：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">touch</span> new_file &amp;&amp; git add . &amp;&amp; git commit -m <span class="string">'add new_file'</span></span></span><br><span class="line">[master 44b0d05] add new_file</span><br><span class="line"> 1 file changed, 0 insertions(+), 0 deletions(-)</span><br><span class="line"> create mode 100644 new_file</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git show-ref --<span class="built_in">head</span> --dereference</span></span><br><span class="line">44b0d05ddadaaa8d2cc40d6647cc474b26f5d8d3 HEAD</span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 refs/heads/abc</span><br><span class="line">44b0d05ddadaaa8d2cc40d6647cc474b26f5d8d3 refs/heads/master</span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 refs/tags/v1.0</span><br><span class="line">5e84371048faa20412f5492e6af264a7e1edfec1 refs/tags/xx</span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 refs/tags/xx^{}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>diff 一下可以看到：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 HEAD</span><br><span class="line">5978c2c79cd3a4711fb8edd3166c9f9f5c8c97f5 refs/heads/master</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这两行发生了变化。也就是每次 commit 时，HEAD 与 <code>heads</code> 都会自动更新。</p>
+<h3 id="2-12-文件-index"><a href="#2-12-文件-index" class="headerlink" title="2.12 文件 index"></a>2.12 文件 index</h3><p>细心的读者发现，没有讲 <code>index</code> 文件？原因在于：</p>
+<p>⭐<strong><code>index</code> 文件是整个 git 除 <code>hash-object</code> 体系最核心的部分，值得用单独一篇来讲</strong>。</p>
+<p>可以先参考以下文章：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2018/10/git-internals.html">阮一峰老师写的 Git 原理入门 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 中 <code>暂存区</code> 的部分</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/git/git/blob/master/Documentation/technical/index-format.txt">Git index format <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/git/git/blob/master/Documentation/technical/racy-git.txt">Use of index and Racy Git problem <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></li>
+</ul>
+<p>简要说一下，<code>index</code> 是一个微型的 <strong>linux 文件系统</strong>，用最经济的方式实现了 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Inode">inode <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>，这并不是偶然，因为创造这个想法的人同时也是 linux 的创造者 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Linus_Torvalds">Linus Torvalds <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>。</p>
+<p>这个文件也叫做 <code>git</code> 的暂存区(<code>Staging Area</code>)，<code>git add</code> 就是把工作区内的某些文件取部分 <code>stat</code> 抓取的内容并写入 <code>.git/index</code> 文件并存为相应的一条 <code>index entry</code>，多条 <code>index entry</code> 形成一个 <code>tree</code>。</p>
+<p><code>git commit</code> 是把上一步形成的 <code>tree</code> 结构及相应的 <code>blob</code> 存储到 <code>objects/</code> 文件夹下并同时生成一条 <code>commit</code> 记录。</p>
+<p><code>git reset</code> 是将刚写入 <code>index</code> 文件的 <code>tree</code> 丢弃，并从 <code>HEAD</code> 中恢复一个 <code>tree</code>。</p>
+<p><code>git status</code> 是拿 <code>index</code> 文件中存储的 <code>tree</code> 与工作区内的文件在 <code>stat</code> 层面做对比，并输出变更。</p>
+<p>以上，这几个文件夹咱们用一张图做总结：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141637576.png"></p>
+
+<div class="article-footer fs14">
+    <section id="references">
+      <div class="header"><span>参考资料</span></div>
+      <div class="body">
+        <ul>
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://git-scm.com/docs/githooks">githooks <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+
+        </li>
+        
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Internals-The-Refspec">Git-Internals-The-Refspec <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+
+        </li>
+        
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain">Git-Internals-Plumbing-and-Porcelain <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+
+        </li>
+        
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="http://www-cs-students.stanford.edu/~blynn/gitmagic/ch08.html#_the_object_database">git objects <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+
+        </li>
+        
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-show-ref">git show ref <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+
+        </li>
+        
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/28720151/git-gc-aggressive-vs-git-repack">git-gc-aggressive-vs-git-repack <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+
+        </li>
+        
+        <li class="post-title">
+          <p><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-repack">git-repack <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+
+        </li>
+        </ul>
+      </div>
+    </section>
+    
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.github.io/2021/10/22/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/understanding-.git-folder/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.github.io/2021/10/22/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/understanding-.git-folder/&amp;title=探秘 .git 文件夹，理解 git 运作机制 - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202311141635758.jpg&amp;summary=近期需要给 git 仓库制作一个 commit-msg 钩子，进入 .git/hooks 文件夹正准备干活，突然想知道其它 git hooks 都是干啥的？.git 文件夹里面那么多文件，又都是干什么的呢？"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=探秘 .git 文件夹，理解 git 运作机制 - Yikun Wu&amp;body=https://wu-yikun.github.io/2021/10/22/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/understanding-.git-folder/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.github.io/2021/10/22/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/understanding-.git-folder/">
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">上一篇</div><a href="/2021/10/06/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/docker-and-k8s/">一文带你认识 Docker 与 k8s</a></div><div class="item" id="next"><div class="note">下一篇</div><a href="/2021/10/23/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/git-undo/">Git Undo</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class="header cmt-title cap theme">
+      
+    </section>
+    <section class="body cmt-body giscus">
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Wu-yikun/wu-yikun.github.io" data-repo-id="R_kgDONub1yw" data-category="Announcements" data-category-id="DIC_kwDONub1y84CmRgw" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async="true"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">@Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 主题创建</p>
+<span id="busuanzi_container_site_pv">本站总访问量 <span id="busuanzi_value_site_pv"></span> 次</span><div><span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span></div></div></footer>
+
+
+<script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+  function createtime() {
+    var now = new Date();
+    var grt= new Date("01/25/2025 00:00:00");
+    now.setTime(now.getTime() + 250);
+    days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+    hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+    if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+    mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+    seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+    snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+    document.getElementById("timeDate").innerHTML = "本站已运行 "+dnum+" 天 ";
+    document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+  };
+  setInterval("createtime()",250);
+</script>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-git-%E6%96%87%E4%BB%B6%E5%A4%B9%E5%88%9B%E5%BB%BA"><span class="toc-text">1. .git 文件夹创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-git-%E7%BB%93%E6%9E%84"><span class="toc-text">2. .git 结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%96%87%E4%BB%B6-COMMIT-EDITMSG"><span class="toc-text">2.1. 文件 COMMIT_EDITMSG</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%96%87%E4%BB%B6-HEAD"><span class="toc-text">2.2 文件 HEAD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%96%87%E4%BB%B6-ORIG-HEAD"><span class="toc-text">2.3 文件 ORIG_HEAD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E6%96%87%E4%BB%B6-FETCH-HEAD"><span class="toc-text">2.4 文件 FETCH_HEAD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E6%96%87%E4%BB%B6-config"><span class="toc-text">2.5 文件 config</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E6%96%87%E4%BB%B6-description"><span class="toc-text">2.6 文件 description</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E6%96%87%E4%BB%B6%E5%A4%B9-hooks"><span class="toc-text">2.7 文件夹 hooks/</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-%E6%96%87%E4%BB%B6%E5%A4%B9-info"><span class="toc-text">2.8 文件夹 info/</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-9-%E6%96%87%E4%BB%B6%E5%A4%B9-logs"><span class="toc-text">2.9 文件夹 logs/</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-10-%E6%96%87%E4%BB%B6%E5%A4%B9-objects"><span class="toc-text">2.10 文件夹 objects/</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-11-%E6%96%87%E4%BB%B6%E5%A4%B9-refs"><span class="toc-text">2.11 文件夹 refs/</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-12-%E6%96%87%E4%BB%B6-index"><span class="toc-text">2.12 文件 index</span></a></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class="float-panel blur">
+  <button type="button" style="display:none" class="laptop-only rightbar-toggle mobile" onclick="sidebar.rightbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" style="display:none" class="mobile-only leftbar-toggle mobile" onclick="sidebar.leftbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer=""></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer="">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"giscus":{"js":"/js/services/giscus_new.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer="" src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div>
+</body></html><script>var posts=["2025/04/12/人工智能/animated-pictures-to-easily-understand-self-attention/","2025/04/12/人工智能/the-soul-of-chatgpt-attention-mechanism/","2021/12/10/博客开发/building-a-personal-blog-from-scratch/","2023/11/14/博客开发/hexo-stellar-development-guide/","2022/01/01/年终总结/「2021」passion/","2025/04/12/人工智能/how-does-chatgpt-handle-text-input/","2023/01/01/年终总结/「2022」life-is-a-field-not-a-track/","2024/01/21/年终总结/「2023」feel-the-journey/","2021/10/06/开发工具/docker-and-k8s/","2021/10/23/开发工具/git-undo/","2025/01/10/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","2025/04/12/开发工具/docker-intro/","2025/04/12/开发工具/git-principle/","2025/04/12/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","2021/12/30/开发工具/nat/","2021/10/05/开发工具/tips-for-precise-search-on-github/","2021/10/22/开发工具/understanding-.git-folder/","2021/11/11/生活思考/choose-one-sentence/","2021/09/30/生活思考/constantly-comparing-yourself-to-others-is-the-tragedy-of-life/","2025/02/03/生活思考/deep-thoughts/","2021/12/07/生活思考/don't-limit-your-future-imagination-with-your-current-abilities/","2021/11/11/算法/advanced-algorithms/","2025/04/28/算法/binary-tree-matching/","2025/04/28/算法/constructing-binary-tree/","2025/04/27/算法/cpp-acm-input-output/","2025/04/28/算法/difference-array/","2025/04/28/算法/heapsort-quicksort-mergesort/","2025/04/28/算法/interview-add-two/","2025/04/28/算法/interview-linked-list/","2025/04/28/算法/maximum-product-of-subarray-or-subsequence/","2025/04/28/算法/modulo/","2025/04/28/算法/kuaishou-merge-k-ascending-linked-lists/","2025/04/28/算法/monotonic-stack/","2025/04/28/算法/qpow/","2025/04/28/算法/sieve-of-prime-number/","2022/02/17/算法/tackle-without-sort-library/","2025/04/28/算法/tecent-wxg-russian-doll-envelope/","2025/04/28/算法/union-search/","2024/12/30/系统与体系结构/a-study-of-linux-file-system-evolution/","2024/12/08/系统与体系结构/analysis-of-trace-processing/","2025/04/13/系统与体系结构/debugging-with-gdb/","2025/04/13/系统与体系结构/distributed-systems-paxos.md/","2025/04/13/系统与体系结构/distributed-systems-theoretical-foundations/","2025/03/14/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","2025/04/13/系统与体系结构/effective-c++/","2025/04/02/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","2024/12/08/系统与体系结构/linux-disk-automatic-mounting/","2025/04/13/系统与体系结构/distributed-systems-raft/","2025/03/30/系统与体系结构/linux-kernel-io-path/","2024/12/28/系统与体系结构/madam-for-all-flash-array/","2024/12/08/系统与体系结构/linux-partition/","2024/11/01/系统与体系结构/mmap-vs-read-write/","2024/11/01/系统与体系结构/nvm-top-lab/","2024/11/01/系统与体系结构/persistent-memory-research-report/","2024/12/28/系统与体系结构/pmdk-programming-guidelines/","2022/03/25/编程语言/cpp-copy-constructor/","2025/04/12/编程语言/cpp-stl/","2025/04/12/编程语言/cpp-wiki/","2025/04/12/编程语言/python-wiki/","2022/05/14/编程语言/golang-wiki/","2021/11/18/计算机网络/does-restarting-mean-shutting-down-and-power-on/","2021/09/30/计算机网络/network-ip/","2021/12/27/计算机网络/reverse-proxy/","2025/04/13/面经/interview-review/","2025/04/13/面经/job-hunting-guide-for-technical-personnel/","2021/09/09/经验分享/how-can-undergraduates-enter-bat/","2025/04/13/面经/reverse-interview/","2022/01/08/经验分享/how-to-balance-token-security-and-user-experience/","2022/02/20/经验分享/technical-writing-experience/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>

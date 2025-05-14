@@ -1,0 +1,828 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Linux 分区更改 fdisk、格式化 mkfs、检查 fsck、挂载 mount - Yikun Wu</title>
+
+  
+    <meta name="description" content="本文详细介绍 Linux 系统下与磁盘分区相关的有 fdisk、fsck、mkfs、mount 等其他常用命令～">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 分区更改 fdisk、格式化 mkfs、检查 fsck、挂载 mount">
+<meta property="og:url" content="https://wu-yikun.github.io/2024/12/08/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/linux-partition/index.html">
+<meta property="og:site_name" content="Yikun Wu">
+<meta property="og:description" content="本文详细介绍 Linux 系统下与磁盘分区相关的有 fdisk、fsck、mkfs、mount 等其他常用命令～">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-12-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-05-13T19:47:56.231Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="mount">
+<meta property="article:tag" content="fdisk">
+<meta property="article:tag" content="mkfs">
+<meta property="article:tag" content="fsck">
+<meta property="article:tag" content="lsblk">
+<meta property="article:tag" content="df">
+<meta property="article:tag" content="du">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <meta name="keywords" content="Linux,mount,fdisk,mkfs,fsck,lsblk,df,du">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140357298.svg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar" src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">人的梦想是不会结束的</div><div class="sub hover cap" style="opacity:0"> 不是吗</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+    <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">人工智能 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%8D%9A%E5%AE%A2%E5%BC%80%E5%8F%91/">博客开发 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具 (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%94%9F%E6%B4%BB%E6%80%9D%E8%80%83/">生活思考 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%AE%97%E6%B3%95/">算法 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言 (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E9%9D%A2%E7%BB%8F/">面经 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB/">经验分享 (3)</a></div></div></widget>
+
+<widget class="widget-wrapper tagcloud"><div class="widget-header dis-select"><span class="name">标签索引</span></div><div class="widget-body fs14"><a href="/tags/ACPI/" style="font-size: 12px;" class="tag -0">ACPI</a> <a href="/tags/ART/" style="font-size: 12px;" class="tag -0">ART</a> <a href="/tags/All-Flash-Array/" style="font-size: 12px;" class="tag -0">All-Flash Array</a> <a href="/tags/C/" style="font-size: 22px;" class="tag -8">C++</a> <a href="/tags/COW/" style="font-size: 12px;" class="tag -0">COW</a> <a href="/tags/Ceph/" style="font-size: 12px;" class="tag -0">Ceph</a> <a href="/tags/ChatGPT/" style="font-size: 16px;" class="tag -3">ChatGPT</a> <a href="/tags/DP/" style="font-size: 12px;" class="tag -0">DP</a> <a href="/tags/DPDK/" style="font-size: 12px;" class="tag -0">DPDK</a> <a href="/tags/Difference-Array/" style="font-size: 12px;" class="tag -0">Difference Array</a> <a href="/tags/Docker/" style="font-size: 14px;" class="tag -2">Docker</a> <a href="/tags/DuckDB/" style="font-size: 12px;" class="tag -0">DuckDB</a> <a href="/tags/EX4/" style="font-size: 12px;" class="tag -0">EX4</a> <a href="/tags/Embedding/" style="font-size: 12px;" class="tag -0">Embedding</a> <a href="/tags/File-System/" style="font-size: 12px;" class="tag -0">File System</a> <a href="/tags/GitHub/" style="font-size: 12px;" class="tag -0">GitHub</a> <a href="/tags/Golang/" style="font-size: 12px;" class="tag -0">Golang</a> <a href="/tags/Graph/" style="font-size: 12px;" class="tag -0">Graph</a> <a href="/tags/Halo/" style="font-size: 12px;" class="tag -0">Halo</a> <a href="/tags/Hexo/" style="font-size: 12px;" class="tag -0">Hexo</a> <a href="/tags/IP/" style="font-size: 12px;" class="tag -0">IP</a> <a href="/tags/JWT/" style="font-size: 12px;" class="tag -0">JWT</a> <a href="/tags/Kubernetes/" style="font-size: 12px;" class="tag -0">Kubernetes</a> <a href="/tags/LeetCode/" style="font-size: 24px;" class="tag -10">LeetCode</a> <a href="/tags/LinkList/" style="font-size: 12px;" class="tag -0">LinkList</a> <a href="/tags/Linux/" style="font-size: 20px;" class="tag -7">Linux</a> <a href="/tags/Linux-Kernel/" style="font-size: 14px;" class="tag -2">Linux Kernel</a> <a href="/tags/Markdown/" style="font-size: 12px;" class="tag -0">Markdown</a> <a href="/tags/Modulo/" style="font-size: 12px;" class="tag -0">Modulo</a> <a href="/tags/Monotonic-Stack/" style="font-size: 12px;" class="tag -0">Monotonic Stack</a> <a href="/tags/NAT/" style="font-size: 12px;" class="tag -0">NAT</a> <a href="/tags/NVM/" style="font-size: 14px;" class="tag -2">NVM</a> <a href="/tags/Optane-DIMMs/" style="font-size: 12px;" class="tag -0">Optane DIMMs</a> <a href="/tags/PMDK/" style="font-size: 14px;" class="tag -2">PMDK</a> <a href="/tags/POSIX/" style="font-size: 12px;" class="tag -0">POSIX</a> <a href="/tags/Page-Cache/" style="font-size: 12px;" class="tag -0">Page Cache</a> <a href="/tags/Paxos/" style="font-size: 14px;" class="tag -2">Paxos</a> <a href="/tags/Python/" style="font-size: 12px;" class="tag -0">Python</a> <a href="/tags/RAID/" style="font-size: 12px;" class="tag -0">RAID</a> <a href="/tags/Raft/" style="font-size: 14px;" class="tag -2">Raft</a> <a href="/tags/SSD/" style="font-size: 12px;" class="tag -0">SSD</a> <a href="/tags/STL/" style="font-size: 12px;" class="tag -0">STL</a> <a href="/tags/Search/" style="font-size: 12px;" class="tag -0">Search</a> <a href="/tags/Self-Attention/" style="font-size: 14px;" class="tag -2">Self-Attention</a> <a href="/tags/Sieve-of-Prime-Number/" style="font-size: 12px;" class="tag -0">Sieve of Prime Number</a> <a href="/tags/Stellar/" style="font-size: 12px;" class="tag -0">Stellar</a> <a href="/tags/Storage/" style="font-size: 12px;" class="tag -0">Storage</a> <a href="/tags/Sunny-Ngrok/" style="font-size: 12px;" class="tag -0">Sunny-Ngrok</a> <a href="/tags/Syscall/" style="font-size: 12px;" class="tag -0">Syscall</a> <a href="/tags/Tokenizer/" style="font-size: 12px;" class="tag -0">Tokenizer</a> <a href="/tags/Transformer/" style="font-size: 14px;" class="tag -2">Transformer</a> <a href="/tags/Tree/" style="font-size: 16px;" class="tag -3">Tree</a> <a href="/tags/Trie/" style="font-size: 12px;" class="tag -0">Trie</a> <a href="/tags/UCloud/" style="font-size: 12px;" class="tag -0">UCloud</a> <a href="/tags/Union-Search/" style="font-size: 12px;" class="tag -0">Union Search</a> <a href="/tags/VFS/" style="font-size: 14px;" class="tag -2">VFS</a> <a href="/tags/Vector/" style="font-size: 12px;" class="tag -0">Vector</a> <a href="/tags/WAL/" style="font-size: 12px;" class="tag -0">WAL</a> <a href="/tags/Zero-Copy/" style="font-size: 12px;" class="tag -0">Zero Copy</a> <a href="/tags/builtin/" style="font-size: 12px;" class="tag -0">__builtin</a> <a href="/tags/df/" style="font-size: 12px;" class="tag -0">df</a> <a href="/tags/du/" style="font-size: 12px;" class="tag -0">du</a> <a href="/tags/fdisk/" style="font-size: 12px;" class="tag -0">fdisk</a> <a href="/tags/fio/" style="font-size: 12px;" class="tag -0">fio</a> <a href="/tags/fsck/" style="font-size: 12px;" class="tag -0">fsck</a> <a href="/tags/fstab/" style="font-size: 14px;" class="tag -2">fstab</a> <a href="/tags/g/" style="font-size: 12px;" class="tag -0">g++</a> <a href="/tags/gcc/" style="font-size: 12px;" class="tag -0">gcc</a> <a href="/tags/gdb/" style="font-size: 12px;" class="tag -0">gdb</a> <a href="/tags/git/" style="font-size: 16px;" class="tag -3">git</a> <a href="/tags/grub/" style="font-size: 12px;" class="tag -0">grub</a> <a href="/tags/iostat/" style="font-size: 12px;" class="tag -0">iostat</a> <a href="/tags/libpmemobj/" style="font-size: 12px;" class="tag -0">libpmemobj</a> <a href="/tags/lsblk/" style="font-size: 12px;" class="tag -0">lsblk</a> <a href="/tags/mdadm/" style="font-size: 12px;" class="tag -0">mdadm</a> <a href="/tags/mkfs/" style="font-size: 12px;" class="tag -0">mkfs</a> <a href="/tags/mmaloc/" style="font-size: 12px;" class="tag -0">mmaloc</a> <a href="/tags/mmap/" style="font-size: 16px;" class="tag -3">mmap</a> <a href="/tags/mount/" style="font-size: 14px;" class="tag -2">mount</a> <a href="/tags/move/" style="font-size: 12px;" class="tag -0">move</a> <a href="/tags/qpow/" style="font-size: 12px;" class="tag -0">qpow</a> <a href="/tags/ranges/" style="font-size: 12px;" class="tag -0">ranges</a> <a href="/tags/read/" style="font-size: 14px;" class="tag -2">read</a> <a href="/tags/smartctl/" style="font-size: 12px;" class="tag -0">smartctl</a> <a href="/tags/token/" style="font-size: 12px;" class="tag -0">token</a> <a href="/tags/trace/" style="font-size: 12px;" class="tag -0">trace</a> <a href="/tags/wipefs/" style="font-size: 12px;" class="tag -0">wipefs</a> <a href="/tags/write/" style="font-size: 14px;" class="tag -2">write</a> <a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" style="font-size: 12px;" class="tag -0">内网穿透</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/" style="font-size: 18px;" class="tag -5">分布式系统</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 14px;" class="tag -2">博客</a> <a href="/tags/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/" style="font-size: 12px;" class="tag -0">反向代理</a> <a href="/tags/%E5%AE%89%E5%85%A8/" style="font-size: 12px;" class="tag -0">安全</a> <a href="/tags/%E5%B4%A9%E6%BA%83%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 12px;" class="tag -0">崩溃一致性</a> <a href="/tags/%E5%B9%82%E7%AD%89%E6%80%A7/" style="font-size: 12px;" class="tag -0">幂等性</a> <a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/" style="font-size: 18px;" class="tag -5">年终总结</a> <a href="/tags/%E6%8B%9C%E5%8D%A0%E5%BA%AD/" style="font-size: 12px;" class="tag -0">拜占庭</a> <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 14px;" class="tag -2">排序</a> <a href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" style="font-size: 12px;" class="tag -0">服务器</a> <a href="/tags/%E6%9C%AA%E6%9D%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%B9%B8%E5%AD%98%E8%80%85/" style="font-size: 12px;" class="tag -0">未来世界的幸存者</a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Wu-yikun" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418811.svg"></a><a class="social" href="https://leetcode.cn/u/wu-yikun/" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419535.svg"></a><a class="social" href="https://juejin.cn/user/1654082381026734" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419245.svg"></a><a class="social" href="https://www.zhihu.com/people/JayChou" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419020.svg"></a><a class="social" href="https://music.163.com/#/user/home?id=1479129382" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419025.svg"></a><a class="social" href="https://space.bilibili.com/441384986?spm_id_from=333.1007.0.0" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418494.svg"></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202501222240708.png">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/Linux/">Linux</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/df/">df</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/du/">du</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/fdisk/">fdisk</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/fsck/">fsck</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/lsblk/">lsblk</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/mkfs/">mkfs</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/mount/">mount</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-12-07T16:00:00.000Z">2024-12-08</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-05-13T19:47:56.231Z">2025-05-14</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Linux 分区更改 fdisk、格式化 mkfs、检查 fsck、挂载 mount</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>本文详细介绍 Linux 系统下与磁盘分区相关的有 <code>fdisk</code>、<code>fsck</code>、<code>mkfs</code>、<code>mount</code> 等其他常用命令～</p>
+<span id="more"></span>
+
+<p>Linux 系统下与磁盘分区相关的有 <code>fdisk</code>、<code>fsck</code>、<code>mkfs</code>、<code>mount</code> 等这些命令：</p>
+<ul>
+<li><code>fdisk</code> 是用来操作磁盘分区表相关的更改，比如更改分区表格式，创建分区表，新建/删除分区等</li>
+<li><code>mkfs</code> 则是在创建分区之后负责将分区格式化的工具</li>
+<li><code>mount</code> 则是将分区挂载到 Linux 的文件树中（与之对应的卸载是 <code>umount</code>）</li>
+</ul>
+<p>我以向 Linux 系统添加了一块全新的磁盘以拓展存储空间为例。各种命令的详细使用方法使用 <code>man</code> 查看，此处不再翻译。</p>
+<h2 id="fdisk"><a href="#fdisk" class="headerlink" title="fdisk"></a>fdisk</h2><p>使用 <code>fdisk</code> 命令对硬盘进行分区，创建分区表和分区。可以创建主分区、扩展分区和逻辑分区等。</p>
+<p>分区完成后，每个分区都会被赋予一个设备节点（例如：<code>/dev/sda1</code>，<code>/dev/sdb2</code> 等）。</p>
+<p>接下来，需要使用 <code>mkfs</code> 命令对每个分区进行格式化，例如 <code>mkfs.ext4</code>、<code>mkfs.xfs</code> 等。</p>
+<p>最后，将格式化后的分区挂载到指定的挂载点（目录）上，使其可以被访问和使用。</p>
+<hr>
+<p>在添加磁盘之前，先执行 <code>fdisk -l</code> <strong>列出系统中的物理磁盘</strong>，记录下来，方便与添加磁盘之后做对比，找到新添加的磁盘设备号。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">root@linux:~$ fdisk -l</span><br><span class="line">Disk /dev/sda: 20 GiB, 21474836480 bytes, 41943040 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: dos</span><br><span class="line">Disk identifier: 0x25241c74</span><br><span class="line">Device     Boot    Start      End  Sectors Size Id Type</span><br><span class="line">/dev/sda1  *        2048 25165823 25163776  12G 83 Linux</span><br><span class="line">/dev/sda2       25167870 41940991 16773122   8G  5 Extended</span><br><span class="line">/dev/sda5       25167872 41940991 16773120   8G 82 Linux swap / Solaris</span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以看到，目前系统只安装了一块硬盘 <code>sda</code>，有三个分区，现在可以关机加硬盘了。加完硬盘后开机再执行 <code>fdisk -l</code></p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">root@linux:~$ fdisk -l</span><br><span class="line">Disk /dev/sda: 20 GiB, 21474836480 bytes, 41943040 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: dos</span><br><span class="line">Disk identifier: 0x25241c74</span><br><span class="line">Device     Boot    Start      End  Sectors Size Id Type</span><br><span class="line">/dev/sda1  *        2048 25165823 25163776  12G 83 Linux</span><br><span class="line">/dev/sda2       25167870 41940991 16773122   8G  5 Extended</span><br><span class="line">/dev/sda5       25167872 41940991 16773120   8G 82 Linux swap / Solaris</span><br><span class="line"></span><br><span class="line">Disk /dev/sdb: 10 GiB, 10737418240 bytes, 20971520 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以看到，<strong>新添加的硬盘的设备号为 <code>sdb</code>，<code>没有分区表</code>，没有分区</strong>。接下来就用 <code>fdisk /dev/sdb</code> 来创建分区表和分区。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">root@linux:~$ fdisk /dev/sdb</span><br><span class="line">Welcome to fdisk (util-linux 2.27.1).</span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, <span class="keyword">until</span> you decide to write them.</span><br><span class="line">Be careful before using the write <span class="built_in">command</span>.</span><br><span class="line">Device does not contain a recognized partition table.</span><br><span class="line">Created a new DOS disklabel with disk identifier 0x95942ae2.</span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>):</span><br></pre></td></tr></tbody></table></figure>
+
+<p>不知道怎么操作的此时可以按 <code>m</code> 调出帮助界面</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): m</span><br><span class="line">Help:</span><br><span class="line">  DOS (MBR)</span><br><span class="line">   a   toggle a bootable flag</span><br><span class="line">   b   edit nested BSD disklabel</span><br><span class="line">   c   toggle the dos compatibility flag</span><br><span class="line">  Generic</span><br><span class="line">   d   delete a partition</span><br><span class="line">   F   list free unpartitioned space</span><br><span class="line">   l   list known partition types</span><br><span class="line">   n   add a new partition</span><br><span class="line">   p   <span class="built_in">print</span> the partition table</span><br><span class="line">   t   change a partition <span class="built_in">type</span></span><br><span class="line">   v   verify the partition table</span><br><span class="line">   i   <span class="built_in">print</span> information about a partition</span><br><span class="line">  Misc</span><br><span class="line">   m   <span class="built_in">print</span> this menu</span><br><span class="line">   u   change display/entry units</span><br><span class="line">   x   extra functionality (experts only)</span><br><span class="line">  Script</span><br><span class="line">   I   load disk layout from sfdisk script file</span><br><span class="line">   O   dump disk layout to sfdisk script file</span><br><span class="line">  Save &amp; Exit</span><br><span class="line">   w   write table to disk and <span class="built_in">exit</span></span><br><span class="line">   q   quit without saving changes</span><br><span class="line">  Create a new label</span><br><span class="line">   g   create a new empty GPT partition table</span><br><span class="line">   G   create a new empty SGI (IRIX) partition table</span><br><span class="line">   o   create a new empty DOS partition table</span><br><span class="line">   s   create a new empty Sun partition table</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>先创建一个 GPT 分区表</strong>，按 <code>g</code></p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): g</span><br><span class="line">Created a new GPT disklabel (GUID: F4A12897-62F7-4ABA-9BC3-88BF53550DE3).</span><br></pre></td></tr></tbody></table></figure>
+
+<p>分区表创建后创建分区，按 <code>n</code> 回车，Partition number、First sector、Last sector 参数不清楚的可以直接回车使用默认参数。</p>
+<ul>
+<li><p><strong>指定起始扇区</strong>：按回车使用默认值，通常是第一个可用扇区。</p>
+</li>
+<li><p><strong>指定结束扇区</strong>或分区大小，你可以手动指定结束扇区，也可以通过输入大小来自动计算结束扇区。例如：</p>
+<ul>
+<li><p>输入 <code>+50G</code> 创建一个 50 GiB 的分区。</p>
+</li>
+<li><p>输入 <code>+200G</code> 创建一个 200 GiB 的分区。</p>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition number (1-128, default 1):</span><br><span class="line">First sector (2048-20971486, default 2048):</span><br><span class="line">Last sector, +sectors or +size{K,M,G,T,P} (2048-20971486, default 20971486):</span><br><span class="line">Created a new partition 1 of <span class="built_in">type</span> <span class="string">'Linux filesystem'</span> and of size 10 GiB.</span><br></pre></td></tr></tbody></table></figure>
+
+<p>此时已经在这块新加的 10GB 的硬盘中创建了一个 10GB 的分区。</p>
+<p>最后按 <code>w</code> 将更改信息写入硬盘。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered.</span><br><span class="line">Calling ioctl() to re-read partition table.</span><br><span class="line">Syncing disks.</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="mkfs"><a href="#mkfs" class="headerlink" title="mkfs"></a>mkfs</h2><p>常见的 File System</p>
+<ul>
+<li>ext2</li>
+<li>ext3</li>
+<li>ext4</li>
+<li>btrfs</li>
+<li>xfs</li>
+</ul>
+<p>虽然说文件系统的种类很多，但大部分 linux 下文件系统都有着类似的结构，包括超级块、inode、数据块、目录块等。</p>
+<ul>
+<li><strong>超级块</strong>包括了文件系统的总体信息，是文件系统的核心，所以磁盘中会有多个超级块，即使某一些超级块坏了，文件系统依然可用。</li>
+<li><strong>inode</strong> 存储着所有与文件有关的数据，比如文件的权限等，并不包括文件内容和文件名。</li>
+<li><strong>数据块</strong>是真实存储数据的，<strong>一个数据块默认的大小为 <code>4KB</code></strong>。</li>
+<li><strong>目录块</strong>包括文件内容和文件名，以及 inode 的信息。</li>
+</ul>
+<hr>
+<p>注意：<strong>如果设备上没有分区，或者设备分区上没有文件系统，也会导致挂载失败</strong>。你可以检查设备是否已经被格式化或有文件系统。</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">sudo</span> blkid /dev/nvme0n1</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">为空表示没有文件系统/还没被格式化过</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">sudo</span> mkfs.ext4 /dev/nvme0n1</span></span><br><span class="line">mke2fs 1.45.5 (07-Jan-2020)</span><br><span class="line">Discarding device blocks: done                            </span><br><span class="line">Creating filesystem with 122096646 4k blocks and 30531584 inodes</span><br><span class="line">Filesystem UUID: 36df5186-24a0-4dad-9b4e-664a4230b7f1</span><br><span class="line">Superblock backups stored on blocks: </span><br><span class="line">        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208, </span><br><span class="line">        4096000, 7962624, 11239424, 20480000, 23887872, 71663616, 78675968, </span><br><span class="line">        102400000</span><br><span class="line"></span><br><span class="line">Allocating group tables: done                            </span><br><span class="line">Writing inode tables: done                            </span><br><span class="line">Creating journal (262144 blocks): done</span><br><span class="line">Writing superblocks and filesystem accounting information: done</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">sudo</span> blkid /dev/nvme0n1</span></span><br><span class="line">/dev/nvme0n1: UUID="36df5186-24a0-4dad-9b4e-664a4230b7f1" TYPE="ext4"</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">sudo</span> mount &lt;设备&gt; &lt;挂载点&gt;</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">已经被格式化过</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">sudo</span> blkid /dev/nvme1n1</span></span><br><span class="line">/dev/nvme1n1: PTUUID="8e912df5-211c-45ea-a422-6a0f83c045c3" PTTYPE="gpt"</span><br></pre></td></tr></tbody></table></figure>
+
+<hr>
+<p>接下来 <code>mkfs.ext4 /dev/sdb1</code> 格式化该分区（<code>mkfs</code> 后面跟着 <code>.</code> 与文件系统的格式表明要将目标分区格式化成什么文件系统）</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@linux:~$ mkfs.ext4 /dev/sdb1</span><br><span class="line">mke2fs 1.42.13 (17-May-2015)</span><br><span class="line">Creating filesystem with 2621179 4k blocks and 655360 inodes</span><br><span class="line">Filesystem UUID: 886f1d1a-a3ad-4bdf-89b3-54ee0c9238f2</span><br><span class="line">Superblock backups stored on blocks:</span><br><span class="line">        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632</span><br><span class="line">Allocating group tables: <span class="keyword">done</span></span><br><span class="line">Writing inode tables: <span class="keyword">done</span></span><br><span class="line">Creating journal (32768 blocks): <span class="keyword">done</span></span><br><span class="line">Writing superblocks and filesystem accounting information: <span class="keyword">done</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="mount"><a href="#mount" class="headerlink" title="mount"></a>mount</h2><p>在文件系统中创建一个空目录作为挂载点，并将分区挂载到挂载点</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@linux:~$ <span class="built_in">mkdir</span> /mnt/new_mountpoint</span><br><span class="line">root@linux:~$ mount -t ext4 /dev/sdb1 /mnt/new_mountpoint/</span><br></pre></td></tr></tbody></table></figure>
+
+<p>此时 <code>/mnt/new_mountpoint/</code> 下面的存储空间就是此次新添加的10GB磁盘的存储空间，可以用 <code>df -h</code> 查看</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">root@linux:~$ <span class="built_in">df</span> -h</span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">udev            3.9G     0  3.9G   0% /dev</span><br><span class="line">tmpfs           799M  9.1M  790M   2% /run</span><br><span class="line">/dev/sda1        12G  4.5G  6.7G  40% /</span><br><span class="line">tmpfs           3.9G  188K  3.9G   1% /dev/shm</span><br><span class="line">tmpfs           5.0M  4.0K  5.0M   1% /run/lock</span><br><span class="line">tmpfs           3.9G     0  3.9G   0% /sys/fs/cgroup</span><br><span class="line">tmpfs           799M   24K  799M   1% /run/user/108</span><br><span class="line">tmpfs           799M     0  799M   0% /run/user/1000</span><br><span class="line">/dev/sdb1       9.8G   23M  9.2G   1% /mnt/new_mountpoint</span><br></pre></td></tr></tbody></table></figure>
+
+<hr>
+<p>在使用 <code>mount</code> 命令时，设备（source）和挂载点（target）的顺序很重要。<strong>设备</strong>应该在前面，<strong>挂载点</strong>在后面。具体的语法格式如下：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">mount [选项] &lt;设备&gt; &lt;挂载点&gt;</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="具体说明"><a href="#具体说明" class="headerlink" title="具体说明"></a>具体说明</h3><ul>
+<li><strong>设备</strong>：指的是你要挂载的块设备或文件系统的路径，比如 <code>/dev/sda1</code> 或 <code>/dev/nvme0n1p1</code>。</li>
+<li><strong>挂载点</strong>：指的是挂载该设备的目录路径，比如 <code>/mnt/nvme0n1</code>。</li>
+</ul>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><ol>
+<li><p><strong>挂载设备</strong>： 假设你有一个设备 <code>/dev/sda1</code>，你想挂载到 <code>/mnt/data</code> 目录下，使用如下命令：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mount /dev/sda1 /mnt/data</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p><strong>挂载文件系统类型</strong>： 如果你想指定文件系统类型（例如 <code>ext4</code>），可以使用 <code>-t</code> 选项：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mount -t ext4 /dev/sda1 /mnt/data</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p><strong>卸载设备</strong>： 卸载挂载的设备使用 <code>umount</code> 命令：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo umount /mnt/data</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<h3 id="常用选项"><a href="#常用选项" class="headerlink" title="常用选项"></a>常用选项</h3><ul>
+<li><code>-t &lt;type&gt;</code>：指定文件系统类型，如 <code>ext4</code>、<code>xfs</code> 等。</li>
+<li><code>-o &lt;options&gt;</code>：指定挂载选项，如 <code>ro</code>（只读）、<code>rw</code>（读写）、<code>noatime</code>（不更新访问时间）等。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><code>fdisk</code> 分区挂载更加灵活，可以将磁盘划分为多个分区，每个分区可以有不同的文件系统类型，分区完后仍然需要对每个分区 <code>mkfs</code> 格式化文件系统，或者也可以直接 <code>mkfs</code> 选择对整个磁盘格式化，但整个磁盘将只能使用一个文件系统类型，无法将磁盘分割为多个独立的区域。</p>
+<h2 id="常用命令-lsblk、df、du"><a href="#常用命令-lsblk、df、du" class="headerlink" title="常用命令 lsblk、df、du"></a>常用命令 lsblk、df、du</h2><figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">wyk 09:20:49 ~</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">lsblk</span></span><br><span class="line">NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS</span><br><span class="line">loop0         7:0    0  79.9M  1 loop /snap/lxd/22923</span><br><span class="line">loop1         7:1    0    62M  1 loop /snap/core20/1587</span><br><span class="line">loop3         7:3    0  38.8M  1 loop /snap/snapd/21759</span><br><span class="line">loop4         7:4    0  63.9M  1 loop /snap/core20/2318</span><br><span class="line">loop5         7:5    0    87M  1 loop /snap/lxd/28373</span><br><span class="line">sda           8:0    0 447.1G  0 disk </span><br><span class="line">├─sda1        8:1    0     1G  0 part </span><br><span class="line">└─sda2        8:2    0 446.1G  0 part /old8003-2</span><br><span class="line">sdb           8:16   0   1.8T  0 disk /home/cyf/hdd</span><br><span class="line">nvme4n1     259:0    0 894.3G  0 disk /home/lzh/ssd</span><br><span class="line">nvme3n1     259:1    0 894.3G  0 disk /home/wyk/ssd</span><br><span class="line">nvme2n1     259:2    0 894.3G  0 disk </span><br><span class="line">├─nvme2n1p1 259:3    0     1G  0 part /boot/efi</span><br><span class="line">└─nvme2n1p2 259:4    0 893.2G  0 part /</span><br><span class="line">nvme0n1     259:5    0 894.3G  0 disk /home/cyf/ssd0</span><br><span class="line">nvme1n1     259:6    0 894.3G  0 disk /home/cyf/ssd1</span><br><span class="line"></span><br><span class="line">wyk 09:21:02 ~</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">df</span> -h</span></span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">tmpfs            13G  3.3M   13G   1% /run</span><br><span class="line">/dev/nvme2n1p2  879G  308G  527G  37% /</span><br><span class="line">tmpfs            63G     0   63G   0% /dev/shm</span><br><span class="line">tmpfs           5.0M     0  5.0M   0% /run/lock</span><br><span class="line">/dev/nvme2n1p1  1.1G  6.1M  1.1G   1% /boot/efi</span><br><span class="line">/dev/sda2       439G  336G   81G  81% /old8003-2</span><br><span class="line">/dev/nvme3n1    880G   28K  835G   1% /home/wyk/ssd</span><br><span class="line"></span><br><span class="line">wyk 09:17:50 ~</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">sudo</span> <span class="built_in">du</span> -h --max-depth=1 /old8003-2/home/</span></span><br><span class="line">30G     /old8003-2/home/ymx</span><br><span class="line">6.4G    /old8003-2/home/cjh</span><br><span class="line">72G     /old8003-2/home/cyf</span><br><span class="line">15G     /old8003-2/home/zzh</span><br><span class="line">2.1G    /old8003-2/home/jyc</span><br><span class="line">525M    /old8003-2/home/astl</span><br><span class="line">2.7G    /old8003-2/home/lcc</span><br><span class="line">1.1G    /old8003-2/home/whs</span><br><span class="line">1.6G    /old8003-2/home/olh</span><br><span class="line">6.4G    /old8003-2/home/wyk</span><br><span class="line">95G     /old8003-2/home/lzh</span><br><span class="line">8.0G    /old8003-2/home/zyu</span><br><span class="line">239G    /old8003-2/home</span><br><span class="line"></span><br><span class="line">wyk 09:24:37 ~</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">lsblk -d -o name,rota</span></span><br><span class="line">NAME    ROTA</span><br><span class="line">loop0      0</span><br><span class="line">loop1      0</span><br><span class="line">loop3      0</span><br><span class="line">loop4      0</span><br><span class="line">loop5      0</span><br><span class="line">sda        0</span><br><span class="line">sdb        1</span><br><span class="line">nvme4n1    0</span><br><span class="line">nvme3n1    0</span><br><span class="line">nvme2n1    0</span><br><span class="line">nvme0n1    0</span><br><span class="line">nvme1n1    0</span><br><span class="line">wyk 09:24:44 ~</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><code>lsblk -d -o name,rota</code> 对于其返回值，看 ROTA 值来判断： </p>
+<p>若 ROTA=1，则意味该硬盘旋转，则其为机械硬盘； </p>
+<p>若 ROTA=0，则意味着该盘为固态硬盘； </p>
+<p>对于上述打印结果，<strong>sdb</strong> 为固态硬盘，<strong>sda</strong> 为机械硬盘。</p>
+</blockquote>
+<p>执行 <code>sudo umount /old8003-1</code> <strong>不会擦除 SSD 上的数据</strong>。</p>
+<p><code>umount</code> 命令只是<strong>卸载文件系统</strong>，意味着它将断开挂载点和设备的关联，让该挂载点不再可访问。数据仍然保留在 SSD 上的分区中，<strong>没有被删除</strong>。</p>
+<p>简单来说：</p>
+<ul>
+<li><code>umount</code>: 只断开文件系统，不会对数据产生任何影响。</li>
+<li>数据还在磁盘上，只是暂时不可通过该挂载点访问。</li>
+</ul>
+<p>要删除数据，通常需要<strong>格式化磁盘</strong>或者手动删除文件。</p>
+<blockquote>
+<p>某个 ssd/hdd 还挂载在某个目录下，如果要清除上面的数据并挂载到自己指定目录下要怎么做（全流程）</p>
+</blockquote>
+<ul>
+<li>这将显示所有在 <code>/old8003-1</code> 目录下活动的文件和进程。如果有进程正在使用该目录，可以终止它们或手动关闭它们：<code>sudo lsof /old8003-1</code></li>
+<li>格式化前先取消磁盘的挂载 <code>sudo umount /old8003-1</code></li>
+<li>可以选择 <code>sudo fdisk /dev/nvme3n1</code> 对磁盘进行分区，也可以不分区， 直接把整个磁盘格式化（就没有 nvme3n1p1、nvme3n1p2 这类分区了）</li>
+<li>指定分区的格式化文件系统类型 <code>sudo mkfs.ext4 /dev/nvme3n1</code></li>
+<li>最后挂载上去即可 <code>sudo mount ~/ssd /dev/nvme3n1</code></li>
+</ul>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.github.io/2024/12/08/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/linux-partition/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.github.io/2024/12/08/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/linux-partition/&amp;title=Linux 分区更改 fdisk、格式化 mkfs、检查 fsck、挂载 mount - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202501222240708.png&amp;summary=本文详细介绍 Linux 系统下与磁盘分区相关的有 fdisk、fsck、mkfs、mount 等其他常用命令～"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=Linux 分区更改 fdisk、格式化 mkfs、检查 fsck、挂载 mount - Yikun Wu&amp;body=https://wu-yikun.github.io/2024/12/08/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/linux-partition/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.github.io/2024/12/08/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/linux-partition/">
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">上一篇</div><a href="/2024/11/01/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/mmap-vs-read-write/">关于 mmap 与 read/write</a></div><div class="item" id="next"><div class="note">下一篇</div><a href="/2024/12/08/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/linux-disk-automatic-mounting/">Linux 磁盘配置文件 /etc/fstab 详解</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class="header cmt-title cap theme">
+      
+    </section>
+    <section class="body cmt-body giscus">
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Wu-yikun/wu-yikun.github.io" data-repo-id="R_kgDONub1yw" data-category="Announcements" data-category-id="DIC_kwDONub1y84CmRgw" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async="true"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">@Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 主题创建</p>
+<span id="busuanzi_container_site_pv">本站总访问量 <span id="busuanzi_value_site_pv"></span> 次</span><div><span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span></div></div></footer>
+
+
+<script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+  function createtime() {
+    var now = new Date();
+    var grt= new Date("01/25/2025 00:00:00");
+    now.setTime(now.getTime() + 250);
+    days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+    hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+    if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+    mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+    seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+    snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+    document.getElementById("timeDate").innerHTML = "本站已运行 "+dnum+" 天 ";
+    document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+  };
+  setInterval("createtime()",250);
+</script>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fdisk"><span class="toc-text">fdisk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mkfs"><span class="toc-text">mkfs</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mount"><span class="toc-text">mount</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E8%AF%B4%E6%98%8E"><span class="toc-text">具体说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-text">示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E9%80%89%E9%A1%B9"><span class="toc-text">常用选项</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-lsblk%E3%80%81df%E3%80%81du"><span class="toc-text">常用命令 lsblk、df、du</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class="float-panel blur">
+  <button type="button" style="display:none" class="laptop-only rightbar-toggle mobile" onclick="sidebar.rightbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" style="display:none" class="mobile-only leftbar-toggle mobile" onclick="sidebar.leftbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer=""></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer="">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"giscus":{"js":"/js/services/giscus_new.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer="" src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div>
+</body></html><script>var posts=["2025/04/12/人工智能/animated-pictures-to-easily-understand-self-attention/","2025/04/12/人工智能/the-soul-of-chatgpt-attention-mechanism/","2021/12/10/博客开发/building-a-personal-blog-from-scratch/","2023/11/14/博客开发/hexo-stellar-development-guide/","2022/01/01/年终总结/「2021」passion/","2025/04/12/人工智能/how-does-chatgpt-handle-text-input/","2023/01/01/年终总结/「2022」life-is-a-field-not-a-track/","2024/01/21/年终总结/「2023」feel-the-journey/","2021/10/06/开发工具/docker-and-k8s/","2021/10/23/开发工具/git-undo/","2025/01/10/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","2025/04/12/开发工具/docker-intro/","2025/04/12/开发工具/git-principle/","2025/04/12/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","2021/12/30/开发工具/nat/","2021/10/05/开发工具/tips-for-precise-search-on-github/","2021/10/22/开发工具/understanding-.git-folder/","2021/11/11/生活思考/choose-one-sentence/","2021/09/30/生活思考/constantly-comparing-yourself-to-others-is-the-tragedy-of-life/","2025/02/03/生活思考/deep-thoughts/","2021/12/07/生活思考/don't-limit-your-future-imagination-with-your-current-abilities/","2021/11/11/算法/advanced-algorithms/","2025/04/28/算法/binary-tree-matching/","2025/04/28/算法/constructing-binary-tree/","2025/04/27/算法/cpp-acm-input-output/","2025/04/28/算法/difference-array/","2025/04/28/算法/heapsort-quicksort-mergesort/","2025/04/28/算法/interview-add-two/","2025/04/28/算法/interview-linked-list/","2025/04/28/算法/maximum-product-of-subarray-or-subsequence/","2025/04/28/算法/modulo/","2025/04/28/算法/kuaishou-merge-k-ascending-linked-lists/","2025/04/28/算法/monotonic-stack/","2025/04/28/算法/qpow/","2025/04/28/算法/sieve-of-prime-number/","2022/02/17/算法/tackle-without-sort-library/","2025/04/28/算法/tecent-wxg-russian-doll-envelope/","2025/04/28/算法/union-search/","2024/12/30/系统与体系结构/a-study-of-linux-file-system-evolution/","2024/12/08/系统与体系结构/analysis-of-trace-processing/","2025/04/13/系统与体系结构/debugging-with-gdb/","2025/04/13/系统与体系结构/distributed-systems-paxos.md/","2025/04/13/系统与体系结构/distributed-systems-theoretical-foundations/","2025/03/14/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","2025/04/13/系统与体系结构/effective-c++/","2025/04/02/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","2024/12/08/系统与体系结构/linux-disk-automatic-mounting/","2025/04/13/系统与体系结构/distributed-systems-raft/","2025/03/30/系统与体系结构/linux-kernel-io-path/","2024/12/28/系统与体系结构/madam-for-all-flash-array/","2024/12/08/系统与体系结构/linux-partition/","2024/11/01/系统与体系结构/mmap-vs-read-write/","2024/11/01/系统与体系结构/nvm-top-lab/","2024/11/01/系统与体系结构/persistent-memory-research-report/","2024/12/28/系统与体系结构/pmdk-programming-guidelines/","2022/03/25/编程语言/cpp-copy-constructor/","2025/04/12/编程语言/cpp-stl/","2025/04/12/编程语言/cpp-wiki/","2025/04/12/编程语言/python-wiki/","2022/05/14/编程语言/golang-wiki/","2021/11/18/计算机网络/does-restarting-mean-shutting-down-and-power-on/","2021/09/30/计算机网络/network-ip/","2021/12/27/计算机网络/reverse-proxy/","2025/04/13/面经/interview-review/","2025/04/13/面经/job-hunting-guide-for-technical-personnel/","2021/09/09/经验分享/how-can-undergraduates-enter-bat/","2025/04/13/面经/reverse-interview/","2022/01/08/经验分享/how-to-balance-token-security-and-user-experience/","2022/02/20/经验分享/technical-writing-experience/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>

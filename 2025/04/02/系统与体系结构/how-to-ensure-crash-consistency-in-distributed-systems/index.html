@@ -1,0 +1,737 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>分布式系统中如何保证崩溃一致性？ - Yikun Wu</title>
+
+  
+    <meta name="description" content="崩溃一致性是指系统在发生崩溃（例如服务器宕机、进程异常退出或断电）后，能够确保持久化的数据仍然处于一致的有效状态。也就是说，无论何时发生崩溃，系统存储上的数据要么保持崩溃前的完整更新，要么回退到崩溃前的稳定状态，不会出现部分更新导致的数据不完整或损坏。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式系统中如何保证崩溃一致性？">
+<meta property="og:url" content="https://wu-yikun.github.io/2025/04/02/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/how-to-ensure-crash-consistency-in-distributed-systems/index.html">
+<meta property="og:site_name" content="Yikun Wu">
+<meta property="og:description" content="崩溃一致性是指系统在发生崩溃（例如服务器宕机、进程异常退出或断电）后，能够确保持久化的数据仍然处于一致的有效状态。也就是说，无论何时发生崩溃，系统存储上的数据要么保持崩溃前的完整更新，要么回退到崩溃前的稳定状态，不会出现部分更新导致的数据不完整或损坏。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-05-13T19:47:56.229Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="分布式系统">
+<meta property="article:tag" content="Paxos">
+<meta property="article:tag" content="Ceph">
+<meta property="article:tag" content="COW">
+<meta property="article:tag" content="WAL">
+<meta property="article:tag" content="Raft">
+<meta property="article:tag" content="崩溃一致性">
+<meta property="article:tag" content="幂等性">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <meta name="keywords" content="Linux,分布式系统,Paxos,Ceph,COW,WAL,Raft,崩溃一致性,幂等性">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140357298.svg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar" src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">人的梦想是不会结束的</div><div class="sub hover cap" style="opacity:0"> 不是吗</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+    <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">人工智能 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%8D%9A%E5%AE%A2%E5%BC%80%E5%8F%91/">博客开发 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具 (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%94%9F%E6%B4%BB%E6%80%9D%E8%80%83/">生活思考 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%AE%97%E6%B3%95/">算法 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言 (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E9%9D%A2%E7%BB%8F/">面经 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB/">经验分享 (3)</a></div></div></widget>
+
+<widget class="widget-wrapper tagcloud"><div class="widget-header dis-select"><span class="name">标签索引</span></div><div class="widget-body fs14"><a href="/tags/ACPI/" style="font-size: 12px;" class="tag -0">ACPI</a> <a href="/tags/ART/" style="font-size: 12px;" class="tag -0">ART</a> <a href="/tags/All-Flash-Array/" style="font-size: 12px;" class="tag -0">All-Flash Array</a> <a href="/tags/C/" style="font-size: 22px;" class="tag -8">C++</a> <a href="/tags/COW/" style="font-size: 12px;" class="tag -0">COW</a> <a href="/tags/Ceph/" style="font-size: 12px;" class="tag -0">Ceph</a> <a href="/tags/ChatGPT/" style="font-size: 16px;" class="tag -3">ChatGPT</a> <a href="/tags/DP/" style="font-size: 12px;" class="tag -0">DP</a> <a href="/tags/DPDK/" style="font-size: 12px;" class="tag -0">DPDK</a> <a href="/tags/Difference-Array/" style="font-size: 12px;" class="tag -0">Difference Array</a> <a href="/tags/Docker/" style="font-size: 14px;" class="tag -2">Docker</a> <a href="/tags/DuckDB/" style="font-size: 12px;" class="tag -0">DuckDB</a> <a href="/tags/EX4/" style="font-size: 12px;" class="tag -0">EX4</a> <a href="/tags/Embedding/" style="font-size: 12px;" class="tag -0">Embedding</a> <a href="/tags/File-System/" style="font-size: 12px;" class="tag -0">File System</a> <a href="/tags/GitHub/" style="font-size: 12px;" class="tag -0">GitHub</a> <a href="/tags/Golang/" style="font-size: 12px;" class="tag -0">Golang</a> <a href="/tags/Graph/" style="font-size: 12px;" class="tag -0">Graph</a> <a href="/tags/Halo/" style="font-size: 12px;" class="tag -0">Halo</a> <a href="/tags/Hexo/" style="font-size: 12px;" class="tag -0">Hexo</a> <a href="/tags/IP/" style="font-size: 12px;" class="tag -0">IP</a> <a href="/tags/JWT/" style="font-size: 12px;" class="tag -0">JWT</a> <a href="/tags/Kubernetes/" style="font-size: 12px;" class="tag -0">Kubernetes</a> <a href="/tags/LeetCode/" style="font-size: 24px;" class="tag -10">LeetCode</a> <a href="/tags/LinkList/" style="font-size: 12px;" class="tag -0">LinkList</a> <a href="/tags/Linux/" style="font-size: 20px;" class="tag -7">Linux</a> <a href="/tags/Linux-Kernel/" style="font-size: 14px;" class="tag -2">Linux Kernel</a> <a href="/tags/Markdown/" style="font-size: 12px;" class="tag -0">Markdown</a> <a href="/tags/Modulo/" style="font-size: 12px;" class="tag -0">Modulo</a> <a href="/tags/Monotonic-Stack/" style="font-size: 12px;" class="tag -0">Monotonic Stack</a> <a href="/tags/NAT/" style="font-size: 12px;" class="tag -0">NAT</a> <a href="/tags/NVM/" style="font-size: 14px;" class="tag -2">NVM</a> <a href="/tags/Optane-DIMMs/" style="font-size: 12px;" class="tag -0">Optane DIMMs</a> <a href="/tags/PMDK/" style="font-size: 14px;" class="tag -2">PMDK</a> <a href="/tags/POSIX/" style="font-size: 12px;" class="tag -0">POSIX</a> <a href="/tags/Page-Cache/" style="font-size: 12px;" class="tag -0">Page Cache</a> <a href="/tags/Paxos/" style="font-size: 14px;" class="tag -2">Paxos</a> <a href="/tags/Python/" style="font-size: 12px;" class="tag -0">Python</a> <a href="/tags/RAID/" style="font-size: 12px;" class="tag -0">RAID</a> <a href="/tags/Raft/" style="font-size: 14px;" class="tag -2">Raft</a> <a href="/tags/SSD/" style="font-size: 12px;" class="tag -0">SSD</a> <a href="/tags/STL/" style="font-size: 12px;" class="tag -0">STL</a> <a href="/tags/Search/" style="font-size: 12px;" class="tag -0">Search</a> <a href="/tags/Self-Attention/" style="font-size: 14px;" class="tag -2">Self-Attention</a> <a href="/tags/Sieve-of-Prime-Number/" style="font-size: 12px;" class="tag -0">Sieve of Prime Number</a> <a href="/tags/Stellar/" style="font-size: 12px;" class="tag -0">Stellar</a> <a href="/tags/Storage/" style="font-size: 12px;" class="tag -0">Storage</a> <a href="/tags/Sunny-Ngrok/" style="font-size: 12px;" class="tag -0">Sunny-Ngrok</a> <a href="/tags/Syscall/" style="font-size: 12px;" class="tag -0">Syscall</a> <a href="/tags/Tokenizer/" style="font-size: 12px;" class="tag -0">Tokenizer</a> <a href="/tags/Transformer/" style="font-size: 14px;" class="tag -2">Transformer</a> <a href="/tags/Tree/" style="font-size: 16px;" class="tag -3">Tree</a> <a href="/tags/Trie/" style="font-size: 12px;" class="tag -0">Trie</a> <a href="/tags/UCloud/" style="font-size: 12px;" class="tag -0">UCloud</a> <a href="/tags/Union-Search/" style="font-size: 12px;" class="tag -0">Union Search</a> <a href="/tags/VFS/" style="font-size: 14px;" class="tag -2">VFS</a> <a href="/tags/Vector/" style="font-size: 12px;" class="tag -0">Vector</a> <a href="/tags/WAL/" style="font-size: 12px;" class="tag -0">WAL</a> <a href="/tags/Zero-Copy/" style="font-size: 12px;" class="tag -0">Zero Copy</a> <a href="/tags/builtin/" style="font-size: 12px;" class="tag -0">__builtin</a> <a href="/tags/df/" style="font-size: 12px;" class="tag -0">df</a> <a href="/tags/du/" style="font-size: 12px;" class="tag -0">du</a> <a href="/tags/fdisk/" style="font-size: 12px;" class="tag -0">fdisk</a> <a href="/tags/fio/" style="font-size: 12px;" class="tag -0">fio</a> <a href="/tags/fsck/" style="font-size: 12px;" class="tag -0">fsck</a> <a href="/tags/fstab/" style="font-size: 14px;" class="tag -2">fstab</a> <a href="/tags/g/" style="font-size: 12px;" class="tag -0">g++</a> <a href="/tags/gcc/" style="font-size: 12px;" class="tag -0">gcc</a> <a href="/tags/gdb/" style="font-size: 12px;" class="tag -0">gdb</a> <a href="/tags/git/" style="font-size: 16px;" class="tag -3">git</a> <a href="/tags/grub/" style="font-size: 12px;" class="tag -0">grub</a> <a href="/tags/iostat/" style="font-size: 12px;" class="tag -0">iostat</a> <a href="/tags/libpmemobj/" style="font-size: 12px;" class="tag -0">libpmemobj</a> <a href="/tags/lsblk/" style="font-size: 12px;" class="tag -0">lsblk</a> <a href="/tags/mdadm/" style="font-size: 12px;" class="tag -0">mdadm</a> <a href="/tags/mkfs/" style="font-size: 12px;" class="tag -0">mkfs</a> <a href="/tags/mmaloc/" style="font-size: 12px;" class="tag -0">mmaloc</a> <a href="/tags/mmap/" style="font-size: 16px;" class="tag -3">mmap</a> <a href="/tags/mount/" style="font-size: 14px;" class="tag -2">mount</a> <a href="/tags/move/" style="font-size: 12px;" class="tag -0">move</a> <a href="/tags/qpow/" style="font-size: 12px;" class="tag -0">qpow</a> <a href="/tags/ranges/" style="font-size: 12px;" class="tag -0">ranges</a> <a href="/tags/read/" style="font-size: 14px;" class="tag -2">read</a> <a href="/tags/smartctl/" style="font-size: 12px;" class="tag -0">smartctl</a> <a href="/tags/token/" style="font-size: 12px;" class="tag -0">token</a> <a href="/tags/trace/" style="font-size: 12px;" class="tag -0">trace</a> <a href="/tags/wipefs/" style="font-size: 12px;" class="tag -0">wipefs</a> <a href="/tags/write/" style="font-size: 14px;" class="tag -2">write</a> <a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" style="font-size: 12px;" class="tag -0">内网穿透</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/" style="font-size: 18px;" class="tag -5">分布式系统</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 14px;" class="tag -2">博客</a> <a href="/tags/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/" style="font-size: 12px;" class="tag -0">反向代理</a> <a href="/tags/%E5%AE%89%E5%85%A8/" style="font-size: 12px;" class="tag -0">安全</a> <a href="/tags/%E5%B4%A9%E6%BA%83%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 12px;" class="tag -0">崩溃一致性</a> <a href="/tags/%E5%B9%82%E7%AD%89%E6%80%A7/" style="font-size: 12px;" class="tag -0">幂等性</a> <a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/" style="font-size: 18px;" class="tag -5">年终总结</a> <a href="/tags/%E6%8B%9C%E5%8D%A0%E5%BA%AD/" style="font-size: 12px;" class="tag -0">拜占庭</a> <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 14px;" class="tag -2">排序</a> <a href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" style="font-size: 12px;" class="tag -0">服务器</a> <a href="/tags/%E6%9C%AA%E6%9D%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%B9%B8%E5%AD%98%E8%80%85/" style="font-size: 12px;" class="tag -0">未来世界的幸存者</a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Wu-yikun" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418811.svg"></a><a class="social" href="https://leetcode.cn/u/wu-yikun/" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419535.svg"></a><a class="social" href="https://juejin.cn/user/1654082381026734" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419245.svg"></a><a class="social" href="https://www.zhihu.com/people/JayChou" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419020.svg"></a><a class="social" href="https://music.163.com/#/user/home?id=1479129382" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419025.svg"></a><a class="social" href="https://space.bilibili.com/441384986?spm_id_from=333.1007.0.0" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418494.svg"></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504021525623.png">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/COW/">COW</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Ceph/">Ceph</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Linux/">Linux</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Paxos/">Paxos</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Raft/">Raft</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/WAL/">WAL</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/%E5%B4%A9%E6%BA%83%E4%B8%80%E8%87%B4%E6%80%A7/">崩溃一致性</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/%E5%B9%82%E7%AD%89%E6%80%A7/">幂等性</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-04-01T16:00:00.000Z">2025-04-02</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-05-13T19:47:56.229Z">2025-05-14</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>分布式系统中如何保证崩溃一致性？</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>崩溃一致性是指系统在发生崩溃（例如服务器宕机、进程异常退出或断电）后，能够确保持久化的数据仍然处于一致的有效状态。也就是说，无论何时发生崩溃，系统存储上的数据要么保持崩溃前的完整更新，要么回退到崩溃前的稳定状态，不会出现部分更新导致的数据不完整或损坏。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>面试官：你如何在系统中保证崩溃一致性？</p>
+</blockquote>
+<h2 id="崩溃一致性的定义和重要性"><a href="#崩溃一致性的定义和重要性" class="headerlink" title="崩溃一致性的定义和重要性"></a>崩溃一致性的定义和重要性</h2><p>崩溃一致性是指系统在发生崩溃（例如服务器宕机、进程异常退出或断电）后，能够确保持久化的数据仍然处于<strong>一致的有效状态</strong>。也就是说，无论何时发生崩溃，系统存储上的数据要么保持<strong>崩溃前的完整更新</strong>，要么回退到<strong>崩溃前的稳定状态</strong>，不会出现部分更新导致的数据不完整或损坏。例如，在文件系统或数据库中，如果一次操作需要更新多个位置，崩溃一致性要求不能出现只更新了一部分就崩溃的情况，否则会造成数据结构的不一致。通过保证崩溃一致性，系统在重启恢复后可以正确地继续运行，数据不会因中途崩溃而处于混乱状态。这在分布式存储、数据库和后端服务中至关重要，直接关系到数据可靠性和系统健壮性。</p>
+<h2 id="常见的崩溃一致性保障方案"><a href="#常见的崩溃一致性保障方案" class="headerlink" title="常见的崩溃一致性保障方案"></a>常见的崩溃一致性保障方案</h2><p>在分布式系统和后端架构设计中，有多种机制用来保证崩溃一致性。实际设计中通常根据场景组合运用这些方案：</p>
+<h3 id="写前日志（Write-Ahead-Logging，WAL）"><a href="#写前日志（Write-Ahead-Logging，WAL）" class="headerlink" title="写前日志（Write-Ahead Logging，WAL）"></a>写前日志（Write-Ahead Logging，WAL）</h3><p>先将将要进行的更新记录到日志（预写日志）并持久化，再执行实际的数据更新。这样如果系统在更新过程中崩溃，重启时可以通过日志<strong>重放或回滚</strong>确保数据一致 (存储系统的崩溃一致性问题 (Crash Consistency))。WAL 广泛应用于数据库和文件系统（如 MySQL InnoDB 的 redo log，PostgreSQL 的 WAL，Ext4 文件系统的 journal 模式）。举例来说，在数据库事务中，先写事务日志并将其 fsync 到磁盘，再更新数据页；若中途崩溃，重启时根据日志完成未完事务或撤销部分更新，保证数据一致不丢失。</p>
+<h3 id="两阶段提交（2PC）-三阶段提交（3PC）"><a href="#两阶段提交（2PC）-三阶段提交（3PC）" class="headerlink" title="两阶段提交（2PC）/ 三阶段提交（3PC）"></a>两阶段提交（2PC）/ 三阶段提交（3PC）</h3><p>这是分布式事务的经典协议，用于确保跨多个节点或资源的原子性提交。一致性通过一个协调者让所有参与者都准备就绪再统一提交。<strong>两阶段提交</strong> (prepare/commit) 确保所有节点要么都提交事务，要么都回滚，中间任一节点崩溃都不会导致部分节点提交。例如，在订单系统中，订单服务和支付服务需要同时更新，各服务在准备阶段预留资源，只有当所有服务都准备成功后才正式提交扣款和订单确认，否则全部撤销。2PC 的缺点是协调者崩溃或网络分区时会阻塞（出现<strong>脑裂</strong>风险）。<strong>三阶段提交</strong>在 2PC 基础上增加预提交阶段（CanCommit、PreCommit、DoCommit），减少单点故障导致的阻塞，但通信开销更大，且仍要求可靠网络条件。实际中原生 3PC 较少直接使用，更常用改进的一致性协议或结合其他机制来避免单点问题。</p>
+<h3 id="分布式一致性协议（如-Paxos-Raft-等）"><a href="#分布式一致性协议（如-Paxos-Raft-等）" class="headerlink" title="分布式一致性协议（如 Paxos / Raft 等）"></a>分布式一致性协议（如 Paxos / Raft 等）</h3><p>这些是一致性算法，用于在<strong>多副本场景</strong>下保证数据副本之间的状态一致，进而保障崩溃后的系统一致性。Paxos 和 Raft 通过多数派投票<strong>达成共识</strong>，确保一旦某个操作被多数节点提交，整个集群最终都应用该操作，即使部分节点崩溃也不影响全局一致结果。它们通常用于实现复制日志和领导者选举。例如，Raft 协议通过由 Leader 将日志条目复制到 Follower，并要求超过半数节点写入确认后再认为提交成功，这样即使一个节点崩溃，已提交日志仍然存在于其他节点中，系统可以选举新 Leader 继续提供服务。很多分布式 KV 存储（如 Etcd、Consul）和分布式数据库利用 Raft/Paxos 保证在崩溃或网络异常情况下数据不会不一致。此外，基于这些共识协议可以构建分布式事务：例如 Google Spanner 将 2PC 与 Paxos 结合，在每个分片组内用 Paxos 保证副本一致性，并用 2PC 跨分片提交全局事务，从而同时实现强一致和高可用的事务处理。</p>
+<h3 id="本地持久化与-fsync"><a href="#本地持久化与-fsync" class="headerlink" title="本地持久化与 fsync"></a>本地持久化与 fsync</h3><p>无论采用哪种高级协议，底层的<strong>持久化正确性</strong>都是基础。为了保证崩溃时数据已真正写入稳定存储，需要使用<code>fsync</code>或类似手段将数据刷盘。操作系统和硬件常有缓存，如果只写入内存缓冲区而不刷新到磁盘，崩溃会导致已写入的数据丢失。通过在关键步骤后调用 fsync 确保数据写入磁盘，可以提供<strong>持久化的崩溃一致性</strong>。例如，消息队列在写入消息日志后会调用 fsync（或根据配置定期刷盘）才确认消息“已持久化”，这样 Broker 宕机重启后，日志里的消息仍然可用，不会丢失或损坏。需要注意频繁 fsync 会影响性能，因此实际系统常结合<strong>批量写入</strong>或后台刷盘策略，在保证一定一致性的前提下平衡性能（例如 MySQL 的<code>innodb_flush_log_at_trx_commit</code>参数决定每次事务提交是否立即 fsync 日志）。</p>
+<h3 id="幂等性设计与重试机制"><a href="#幂等性设计与重试机制" class="headerlink" title="幂等性设计与重试机制"></a>幂等性设计与重试机制</h3><p>在分布式系统中，<strong>失败重试</strong>是常见现象（例如网络超时后客户端重发请求，或者服务重启后重新处理消息）。为了保证在崩溃和重试场景下状态不乱，要求关键操作具有<strong>幂等性</strong>——同一操作执行一次和多次的效果相同，不会因重复执行产生副作用差异。例如，支付接口需要设计为幂等，以避免由于请求超时重复扣款；又如订单创建接口应防止创建重复订单。这通常通过在业务层引入唯一请求 ID 或事务 ID 来实现，每次操作前先检查是否已处理过该 ID，已处理则跳过，未处理才执行并记录结果。幂等设计配合重试机制，使系统在部分操作失败或崩溃恢复后可以安全地<strong>重放操作</strong>，达到“至少一次”投递但效果如“只执行一次”的一致性结果。例如，消息队列消费者在处理消息时，如果进程突然崩溃，下次重启后消息会被重新投递，此时消费者处理逻辑如果具备幂等（例如根据消息唯一键检查数据库中是否已应用），就能保证不会因重复消费导致数据错误。</p>
+<h2 id="实际项目经验与应用案例"><a href="#实际项目经验与应用案例" class="headerlink" title="实际项目经验与应用案例"></a>实际项目经验与应用案例</h2><blockquote>
+<p>面试中展示崩溃一致性的理解，最好结合自身经历或熟悉的系统案例，说明如何运用了上述机制：</p>
+</blockquote>
+<p><strong>分布式 KV 存储系统</strong>：举例来说，在设计分布式 Key-Value 存储时，会使用 <strong>WAL 日志 + 多副本复制</strong>来保证崩溃一致性。每次写操作先写入本地 WAL 并持久化，然后通过一致性协议（如 Raft）将该操作复制到其他节点。在我参与的一个存储引擎项目中，我们采用 Raft 保证各副本日志一致，同时每台节点本地使用 WAL 和定期快照。一次写入只有当多数节点写入日志成功并且主节点的日志 fsync 完成后才确认成功返回。这样，即便某个节点宕机，其恢复时可以通过重放本地 WAL 和从其他副本同步缺失日志将数据恢复到崩溃前的<strong>一致状态</strong>。这种方案在实践中确保了无单点故障的数据可靠性——如 etcd、ZooKeeper 也使用类似思路，保证配置数据在节点崩溃后依然一致。</p>
+<p><strong>订单和支付事务系统</strong>：在电商订单系统中，经常需要保证诸如“扣库存”和“扣款”这两个不同服务的操作要么都成功要么都不执行。我的经验是可以采用<strong>分布式事务</strong>或<strong>事务补偿机制</strong>来解决。例如，我们尝试过使用两阶段提交：订单服务作为协调者，通知库存服务和支付服务预留资源（准备阶段），如果都成功则发出提交指令，各自将最终状态持久化；如果中途任一失败则发出回滚指令撤销之前的操作。这保证了服务崩溃或网络异常时不会出现“扣了款但订单未创建”这类不一致结果。另外一种实践是使用 <strong>Saga（补偿事务）模式</strong>配合幂等设计，各服务先本地完成操作，如果后续步骤失败则通过调用补偿动作（如退款、加回库存）来最终达成一致。无论哪种方案，都需要在<strong>实际落地</strong>时注意持久化（写数据库事务日志或业务状态日志）以及操作的幂等性。例如，我们会为每个订单生成唯一事务 ID，在整个事务链路中传递，崩溃恢复后根据事务日志判断需要补偿还是继续未完成的步骤。通过这样的设计，订单系统在面临部分服务宕机重启时，仍然可以保证数据的最终一致性和正确性。</p>
+<p><strong>消息队列系统</strong>：以分布式消息队列为例（如 Kafka 或 RabbitMQ），崩溃一致性体现在<strong>不丢消息且不重复乱序</strong>。实际项目中，我部署过的 Kafka 集群采用<strong>持久化日志+副本同步</strong>：生产者发送的消息先写入领导者节点的磁盘日志（Kafka 提供多种 acks 级别确保消息写入持久化），Leader 将消息复制给 Follower 节点，等至少一个 Follower 也写入成功后再确认给生产者。每条消息有偏移量，消费者处理时按偏移顺序提交位移。若 Broker 崩溃，Zookeeper/Raft 协调下会选出新的 Leader 继续未完成的日志追加，消费者可以从上次提交的偏移继续消费，保证顺序和一致性。而对于消费者重复消费的情况，我们在消费端通过<strong>幂等处理</strong>解决：例如消息携带唯一 ID，消费逻辑更新数据库前先检查记录是否已处理该 ID，以避免因消费者崩溃重启后重复消费导致的数据重复。通过这些措施，消息队列系统实现了<strong>崩溃后恢复不丢消息</strong>，并使得任何重复消息的影响可控，从而在分布式部署下依然保持数据一致可靠。</p>
+<h2 id="面试回答思路和结构化表达建议"><a href="#面试回答思路和结构化表达建议" class="headerlink" title="面试回答思路和结构化表达建议"></a>面试回答思路和结构化表达建议</h2><p>在技术面试中回答“如何保证崩溃一致性”这类问题时，可以按照有条理的结构来表达，确保面试官能清晰理解你的思路：</p>
+<ol>
+<li><strong>问题背景简介</strong>：首先简要说明什么是崩溃一致性，以及在什么背景下需要考虑它。可以点出崩溃场景（宕机、断电等）会导致部分写入丢失或数据结构不完整，从而引出需要机制保证一致性的重要性。</li>
+<li><strong>可选方案对比</strong>：接下来概述解决崩溃一致性的常见方案。可以按照从单机到分布式逐步展开，例如先介绍本地级别的方案（<code>WAL</code> 日志、<code>Copy-on-Write</code>、<code>fsync</code> 刷盘等），再说明分布式场景的方案（<code>2PC</code>/<code>3PC</code> 分布式提交、<code>Paxos</code>/<code>Raft</code> 一致性算法、幂等重试等）<ul>
+<li>WAL 适合单节点多步骤原子更新</li>
+<li>2PC 适合跨服务事务但有阻塞问题</li>
+<li>Raft 适合多副本一致</li>
+</ul>
+</li>
+<li><strong>实际方案选择及理由</strong>：然后重点描述你在实际项目中用到了哪些机制来保证崩溃一致性，以及为什么选择这些方案。<strong>结合具体案例</strong>谈更有说服力，比如说明“在某项目中我们遇到 XX 一致性要求，选择了 YY 方案，因为…”。阐述方案如何落地实施（比如如何实现日志持久化、如何协调多服务提交）。这一部分体现你将理论用于实践的能力，例如提到性能考量（为什么选 WAL 而不是每次直接写入，以及 WAL 带来的性能提升与一致性保障）、可靠性需求（为何采用 Raft 保证副本一致）等决策因素。</li>
+<li><strong>遇到的问题与优化</strong>：最后补充说明在实现崩溃一致性过程中遇到的挑战以及采取的优化措施。这显示你对细节和系统影响有深入理解。比如，你可以提到<strong>性能瓶颈和解决</strong>：“由于频繁 fsync 影响吞吐，我们采用了批量提交来优化磁盘 IO”。或者<strong>复杂性问题</strong>：“实现 2PC 时遇到了超时和协调难题，通过引入超时重试和事务日志监控来保证一致性”。再比如<strong>边缘情况处理</strong>：“考虑到网络分区导致的脑裂，我们引入了仲裁机制/心跳检测来处理”。通过讲述如何发现问题、解决问题，表现出你对崩溃一致性机制有实战经验和思考。结束时可以强调经过这些努力，系统成功保证了在各种异常情况下数据的一致可靠。</li>
+</ol>
+<h2 id="推荐参考文献"><a href="#推荐参考文献" class="headerlink" title="推荐参考文献"></a>推荐参考文献</h2><ul>
+<li>《数据密集型应用系统设计（Designing Data-Intensive Applications）》</li>
+<li>《操作系统原理与实现（Operating System Principle and Implementation）》</li>
+</ul>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.github.io/2025/04/02/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/how-to-ensure-crash-consistency-in-distributed-systems/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.github.io/2025/04/02/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/how-to-ensure-crash-consistency-in-distributed-systems/&amp;title=分布式系统中如何保证崩溃一致性？ - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504021525623.png&amp;summary=崩溃一致性是指系统在发生崩溃（例如服务器宕机、进程异常退出或断电）后，能够确保持久化的数据仍然处于一致的有效状态。也就是说，无论何时发生崩溃，系统存储上的数据要么保持崩溃前的完整更新，要么回退到崩溃前的稳定状态，不会出现部分更新导致的..."><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=分布式系统中如何保证崩溃一致性？ - Yikun Wu&amp;body=https://wu-yikun.github.io/2025/04/02/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/how-to-ensure-crash-consistency-in-distributed-systems/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.github.io/2025/04/02/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/how-to-ensure-crash-consistency-in-distributed-systems/">
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">上一篇</div><a href="/2025/03/30/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/linux-kernel-io-path/">Linux Kernel I/O</a></div><div class="item" id="next"><div class="note">下一篇</div><a href="/2025/04/12/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/python-wiki/">Python Wiki</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class="header cmt-title cap theme">
+      
+    </section>
+    <section class="body cmt-body giscus">
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Wu-yikun/wu-yikun.github.io" data-repo-id="R_kgDONub1yw" data-category="Announcements" data-category-id="DIC_kwDONub1y84CmRgw" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async="true"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">@Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 主题创建</p>
+<span id="busuanzi_container_site_pv">本站总访问量 <span id="busuanzi_value_site_pv"></span> 次</span><div><span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span></div></div></footer>
+
+
+<script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+  function createtime() {
+    var now = new Date();
+    var grt= new Date("01/25/2025 00:00:00");
+    now.setTime(now.getTime() + 250);
+    days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+    hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+    if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+    mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+    seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+    snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+    document.getElementById("timeDate").innerHTML = "本站已运行 "+dnum+" 天 ";
+    document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+  };
+  setInterval("createtime()",250);
+</script>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B4%A9%E6%BA%83%E4%B8%80%E8%87%B4%E6%80%A7%E7%9A%84%E5%AE%9A%E4%B9%89%E5%92%8C%E9%87%8D%E8%A6%81%E6%80%A7"><span class="toc-text">崩溃一致性的定义和重要性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E5%B4%A9%E6%BA%83%E4%B8%80%E8%87%B4%E6%80%A7%E4%BF%9D%E9%9A%9C%E6%96%B9%E6%A1%88"><span class="toc-text">常见的崩溃一致性保障方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%89%8D%E6%97%A5%E5%BF%97%EF%BC%88Write-Ahead-Logging%EF%BC%8CWAL%EF%BC%89"><span class="toc-text">写前日志（Write-Ahead Logging，WAL）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%EF%BC%882PC%EF%BC%89-%E4%B8%89%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%EF%BC%883PC%EF%BC%89"><span class="toc-text">两阶段提交（2PC）/ 三阶段提交（3PC）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%88%E5%A6%82-Paxos-Raft-%E7%AD%89%EF%BC%89"><span class="toc-text">分布式一致性协议（如 Paxos / Raft 等）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%8C%81%E4%B9%85%E5%8C%96%E4%B8%8E-fsync"><span class="toc-text">本地持久化与 fsync</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%82%E7%AD%89%E6%80%A7%E8%AE%BE%E8%AE%A1%E4%B8%8E%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6"><span class="toc-text">幂等性设计与重试机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E9%A1%B9%E7%9B%AE%E7%BB%8F%E9%AA%8C%E4%B8%8E%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B"><span class="toc-text">实际项目经验与应用案例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94%E6%80%9D%E8%B7%AF%E5%92%8C%E7%BB%93%E6%9E%84%E5%8C%96%E8%A1%A8%E8%BE%BE%E5%BB%BA%E8%AE%AE"><span class="toc-text">面试回答思路和结构化表达建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">推荐参考文献</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class="float-panel blur">
+  <button type="button" style="display:none" class="laptop-only rightbar-toggle mobile" onclick="sidebar.rightbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" style="display:none" class="mobile-only leftbar-toggle mobile" onclick="sidebar.leftbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer=""></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer="">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"giscus":{"js":"/js/services/giscus_new.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer="" src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div>
+</body></html><script>var posts=["2025/04/12/人工智能/animated-pictures-to-easily-understand-self-attention/","2025/04/12/人工智能/the-soul-of-chatgpt-attention-mechanism/","2021/12/10/博客开发/building-a-personal-blog-from-scratch/","2023/11/14/博客开发/hexo-stellar-development-guide/","2022/01/01/年终总结/「2021」passion/","2025/04/12/人工智能/how-does-chatgpt-handle-text-input/","2023/01/01/年终总结/「2022」life-is-a-field-not-a-track/","2024/01/21/年终总结/「2023」feel-the-journey/","2021/10/06/开发工具/docker-and-k8s/","2021/10/23/开发工具/git-undo/","2025/01/10/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","2025/04/12/开发工具/docker-intro/","2025/04/12/开发工具/git-principle/","2025/04/12/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","2021/12/30/开发工具/nat/","2021/10/05/开发工具/tips-for-precise-search-on-github/","2021/10/22/开发工具/understanding-.git-folder/","2021/11/11/生活思考/choose-one-sentence/","2021/09/30/生活思考/constantly-comparing-yourself-to-others-is-the-tragedy-of-life/","2025/02/03/生活思考/deep-thoughts/","2021/12/07/生活思考/don't-limit-your-future-imagination-with-your-current-abilities/","2021/11/11/算法/advanced-algorithms/","2025/04/28/算法/binary-tree-matching/","2025/04/28/算法/constructing-binary-tree/","2025/04/27/算法/cpp-acm-input-output/","2025/04/28/算法/difference-array/","2025/04/28/算法/heapsort-quicksort-mergesort/","2025/04/28/算法/interview-add-two/","2025/04/28/算法/interview-linked-list/","2025/04/28/算法/maximum-product-of-subarray-or-subsequence/","2025/04/28/算法/modulo/","2025/04/28/算法/kuaishou-merge-k-ascending-linked-lists/","2025/04/28/算法/monotonic-stack/","2025/04/28/算法/qpow/","2025/04/28/算法/sieve-of-prime-number/","2022/02/17/算法/tackle-without-sort-library/","2025/04/28/算法/tecent-wxg-russian-doll-envelope/","2025/04/28/算法/union-search/","2024/12/30/系统与体系结构/a-study-of-linux-file-system-evolution/","2024/12/08/系统与体系结构/analysis-of-trace-processing/","2025/04/13/系统与体系结构/debugging-with-gdb/","2025/04/13/系统与体系结构/distributed-systems-paxos.md/","2025/04/13/系统与体系结构/distributed-systems-theoretical-foundations/","2025/03/14/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","2025/04/13/系统与体系结构/effective-c++/","2025/04/02/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","2024/12/08/系统与体系结构/linux-disk-automatic-mounting/","2025/04/13/系统与体系结构/distributed-systems-raft/","2025/03/30/系统与体系结构/linux-kernel-io-path/","2024/12/28/系统与体系结构/madam-for-all-flash-array/","2024/12/08/系统与体系结构/linux-partition/","2024/11/01/系统与体系结构/mmap-vs-read-write/","2024/11/01/系统与体系结构/nvm-top-lab/","2024/11/01/系统与体系结构/persistent-memory-research-report/","2024/12/28/系统与体系结构/pmdk-programming-guidelines/","2022/03/25/编程语言/cpp-copy-constructor/","2025/04/12/编程语言/cpp-stl/","2025/04/12/编程语言/cpp-wiki/","2025/04/12/编程语言/python-wiki/","2022/05/14/编程语言/golang-wiki/","2021/11/18/计算机网络/does-restarting-mean-shutting-down-and-power-on/","2021/09/30/计算机网络/network-ip/","2021/12/27/计算机网络/reverse-proxy/","2025/04/13/面经/interview-review/","2025/04/13/面经/job-hunting-guide-for-technical-personnel/","2021/09/09/经验分享/how-can-undergraduates-enter-bat/","2025/04/13/面经/reverse-interview/","2022/01/08/经验分享/how-to-balance-token-security-and-user-experience/","2022/02/20/经验分享/technical-writing-experience/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>
