@@ -1,0 +1,861 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>DuckDB 的 Adaptive Radix Tree 源码分析 - Yikun Wu</title>
+
+  
+    <meta name="description" content="ART 索引是由 Viktor Leis, Alfons Kemper, Thomas Neumann 等人提出，它相比于 B+ 树的主要区别在于 B+ 树是面向磁盘的，而 ART 则是面向内存的，即 ART 索引是需要全部加载到内存中。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckDB 的 Adaptive Radix Tree 源码分析">
+<meta property="og:url" content="https://wu-yikun.github.io/post/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/duckdb's-adaptive-radix-tree-source-code/index.html">
+<meta property="og:site_name" content="Yikun Wu">
+<meta property="og:description" content="ART 索引是由 Viktor Leis, Alfons Kemper, Thomas Neumann 等人提出，它相比于 B+ 树的主要区别在于 B+ 树是面向磁盘的，而 ART 则是面向内存的，即 ART 索引是需要全部加载到内存中。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140324466.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140324242.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140334359.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140354857.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140353397.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140401476.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140401135.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140409919.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140429649.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140432273.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140434646.png">
+<meta property="article:published_time" content="2025-03-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-05-13T19:47:56.229Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="ART">
+<meta property="article:tag" content="Trie">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140324466.png">
+  
+  
+  
+  <meta name="keywords" content="DuckDB,ART,Trie">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140357298.svg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar" src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">人的梦想是不会结束的</div><div class="sub hover cap" style="opacity:0"> 不是吗</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+    <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">人工智能 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%8D%9A%E5%AE%A2%E5%BC%80%E5%8F%91/">博客开发 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具 (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%94%9F%E6%B4%BB%E6%80%9D%E8%80%83/">生活思考 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%AE%97%E6%B3%95/">算法 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言 (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E9%9D%A2%E7%BB%8F/">面经 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB/">经验分享 (3)</a></div></div></widget>
+
+<widget class="widget-wrapper tagcloud"><div class="widget-header dis-select"><span class="name">标签索引</span></div><div class="widget-body fs14"><a href="/tags/ACPI/" style="font-size: 12px;" class="tag -0">ACPI</a> <a href="/tags/ART/" style="font-size: 12px;" class="tag -0">ART</a> <a href="/tags/All-Flash-Array/" style="font-size: 12px;" class="tag -0">All-Flash Array</a> <a href="/tags/C/" style="font-size: 22px;" class="tag -8">C++</a> <a href="/tags/COW/" style="font-size: 12px;" class="tag -0">COW</a> <a href="/tags/Ceph/" style="font-size: 12px;" class="tag -0">Ceph</a> <a href="/tags/ChatGPT/" style="font-size: 16px;" class="tag -3">ChatGPT</a> <a href="/tags/DP/" style="font-size: 12px;" class="tag -0">DP</a> <a href="/tags/DPDK/" style="font-size: 12px;" class="tag -0">DPDK</a> <a href="/tags/Difference-Array/" style="font-size: 12px;" class="tag -0">Difference Array</a> <a href="/tags/Docker/" style="font-size: 14px;" class="tag -2">Docker</a> <a href="/tags/DuckDB/" style="font-size: 12px;" class="tag -0">DuckDB</a> <a href="/tags/EX4/" style="font-size: 12px;" class="tag -0">EX4</a> <a href="/tags/Embedding/" style="font-size: 12px;" class="tag -0">Embedding</a> <a href="/tags/File-System/" style="font-size: 12px;" class="tag -0">File System</a> <a href="/tags/GitHub/" style="font-size: 12px;" class="tag -0">GitHub</a> <a href="/tags/Golang/" style="font-size: 12px;" class="tag -0">Golang</a> <a href="/tags/Graph/" style="font-size: 12px;" class="tag -0">Graph</a> <a href="/tags/Halo/" style="font-size: 12px;" class="tag -0">Halo</a> <a href="/tags/Hexo/" style="font-size: 12px;" class="tag -0">Hexo</a> <a href="/tags/IP/" style="font-size: 12px;" class="tag -0">IP</a> <a href="/tags/JWT/" style="font-size: 12px;" class="tag -0">JWT</a> <a href="/tags/Kubernetes/" style="font-size: 12px;" class="tag -0">Kubernetes</a> <a href="/tags/LeetCode/" style="font-size: 24px;" class="tag -10">LeetCode</a> <a href="/tags/LinkList/" style="font-size: 12px;" class="tag -0">LinkList</a> <a href="/tags/Linux/" style="font-size: 20px;" class="tag -7">Linux</a> <a href="/tags/Linux-Kernel/" style="font-size: 14px;" class="tag -2">Linux Kernel</a> <a href="/tags/Markdown/" style="font-size: 12px;" class="tag -0">Markdown</a> <a href="/tags/Modulo/" style="font-size: 12px;" class="tag -0">Modulo</a> <a href="/tags/Monotonic-Stack/" style="font-size: 12px;" class="tag -0">Monotonic Stack</a> <a href="/tags/NAT/" style="font-size: 12px;" class="tag -0">NAT</a> <a href="/tags/NVM/" style="font-size: 14px;" class="tag -2">NVM</a> <a href="/tags/Optane-DIMMs/" style="font-size: 12px;" class="tag -0">Optane DIMMs</a> <a href="/tags/PMDK/" style="font-size: 14px;" class="tag -2">PMDK</a> <a href="/tags/POSIX/" style="font-size: 12px;" class="tag -0">POSIX</a> <a href="/tags/Page-Cache/" style="font-size: 12px;" class="tag -0">Page Cache</a> <a href="/tags/Paxos/" style="font-size: 14px;" class="tag -2">Paxos</a> <a href="/tags/Python/" style="font-size: 12px;" class="tag -0">Python</a> <a href="/tags/RAID/" style="font-size: 12px;" class="tag -0">RAID</a> <a href="/tags/Raft/" style="font-size: 14px;" class="tag -2">Raft</a> <a href="/tags/SSD/" style="font-size: 12px;" class="tag -0">SSD</a> <a href="/tags/STL/" style="font-size: 12px;" class="tag -0">STL</a> <a href="/tags/Search/" style="font-size: 12px;" class="tag -0">Search</a> <a href="/tags/Self-Attention/" style="font-size: 14px;" class="tag -2">Self-Attention</a> <a href="/tags/Sieve-of-Prime-Number/" style="font-size: 12px;" class="tag -0">Sieve of Prime Number</a> <a href="/tags/Stellar/" style="font-size: 12px;" class="tag -0">Stellar</a> <a href="/tags/Storage/" style="font-size: 12px;" class="tag -0">Storage</a> <a href="/tags/Sunny-Ngrok/" style="font-size: 12px;" class="tag -0">Sunny-Ngrok</a> <a href="/tags/Syscall/" style="font-size: 12px;" class="tag -0">Syscall</a> <a href="/tags/Tokenizer/" style="font-size: 12px;" class="tag -0">Tokenizer</a> <a href="/tags/Transformer/" style="font-size: 14px;" class="tag -2">Transformer</a> <a href="/tags/Tree/" style="font-size: 16px;" class="tag -3">Tree</a> <a href="/tags/Trie/" style="font-size: 12px;" class="tag -0">Trie</a> <a href="/tags/UCloud/" style="font-size: 12px;" class="tag -0">UCloud</a> <a href="/tags/Union-Search/" style="font-size: 12px;" class="tag -0">Union Search</a> <a href="/tags/VFS/" style="font-size: 14px;" class="tag -2">VFS</a> <a href="/tags/Vector/" style="font-size: 12px;" class="tag -0">Vector</a> <a href="/tags/WAL/" style="font-size: 12px;" class="tag -0">WAL</a> <a href="/tags/Zero-Copy/" style="font-size: 12px;" class="tag -0">Zero Copy</a> <a href="/tags/builtin/" style="font-size: 12px;" class="tag -0">__builtin</a> <a href="/tags/df/" style="font-size: 12px;" class="tag -0">df</a> <a href="/tags/du/" style="font-size: 12px;" class="tag -0">du</a> <a href="/tags/fdisk/" style="font-size: 12px;" class="tag -0">fdisk</a> <a href="/tags/fio/" style="font-size: 12px;" class="tag -0">fio</a> <a href="/tags/fsck/" style="font-size: 12px;" class="tag -0">fsck</a> <a href="/tags/fstab/" style="font-size: 14px;" class="tag -2">fstab</a> <a href="/tags/g/" style="font-size: 12px;" class="tag -0">g++</a> <a href="/tags/gcc/" style="font-size: 12px;" class="tag -0">gcc</a> <a href="/tags/gdb/" style="font-size: 12px;" class="tag -0">gdb</a> <a href="/tags/git/" style="font-size: 16px;" class="tag -3">git</a> <a href="/tags/grub/" style="font-size: 12px;" class="tag -0">grub</a> <a href="/tags/iostat/" style="font-size: 12px;" class="tag -0">iostat</a> <a href="/tags/libpmemobj/" style="font-size: 12px;" class="tag -0">libpmemobj</a> <a href="/tags/lsblk/" style="font-size: 12px;" class="tag -0">lsblk</a> <a href="/tags/mdadm/" style="font-size: 12px;" class="tag -0">mdadm</a> <a href="/tags/mkfs/" style="font-size: 12px;" class="tag -0">mkfs</a> <a href="/tags/mmaloc/" style="font-size: 12px;" class="tag -0">mmaloc</a> <a href="/tags/mmap/" style="font-size: 16px;" class="tag -3">mmap</a> <a href="/tags/mount/" style="font-size: 14px;" class="tag -2">mount</a> <a href="/tags/move/" style="font-size: 12px;" class="tag -0">move</a> <a href="/tags/qpow/" style="font-size: 12px;" class="tag -0">qpow</a> <a href="/tags/ranges/" style="font-size: 12px;" class="tag -0">ranges</a> <a href="/tags/read/" style="font-size: 14px;" class="tag -2">read</a> <a href="/tags/smartctl/" style="font-size: 12px;" class="tag -0">smartctl</a> <a href="/tags/token/" style="font-size: 12px;" class="tag -0">token</a> <a href="/tags/trace/" style="font-size: 12px;" class="tag -0">trace</a> <a href="/tags/wipefs/" style="font-size: 12px;" class="tag -0">wipefs</a> <a href="/tags/write/" style="font-size: 14px;" class="tag -2">write</a> <a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" style="font-size: 12px;" class="tag -0">内网穿透</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/" style="font-size: 18px;" class="tag -5">分布式系统</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 14px;" class="tag -2">博客</a> <a href="/tags/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/" style="font-size: 12px;" class="tag -0">反向代理</a> <a href="/tags/%E5%AE%89%E5%85%A8/" style="font-size: 12px;" class="tag -0">安全</a> <a href="/tags/%E5%B4%A9%E6%BA%83%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 12px;" class="tag -0">崩溃一致性</a> <a href="/tags/%E5%B9%82%E7%AD%89%E6%80%A7/" style="font-size: 12px;" class="tag -0">幂等性</a> <a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/" style="font-size: 18px;" class="tag -5">年终总结</a> <a href="/tags/%E6%8B%9C%E5%8D%A0%E5%BA%AD/" style="font-size: 12px;" class="tag -0">拜占庭</a> <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 14px;" class="tag -2">排序</a> <a href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" style="font-size: 12px;" class="tag -0">服务器</a> <a href="/tags/%E6%9C%AA%E6%9D%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%B9%B8%E5%AD%98%E8%80%85/" style="font-size: 12px;" class="tag -0">未来世界的幸存者</a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Wu-yikun" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418811.svg"></a><a class="social" href="https://leetcode.cn/u/wu-yikun/" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419535.svg"></a><a class="social" href="https://juejin.cn/user/1654082381026734" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419245.svg"></a><a class="social" href="https://www.zhihu.com/people/JayChou" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419020.svg"></a><a class="social" href="https://music.163.com/#/user/home?id=1479129382" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419025.svg"></a><a class="social" href="https://space.bilibili.com/441384986?spm_id_from=333.1007.0.0" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418494.svg"></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140508596.png">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/ART/">ART</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/DuckDB/">DuckDB</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Trie/">Trie</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-03-13T16:00:00.000Z">2025-03-14</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-05-13T19:47:56.229Z">2025-05-14</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>DuckDB 的 Adaptive Radix Tree 源码分析</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>ART 索引是由 Viktor Leis, Alfons Kemper, Thomas Neumann 等人提出，它相比于 B+ 树的主要区别在于 B+ 树是面向磁盘的，而 ART 则是面向内存的，即 ART 索引是需要全部加载到内存中。</p>
+<span id="more"></span>
+
+<p>DuckDB 不同于其他数据库，并没有使用 B+ 树作为主要索引结构，而是使用 ART (Adaptive Radix Tree) 作为它内部的主要索引结构，本文介绍这一索引。</p>
+<h2 id="ART-Adaptive-Radix-Tree"><a href="#ART-Adaptive-Radix-Tree" class="headerlink" title="ART (Adaptive Radix Tree)"></a>ART (Adaptive Radix Tree)</h2><p><a target="_blank" rel="noopener" href="https://db.in.tum.de/~leis/papers/ART.pdf">ART <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 索引是由 Viktor Leis, Alfons Kemper, Thomas Neumann 等人提出，它相比于 B+ 树的主要区别在于 <strong>B+ 树是面向磁盘的，而 ART 则是面向内存的</strong>，即 ART 索引是需要全部加载到内存中的。DuckDB 之所以选择这个索引有以下几方面的考虑：</p>
+<ol>
+<li>随着内存越来越大，并且价格也越来越便宜，我们可以使用纯内存的索引，从而避免磁盘 IO，提升性能</li>
+<li>ART 索引可以很大程度上节省空间</li>
+<li>ART 索引支持范围查询</li>
+<li>ART 索引有着较高的性能</li>
+</ol>
+<p>后续本文会先介绍 ART 这一数据结构，然后配合着 DuckDB 的代码描述 ART 是如何实现的。</p>
+<h2 id="Trie-数据结构"><a href="#Trie-数据结构" class="headerlink" title="Trie 数据结构"></a>Trie 数据结构</h2><p>在讲 ART 索引之前，我们先看一下 Trie 树🌲</p>
+<p>如果你不知道 Trie 树，可以参考 Wikipedia：<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Trie">https://en.wikipedia.org/wiki/Trie <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+<p>✅ LeetCode 上也有「<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/implement-trie-prefix-tree/description/?envType=study-plan-v2&amp;envId=top-100-liked">206. 实现 Trie（前缀树） <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>」算法题可供参考：</p>
+<ul>
+<li>请你实现 Trie 类：<ul>
+<li><code>Trie()</code> 初始化前缀树对象。</li>
+<li><code>void insert(String word)</code> 向前缀树中插入字符串 <code>word</code> 。</li>
+<li><code>boolean search(String word)</code> 如果字符串 <code>word</code> 在前缀树中，返回 <code>true</code>（即，在检索之前已经插入）；否则，返回 <code>false</code> 。</li>
+<li><code>boolean startsWith(String prefix)</code> 如果之前已经插入的字符串 <code>word</code> 的前缀之一为 <code>prefix</code> ，返回 <code>true</code> ；否则，返回 <code>false</code> 。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>假设字符串里面只有 a 和 b 两种字符。</p>
+<p><code>insert</code>：例如插入字符串 aab，相当于生成了一条移动方向为「左-左-右」的路径。标记最后一个节点为终止节点。再插入字符串 aabb，相当于生成了一条移动方向为「左-左-右-右」的路径。标记最后一个节点为终止节点。</p>
+<p><code>search</code>：例如查找字符串 aab，相当于查找二叉树中是否存在一条移动方向为「左-左-右」的路径，且最后一个节点是终止节点。</p>
+<p><code>startsWith</code>：例如查找前缀 aa，相当于查找二叉树中是否存在一条移动方向为「左-左」的路径，无其他要求。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140324466.png" alt="lc208.png"></p>
+<p>推广到 26 种字母，其实就是一棵 26 叉树，对于 26 叉树的每个节点，可以用哈希表，或者长为 26 的数组来存储子节点。</p>
+</blockquote>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Node</span> {</span><br><span class="line">    Node* son[<span class="number">26</span>]{};</span><br><span class="line">    <span class="type">bool</span> end = <span class="literal">false</span>;</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Trie</span> {</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Node* root = <span class="keyword">new</span> <span class="built_in">Node</span>();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">find</span><span class="params">(string word)</span> </span>{</span><br><span class="line">        Node* cur = root;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">char</span> c : word) {</span><br><span class="line">            c -= <span class="string">'a'</span>;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;son[c] == <span class="literal">nullptr</span>) {</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>; <span class="comment">// not found</span></span><br><span class="line">            }</span><br><span class="line">            cur = cur-&gt;son[c];</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> cur-&gt;end ? <span class="number">2</span> : <span class="number">1</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Trie</span>() {}</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">insert</span><span class="params">(string word)</span> </span>{</span><br><span class="line">        Node* cur = root;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">char</span> c : word) {</span><br><span class="line">            c -= <span class="string">'a'</span>;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;son[c] == <span class="literal">nullptr</span>) {</span><br><span class="line">                cur-&gt;son[c] = <span class="keyword">new</span> <span class="built_in">Node</span>();</span><br><span class="line">            }</span><br><span class="line">            cur = cur-&gt;son[c];</span><br><span class="line">        }</span><br><span class="line">        cur-&gt;end = <span class="literal">true</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">search</span><span class="params">(string word)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">find</span>(word) == <span class="number">2</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">startsWith</span><span class="params">(string prefix)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">find</span>(prefix) != <span class="number">0</span>;</span><br><span class="line">    }</span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140324242.png" alt="img"></p>
+<p>我们可以看到 Trie 树在检索时的优点是，它的检索时间仅与最长的字符串长度有关，而与存储的字符数量无关，这一特性在数据量极大的情况下十分优秀，但是它的缺点是浪费空间，即<strong>每个内部节点都需要保存固定数量的指针，即使它仅有极少的子节点</strong>。</p>
+<p>比如图中的 root 节点，尽管它只有三个子节点，但是它仍然需要保存指向 <code>a,b,c,d,e...</code> 的空指针，这十分浪费空间，其次 Trie 树仅支持保存字符串。</p>
+<p>ART 则是在 Trie 树的基础上，解决了它缺点的同时，保留了它的优点，下面来介绍 ART 索引。</p>
+<p>对于一个索引而言，我们希望它有以下两个特点：</p>
+<ol>
+<li>查询速度快</li>
+<li>空间占用小</li>
+</ol>
+<p>但是如果我们使用 Trie 树做索引（ART 是 Trie 的一个变种），我们就要面临取舍：</p>
+<ul>
+<li>如果内部节点拥有的最大子节点越多（空间占据越多），那么它的高度也越低（速度越快）</li>
+<li>如果内部节点拥有的最大子节点越少（空间占据越少），那么它的高度也越高（速度越慢）</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140334359.png" alt="img"></p>
+<p>ART 树选择每个内部节点的大小为 8bit（子节点的数量为 256），刚好是一个 <code>Byte</code>。这样的好处是<strong>免去了内存对齐的问题，同时在空间与速度上取得了一个较好的平衡</strong>，我们称内部节点所占据的位宽为 <code>span</code>。</p>
+<p>尽管如此，面对稀疏的数据时，每个节点有 256 个子节点仍然会浪费空间，为了解决这个问题，ART 将内部节点进一步细分为以下四类，我们分别来对其进行介绍：</p>
+<ul>
+<li>Node 4</li>
+<li>Node 16</li>
+<li>Node 48</li>
+<li>Node 256</li>
+</ul>
+<h3 id="Node-4"><a href="#Node-4" class="headerlink" title="Node 4"></a>Node 4</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140354857.png" alt="img"></p>
+<p>从图中可以看出，Node 4 分为两个部分，一个是 <code>key</code> 数组，一个是 <code>child</code> 数组。</p>
+<ul>
+<li><code>key</code> 数组存放 key 的部分内容（也就是 key 的一个 Byte）</li>
+<li><code>child</code> 数组则是保存对应的子节点的指针</li>
+</ul>
+<p>注意，我们为了可以范围查询，key 数组要求顺序存储。</p>
+<h3 id="Node-16"><a href="#Node-16" class="headerlink" title="Node 16"></a>Node 16</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140353397.png" alt="img"></p>
+<p>Node 16 和 Node 4 几乎一样，区别只是从 4 个 <code>slot</code> 变成 16 个 <code>slot</code>。</p>
+<h3 id="Node-48"><a href="#Node-48" class="headerlink" title="Node 48"></a>Node 48</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140401476.png" alt="img"></p>
+<p>Node 48 和之前介绍的 Node 一样也是分为 <code>key</code> 数组和 <code>child</code> 数组，区别在于 Node 48 的 <code>key</code> 数组长度为 256，且<strong>内部 <code>key slot</code> 存放的是指针，指向对应子节点在 child 数组中的位置</strong>，这样我们就无需通过遍历找到对应的数组，而是可以直接通过 key 的二进制值作为下标直接定位到对应的 <code>key slot</code>。</p>
+<p>实际查询仅需要 <code>child_array[key_array[key]]</code> 即可。</p>
+<h3 id="Node-256"><a href="#Node-256" class="headerlink" title="Node 256"></a>Node 256</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140401135.png" alt="img"></p>
+<p><strong>Node 256 就是「Trie 树」原始的内部节点表示形式，仅需要一个数组</strong>，数组的下标即为 key，<strong>数组中存放的就是子节点的指针</strong>。</p>
+<p>各种不同类型的 Node 可以相互转换，如果子节点数量超过限制容量就向上转换，如果节点数量相较于限制容量太小就向下转换。</p>
+<h3 id="Leaf"><a href="#Leaf" class="headerlink" title="Leaf"></a>Leaf</h3><p><strong>ART 中的叶节点存放的就是 Key 对应的 Value 值</strong>，ART 的叶节点可以采用三种形式：</p>
+<ol>
+<li>单独有一个叶节点类型专门保存 Value</li>
+<li>和中间节点保持一致的类型，唯一区别则是 child 数组不保存指针而是保存值</li>
+<li>如果值足够小可以通过位操作和指针一起保存，那么我们可以将值直接存放在内部节点中</li>
+</ol>
+<p>🔥 <strong>DuckDB 采用的是第一种方式</strong>。</p>
+<h3 id="Optimization"><a href="#Optimization" class="headerlink" title="Optimization"></a>Optimization</h3><p>在解决了 ART 的空间问题，我们希望可以<strong>进一步优化查询速度</strong>，即减少树的高度。</p>
+<blockquote>
+<p>论文链接：<a target="_blank" rel="noopener" href="https://db.in.tum.de/~leis/papers/ART.pdf">https://db.in.tum.de/~leis/papers/ART.pdf <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+</blockquote>
+<p>论文中有两种方式，但实际上我们可以通过一种简单的做法同时获得这两种优化，<strong>每个节点加上 Prefix 标识</strong>。</p>
+<h4 id="1-Lazy-Expansion"><a href="#1-Lazy-Expansion" class="headerlink" title="1. Lazy Expansion"></a>1. Lazy Expansion</h4><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140409919.png" alt="img"></p>
+<p>其实这个优化相当简单，我们只需 <code>Leaf</code> 可以保存多个 byte 即可，这样子对于多个只有一个子节点的路径来说，我们可以将其都保存在 <code>Leaf</code> 中，从而减少树的高度。</p>
+<h4 id="2-Path-Compression"><a href="#2-Path-Compression" class="headerlink" title="2. Path Compression"></a>2. Path Compression</h4><p>这个优化和 Lazy Expansion 类似，我们只需让 <code>内部节点</code> 可以保存多个 byte 即可。即如果内部节点有相同的前缀，我们可以将其保存在 Prefix 中，<code>key</code> 数组仅仅只对 key 不同的部分作区分。这样也可以有效地减少树的高度。</p>
+<p>如果这里没看懂也没关系，后续我会分析 DuckDB 的代码，那样会更加清晰。</p>
+<h3 id="数据转换"><a href="#数据转换" class="headerlink" title="数据转换"></a>数据转换</h3><p>对于 ART 来说，前面介绍的都是对于字符串类型 <code>string</code>，如果作为一个广泛使用的索引，也需要支持不同类型的数据。而 ART 索引实际上是把 <code>Key</code> 作为数据流进行处理的，也就是说如果想要通过 ART 进行范围搜索，我们需要让 <code>Key</code> 保持一个性质，<strong>即二进制的大小与该类型的语义大小相同</strong>：<br>$$<br>memcmp(binary(x),binary(y)) &lt; 0 \Leftrightarrow x &lt; y \<br>memcmp(binary(x),binary(y)) = 0 \Leftrightarrow x = y \<br>memcmp(binary(x),binary(y)) &gt; 0 \Leftrightarrow x &gt; y<br>$$<br>因此我们需要对某些数字进行转换。</p>
+<h4 id="unsigned-int"><a href="#unsigned-int" class="headerlink" title="unsigned int"></a>unsigned int</h4><p>无需转化，已经满足需求。</p>
+<h4 id="signed-int"><a href="#signed-int" class="headerlink" title="signed int"></a>signed int</h4><p>将符号为 <code>flip</code> 即可。</p>
+<h4 id="float"><a href="#float" class="headerlink" title="float"></a>float</h4><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">uint32_t</span> <span class="title">EncodeFloat</span><span class="params">(<span class="type">float</span> x)</span> </span>{</span><br><span class="line">	<span class="type">uint64_t</span> buff;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//! zero</span></span><br><span class="line">	<span class="keyword">if</span> (x == <span class="number">0</span>) {</span><br><span class="line">		buff = <span class="number">0</span>;</span><br><span class="line">		buff |= (<span class="number">1u</span> &lt;&lt; <span class="number">31</span>);</span><br><span class="line">		<span class="keyword">return</span> buff;</span><br><span class="line">	}</span><br><span class="line">	<span class="comment">// nan</span></span><br><span class="line">	<span class="keyword">if</span> (Value::<span class="built_in">IsNan</span>(x)) {</span><br><span class="line">		<span class="keyword">return</span> UINT_MAX;</span><br><span class="line">	}</span><br><span class="line">	<span class="comment">//! infinity</span></span><br><span class="line">	<span class="keyword">if</span> (x &gt; FLT_MAX) {</span><br><span class="line">		<span class="keyword">return</span> UINT_MAX - <span class="number">1</span>;</span><br><span class="line">	}</span><br><span class="line">	<span class="comment">//! -infinity</span></span><br><span class="line">	<span class="keyword">if</span> (x &lt; -FLT_MAX) {</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	}</span><br><span class="line">	buff = <span class="built_in">Load</span>&lt;<span class="type">uint32_t</span>&gt;(<span class="built_in">const_data_ptr_cast</span>(&amp;x));</span><br><span class="line">	<span class="keyword">if</span> ((buff &amp; (<span class="number">1u</span> &lt;&lt; <span class="number">31</span>)) == <span class="number">0</span>) { <span class="comment">//! +0 and positive numbers</span></span><br><span class="line">		buff |= (<span class="number">1u</span> &lt;&lt; <span class="number">31</span>);</span><br><span class="line">	} <span class="keyword">else</span> {          <span class="comment">//! negative numbers</span></span><br><span class="line">		buff = ~buff; <span class="comment">//! complement 1</span></span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> buff;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="char"><a href="#char" class="headerlink" title="char"></a>char</h4><p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Unicode_collation_algorithm">UCA 算法 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>已经做出了定义。</p>
+<blockquote>
+<p><strong>Unicode Collation Algorithm</strong> (UCA) 是 Unicode 规定的如何比较两个字符串大小的算法。</p>
+</blockquote>
+<h4 id="null"><a href="#null" class="headerlink" title="null"></a>null</h4><p>可以将该值设置为比最大位数仍多 1 位。</p>
+<h4 id="compound-keys"><a href="#compound-keys" class="headerlink" title="compound keys"></a>compound keys</h4><p>按照其包含的基本类型进行拼接即可。</p>
+<h2 id="DuckDB-源码分析"><a href="#DuckDB-源码分析" class="headerlink" title="DuckDB 源码分析"></a>DuckDB 源码分析</h2><blockquote>
+<p>DuckDB 代码链接：<a target="_blank" rel="noopener" href="https://github.com/duckdb/duckdb/tree/main/src/execution/index/art">https://github.com/duckdb/duckdb/tree/main/src/execution/index/art <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+<p>其他参考：</p>
+<ul>
+<li>论文<ul>
+<li>《The Adaptive Radix Tree: ARTful Indexing for Main-Memory Databases》</li>
+<li>《SMART: A High-Performance Adaptive Radix Tree for Disaggregated Memory》</li>
+</ul>
+</li>
+<li>相关代码<ul>
+<li>[<code>cpp</code>] ART：<a target="_blank" rel="noopener" href="https://github.com/rafaelkallis/adaptive-radix-tree">https://github.com/rafaelkallis/adaptive-radix-tree <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></li>
+<li>[<code>golang</code>] ART：<a target="_blank" rel="noopener" href="https://github.com/plar/go-adaptive-radix-tree">https://github.com/plar/go-adaptive-radix-tree <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>这一章通过阅读 DuckDB 的源码，来看一下 ART 索引的实现。</p>
+<p>ART 索引的相关实现都在 <code>art.cpp</code> 和 <code>art.hpp</code>，我们主要关注 <code>Insert</code> 和 <code>Find</code>，其他函数留给读者自行了解。</p>
+<h3 id="Insert"><a href="#Insert" class="headerlink" title="Insert"></a>Insert</h3><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ART::Insert</span><span class="params">(Node &amp;node, <span class="type">const</span> ARTKey &amp;key, <span class="type">idx_t</span> depth, <span class="type">const</span> <span class="type">row_t</span> &amp;row_id)</span> </span>{</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!node.<span class="built_in">IsSet</span>()) {</span><br><span class="line">		<span class="comment">// node is currently empty, create a leaf here with the key</span></span><br><span class="line">		Leaf::<span class="built_in">New</span>(*<span class="keyword">this</span>, node, key, depth, row_id);</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (node.<span class="built_in">DecodeARTNodeType</span>() == NType::LEAF) {</span><br><span class="line"></span><br><span class="line">		<span class="comment">// add a row ID to a leaf, if they have the same key</span></span><br><span class="line">		<span class="keyword">auto</span> &amp;leaf = Leaf::<span class="built_in">Get</span>(*<span class="keyword">this</span>, node);</span><br><span class="line">		<span class="keyword">auto</span> mismatch_position = leaf.prefix.<span class="built_in">KeyMismatchPosition</span>(*<span class="keyword">this</span>, key, depth);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// identical equal</span></span><br><span class="line">		<span class="keyword">if</span> (mismatch_position == leaf.prefix.count &amp;&amp; depth + leaf.prefix.count == key.len) {</span><br><span class="line">			<span class="keyword">return</span> <span class="built_in">InsertToLeaf</span>(node, row_id);</span><br><span class="line">		}</span><br><span class="line"></span><br><span class="line">		<span class="comment">// example:</span></span><br><span class="line">		<span class="comment">// prefix : hello</span></span><br><span class="line">		<span class="comment">// key[depth] : heel;</span></span><br><span class="line">		<span class="comment">// mismatch_position = 2</span></span><br><span class="line">		<span class="comment">// replace leaf with Node4 and store both leaves in it</span></span><br><span class="line">		<span class="keyword">auto</span> old_node = node;</span><br><span class="line">		<span class="keyword">auto</span> &amp;new_n4 = Node4::<span class="built_in">New</span>(*<span class="keyword">this</span>, node);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// new prefix</span></span><br><span class="line">		<span class="comment">// new_n4's prefix is he</span></span><br><span class="line">		new_n<span class="number">4.</span>prefix.<span class="built_in">Initialize</span>(*<span class="keyword">this</span>, key, depth, mismatch_position);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// old_node's prefix change to llo</span></span><br><span class="line">		<span class="keyword">auto</span> key_byte = old_node.<span class="built_in">GetPrefix</span>(*<span class="keyword">this</span>).<span class="built_in">Reduce</span>(*<span class="keyword">this</span>, mismatch_position);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// add child</span></span><br><span class="line">		Node4::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key_byte, old_node);</span><br><span class="line"></span><br><span class="line">		Node leaf_node;</span><br><span class="line">		Leaf::<span class="built_in">New</span>(*<span class="keyword">this</span>, leaf_node, key, depth + mismatch_position + <span class="number">1</span>, row_id);</span><br><span class="line">		<span class="comment">// add child</span></span><br><span class="line">		Node4::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key[depth + mismatch_position], leaf_node);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="comment">// handle prefix of inner node</span></span><br><span class="line">	<span class="keyword">auto</span> &amp;old_node_prefix = node.<span class="built_in">GetPrefix</span>(*<span class="keyword">this</span>);</span><br><span class="line">	<span class="keyword">if</span> (old_node_prefix.count) {</span><br><span class="line"></span><br><span class="line">		<span class="keyword">auto</span> mismatch_position = old_node_prefix.<span class="built_in">KeyMismatchPosition</span>(*<span class="keyword">this</span>, key, depth);</span><br><span class="line">		<span class="keyword">if</span> (mismatch_position != old_node_prefix.count) {</span><br><span class="line"></span><br><span class="line">			<span class="comment">// prefix differs, create new node</span></span><br><span class="line">			<span class="keyword">auto</span> old_node = node;</span><br><span class="line">			<span class="keyword">auto</span> &amp;new_n4 = Node4::<span class="built_in">New</span>(*<span class="keyword">this</span>, node);</span><br><span class="line">			new_n<span class="number">4.</span>prefix.<span class="built_in">Initialize</span>(*<span class="keyword">this</span>, key, depth, mismatch_position);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">auto</span> key_byte = old_node_prefix.<span class="built_in">Reduce</span>(*<span class="keyword">this</span>, mismatch_position);</span><br><span class="line">			Node4::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key_byte, old_node);</span><br><span class="line"></span><br><span class="line">			Node leaf_node;</span><br><span class="line">			Leaf::<span class="built_in">New</span>(*<span class="keyword">this</span>, leaf_node, key, depth + mismatch_position + <span class="number">1</span>, row_id);</span><br><span class="line">			Node4::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key[depth + mismatch_position], leaf_node);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">		}</span><br><span class="line">		depth += node.<span class="built_in">GetPrefix</span>(*<span class="keyword">this</span>).count;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="comment">// recurse</span></span><br><span class="line">	<span class="built_in">D_ASSERT</span>(depth &lt; key.len);</span><br><span class="line">	<span class="keyword">auto</span> child = node.<span class="built_in">GetChild</span>(*<span class="keyword">this</span>, key[depth]);</span><br><span class="line">	<span class="keyword">if</span> (child) {</span><br><span class="line">		<span class="type">bool</span> success = <span class="built_in">Insert</span>(*child, key, depth + <span class="number">1</span>, row_id);</span><br><span class="line">		node.<span class="built_in">ReplaceChild</span>(*<span class="keyword">this</span>, key[depth], *child);</span><br><span class="line">		<span class="keyword">return</span> success;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="comment">// insert at position</span></span><br><span class="line">	Node leaf_node;</span><br><span class="line">	Leaf::<span class="built_in">New</span>(*<span class="keyword">this</span>, leaf_node, key, depth + <span class="number">1</span>, row_id);</span><br><span class="line">	Node::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key[depth], leaf_node);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>参数含义：</p>
+<ul>
+<li><code>node</code> 即为当前要进行插入的节点</li>
+<li><code>key</code> 即为要插入的 key</li>
+<li><code>depth</code>：即当前已经处理到 key 的第几个 byte，举个例子，key 为 <code>hello</code>，depth 为 3，那么说明 <code>he</code> 已经保存在了 node 的祖先节点中，我们当前要处理的是 <code>l</code></li>
+<li><code>row_id</code> 即为 key 对应的 value 值</li>
+</ul>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ART::Insert</span><span class="params">(Node &amp;node, <span class="type">const</span> ARTKey &amp;key, <span class="type">idx_t</span> depth, <span class="type">const</span> <span class="type">row_t</span> &amp;row_id)</span> </span>{</span><br><span class="line">	<span class="keyword">if</span> (!node.<span class="built_in">IsSet</span>()) {</span><br><span class="line">		<span class="comment">// node is currently empty, create a leaf here with the key</span></span><br><span class="line">		Leaf::<span class="built_in">New</span>(*<span class="keyword">this</span>, node, key, depth, row_id);</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	}</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>如果当前节点为空，那么直接设置该节点为叶节点，并且将 <code>row_id</code> 进行保存，注意这里我们会使用 <code>lazy-expansion</code>，即将 key 剩余未处理的字符全部保存在叶节点中。</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ART::Insert</span><span class="params">(Node &amp;node, <span class="type">const</span> ARTKey &amp;key, <span class="type">idx_t</span> depth, <span class="type">const</span> <span class="type">row_t</span> &amp;row_id)</span> </span>{</span><br><span class="line"></span><br><span class="line">	<span class="comment">// .... skip</span></span><br><span class="line">	<span class="keyword">if</span> (node.<span class="built_in">DecodeARTNodeType</span>() == NType::LEAF) {</span><br><span class="line"></span><br><span class="line">		<span class="comment">// add a row ID to a leaf, if they have the same key</span></span><br><span class="line">		<span class="keyword">auto</span> &amp;leaf = Leaf::<span class="built_in">Get</span>(*<span class="keyword">this</span>, node);</span><br><span class="line">		<span class="keyword">auto</span> mismatch_position = leaf.prefix.<span class="built_in">KeyMismatchPosition</span>(*<span class="keyword">this</span>, key, depth);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// identical equal</span></span><br><span class="line">		<span class="keyword">if</span> (mismatch_position == leaf.prefix.count &amp;&amp; depth + leaf.prefix.count == key.len) {</span><br><span class="line">			<span class="keyword">return</span> <span class="built_in">InsertToLeaf</span>(node, row_id);</span><br><span class="line">		}</span><br><span class="line"></span><br><span class="line">		<span class="comment">// example:</span></span><br><span class="line">		<span class="comment">// prefix : hello</span></span><br><span class="line">		<span class="comment">// key[depth] : heel;</span></span><br><span class="line">		<span class="comment">// mismatch_position = 2</span></span><br><span class="line">		<span class="comment">// replace leaf with Node4 and store both leaves in it</span></span><br><span class="line">		<span class="keyword">auto</span> old_node = node;</span><br><span class="line">		<span class="keyword">auto</span> &amp;new_n4 = Node4::<span class="built_in">New</span>(*<span class="keyword">this</span>, node);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// new prefix</span></span><br><span class="line">		<span class="comment">// new_n4's prefix is he</span></span><br><span class="line">		new_n<span class="number">4.</span>prefix.<span class="built_in">Initialize</span>(*<span class="keyword">this</span>, key, depth, mismatch_position);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// old_node's prefix change to llo</span></span><br><span class="line">		<span class="keyword">auto</span> key_byte = old_node.<span class="built_in">GetPrefix</span>(*<span class="keyword">this</span>).<span class="built_in">Reduce</span>(*<span class="keyword">this</span>, mismatch_position);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// add child</span></span><br><span class="line">		Node4::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key_byte, old_node);</span><br><span class="line"></span><br><span class="line">		Node leaf_node;</span><br><span class="line">		Leaf::<span class="built_in">New</span>(*<span class="keyword">this</span>, leaf_node, key, depth + mismatch_position + <span class="number">1</span>, row_id);</span><br><span class="line">		<span class="comment">// add child</span></span><br><span class="line">		Node4::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key[depth + mismatch_position], leaf_node);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	}</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//skip....</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>如果当前遇到的是叶节点，同时 key 完全相同，那么我们可以直接将 <code>row_id</code> 插入叶节点中。不然的话，我们需要将叶节点变成内部节点，同时将不同的部分作为该内部节点的叶节点，如下图所示。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140429649.png" alt="img"></p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ART::Insert</span><span class="params">(Node &amp;node, <span class="type">const</span> ARTKey &amp;key, <span class="type">idx_t</span> depth, <span class="type">const</span> <span class="type">row_t</span> &amp;row_id)</span> </span>{</span><br><span class="line"></span><br><span class="line">	<span class="comment">// skip ....</span></span><br><span class="line">	<span class="comment">// handle prefix of inner node</span></span><br><span class="line">	<span class="keyword">auto</span> &amp;old_node_prefix = node.<span class="built_in">GetPrefix</span>(*<span class="keyword">this</span>);</span><br><span class="line">	<span class="keyword">if</span> (old_node_prefix.count) {</span><br><span class="line"></span><br><span class="line">		<span class="keyword">auto</span> mismatch_position = old_node_prefix.<span class="built_in">KeyMismatchPosition</span>(*<span class="keyword">this</span>, key, depth);</span><br><span class="line">		<span class="keyword">if</span> (mismatch_position != old_node_prefix.count) {</span><br><span class="line"></span><br><span class="line">			<span class="comment">// prefix differs, create new node</span></span><br><span class="line">			<span class="keyword">auto</span> old_node = node;</span><br><span class="line">			<span class="keyword">auto</span> &amp;new_n4 = Node4::<span class="built_in">New</span>(*<span class="keyword">this</span>, node);</span><br><span class="line">			new_n<span class="number">4.</span>prefix.<span class="built_in">Initialize</span>(*<span class="keyword">this</span>, key, depth, mismatch_position);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">auto</span> key_byte = old_node_prefix.<span class="built_in">Reduce</span>(*<span class="keyword">this</span>, mismatch_position);</span><br><span class="line">			Node4::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key_byte, old_node);</span><br><span class="line"></span><br><span class="line">			Node leaf_node;</span><br><span class="line">			Leaf::<span class="built_in">New</span>(*<span class="keyword">this</span>, leaf_node, key, depth + mismatch_position + <span class="number">1</span>, row_id);</span><br><span class="line">			Node4::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key[depth + mismatch_position], leaf_node);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">		}</span><br><span class="line">		depth += node.<span class="built_in">GetPrefix</span>(*<span class="keyword">this</span>).count;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="comment">// recurse</span></span><br><span class="line">	<span class="built_in">D_ASSERT</span>(depth &lt; key.len);</span><br><span class="line">	<span class="keyword">auto</span> child = node.<span class="built_in">GetChild</span>(*<span class="keyword">this</span>, key[depth]);</span><br><span class="line">	<span class="keyword">if</span> (child) {</span><br><span class="line">		<span class="type">bool</span> success = <span class="built_in">Insert</span>(*child, key, depth + <span class="number">1</span>, row_id);</span><br><span class="line">		node.<span class="built_in">ReplaceChild</span>(*<span class="keyword">this</span>, key[depth], *child);</span><br><span class="line">		<span class="keyword">return</span> success;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="comment">// insert at position</span></span><br><span class="line">	Node leaf_node;</span><br><span class="line">	Leaf::<span class="built_in">New</span>(*<span class="keyword">this</span>, leaf_node, key, depth + <span class="number">1</span>, row_id);</span><br><span class="line">	Node::<span class="built_in">InsertChild</span>(*<span class="keyword">this</span>, node, key[depth], leaf_node);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>如果是内部节点，那我们需要讨论：</p>
+<ol>
+<li>如果前缀完全相同，即 “hello” 和 “hellopxxx”。那么我们仅需要找出子节点进行插入即可</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140432273.png" alt="img"></p>
+<ol start="2">
+<li>如果前缀有不同之处，即 “hello” 和 “helopxxx”。那么我们需要创建一个新的节点，并将两个节点作为子节点进行插入</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140434646.png" alt="img"></p>
+<p>可以看到我们只需要在内部节点和叶节点中支持存储多个字符后，便天然支持上述的优化方案。</p>
+<h3 id="Find"><a href="#Find" class="headerlink" title="Find"></a>Find</h3><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Node <span class="title">ART::Lookup</span><span class="params">(Node node, <span class="type">const</span> ARTKey &amp;key, <span class="type">idx_t</span> depth)</span> </span>{</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (node.<span class="built_in">IsSet</span>()) {</span><br><span class="line">		<span class="keyword">if</span> (node.<span class="built_in">DecodeARTNodeType</span>() == NType::LEAF) {</span><br><span class="line">			<span class="keyword">auto</span> &amp;leaf = Leaf::<span class="built_in">Get</span>(*<span class="keyword">this</span>, node);</span><br><span class="line"></span><br><span class="line">			<span class="comment">// check if leaf contains key</span></span><br><span class="line">			<span class="keyword">for</span> (<span class="type">idx_t</span> i = <span class="number">0</span>; i &lt; leaf.prefix.count; i++) {</span><br><span class="line">				<span class="keyword">if</span> (leaf.prefix.<span class="built_in">GetByte</span>(*<span class="keyword">this</span>, i) != key[i + depth]) {</span><br><span class="line">					<span class="keyword">return</span> <span class="built_in">Node</span>();</span><br><span class="line">				}</span><br><span class="line">			}</span><br><span class="line">			<span class="keyword">return</span> node;</span><br><span class="line">		}</span><br><span class="line">		<span class="keyword">auto</span> &amp;node_prefix = node.<span class="built_in">GetPrefix</span>(*<span class="keyword">this</span>);</span><br><span class="line">		<span class="keyword">if</span> (node_prefix.count) {</span><br><span class="line">			<span class="keyword">for</span> (<span class="type">idx_t</span> pos = <span class="number">0</span>; pos &lt; node_prefix.count; pos++) {</span><br><span class="line">				<span class="keyword">if</span> (key[depth + pos] != node_prefix.<span class="built_in">GetByte</span>(*<span class="keyword">this</span>, pos)) {</span><br><span class="line">					<span class="comment">// prefix mismatch, subtree of node does not contain key</span></span><br><span class="line">					<span class="keyword">return</span> <span class="built_in">Node</span>();</span><br><span class="line">				}</span><br><span class="line">			}</span><br><span class="line">			depth += node_prefix.count;</span><br><span class="line">		}</span><br><span class="line"></span><br><span class="line">		<span class="comment">// prefix matches key, but no child at byte, does not contain key</span></span><br><span class="line">		<span class="keyword">auto</span> child = node.<span class="built_in">GetChild</span>(*<span class="keyword">this</span>, key[depth]);</span><br><span class="line">		<span class="keyword">if</span> (!child) {</span><br><span class="line">			<span class="keyword">return</span> <span class="built_in">Node</span>();</span><br><span class="line">		}</span><br><span class="line"></span><br><span class="line">		<span class="comment">// recurse into child</span></span><br><span class="line">		node = *child;</span><br><span class="line">		<span class="built_in">D_ASSERT</span>(node.<span class="built_in">IsSet</span>());</span><br><span class="line">		depth++;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="built_in">Node</span>();</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>查找的代码相对来说比较简单：</p>
+<ol>
+<li>查找到了 <code>Leaf</code> 节点，检查 <code>Prefix</code> 是否匹配，如果不匹配说明 Key 不存在，若匹配直接返回该叶节点即可</li>
+<li>查找到了 <code>内部节点</code>，检查 <code>Prefix</code> 是否匹配，如果不匹配说明 Key 不存在，若匹配则继续搜索对应的子节点</li>
+</ol>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>本文介绍了 DuckDB 的 ART 索引，可以看到尽管 ART 索引的树会比 B+ 树更高，因此如果是面向磁盘的情况下，B+ 树会比 ART 索引优势更大，但是如果是内存索引的情况下，ART 索引更加紧凑，同时它的渐进时间复杂度仅与 key 的长度有关，<strong>可能也更加 Cache friendly</strong>？它的节点相较于 B+ 树更加的小，可以更多的保存在 Cache 中。从论文中的实验来看，它的性能会比 B+ 树更好。相较于 <code>Hash table</code>，它支持范围查询。基于此，DuckDB 将 ART 索引作为其的主要索引。</p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.github.io/post/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/duckdb's-adaptive-radix-tree-source-code/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.github.io/post/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/duckdb's-adaptive-radix-tree-source-code/&amp;title=DuckDB 的 Adaptive Radix Tree 源码分析 - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503140508596.png&amp;summary=ART 索引是由 Viktor Leis, Alfons Kemper, Thomas Neumann 等人提出，它相比于 B+ 树的主要区别在于 B+ 树是面向磁盘的，而 ART 则是面向内存的，即 ART 索引是需要全部加载到内存中。"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=DuckDB 的 Adaptive Radix Tree 源码分析 - Yikun Wu&amp;body=https://wu-yikun.github.io/post/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/duckdb's-adaptive-radix-tree-source-code/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.github.io/post/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/duckdb's-adaptive-radix-tree-source-code/">
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">上一篇</div><a href="/post/%E7%94%9F%E6%B4%BB%E6%80%9D%E8%80%83/deep-thoughts/">未来世界的幸存者</a></div><div class="item" id="next"><div class="note">下一篇</div><a href="/post/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/linux-kernel-io-path/">Linux Kernel I/O</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class="header cmt-title cap theme">
+      
+    </section>
+    <section class="body cmt-body giscus">
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Wu-yikun/wu-yikun.github.io" data-repo-id="R_kgDONub1yw" data-category="Announcements" data-category-id="DIC_kwDONub1y84CmRgw" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async="true"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">@Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 主题创建</p>
+<span id="busuanzi_container_site_pv">本站总访问量 <span id="busuanzi_value_site_pv"></span> 次</span><div><span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span></div></div></footer>
+
+
+<script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+  function createtime() {
+    var now = new Date();
+    var grt= new Date("01/25/2025 00:00:00");
+    now.setTime(now.getTime() + 250);
+    days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+    hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+    if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+    mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+    seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+    snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+    document.getElementById("timeDate").innerHTML = "本站已运行 "+dnum+" 天 ";
+    document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+  };
+  setInterval("createtime()",250);
+</script>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ART-Adaptive-Radix-Tree"><span class="toc-text">ART (Adaptive Radix Tree)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Trie-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">Trie 数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Node-4"><span class="toc-text">Node 4</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Node-16"><span class="toc-text">Node 16</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Node-48"><span class="toc-text">Node 48</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Node-256"><span class="toc-text">Node 256</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Leaf"><span class="toc-text">Leaf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Optimization"><span class="toc-text">Optimization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E8%BD%AC%E6%8D%A2"><span class="toc-text">数据转换</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DuckDB-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-text">DuckDB 源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Insert"><span class="toc-text">Insert</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Find"><span class="toc-text">Find</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%90%8E"><span class="toc-text">最后</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class="float-panel blur">
+  <button type="button" style="display:none" class="laptop-only rightbar-toggle mobile" onclick="sidebar.rightbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" style="display:none" class="mobile-only leftbar-toggle mobile" onclick="sidebar.leftbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer=""></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer="">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"giscus":{"js":"/js/services/giscus_new.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer="" src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div>
+</body></html><script>var posts=["post/人工智能/animated-pictures-to-easily-understand-self-attention/","post/人工智能/how-does-chatgpt-handle-text-input/","post/人工智能/the-soul-of-chatgpt-attention-mechanism/","post/博客开发/building-a-personal-blog-from-scratch/","post/博客开发/hexo-stellar-development-guide/","post/年终总结/「2021」passion/","post/年终总结/「2022」life-is-a-field-not-a-track/","post/开发工具/docker-and-k8s/","post/年终总结/「2023」feel-the-journey/","post/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","post/开发工具/docker-intro/","post/开发工具/git-undo/","post/开发工具/git-principle/","post/开发工具/nat/","post/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","post/开发工具/tips-for-precise-search-on-github/","post/开发工具/understanding-.git-folder/","post/生活思考/choose-one-sentence/","post/生活思考/constantly-comparing-yourself-to-others-is-the-tragedy-of-life/","post/生活思考/don't-limit-your-future-imagination-with-your-current-abilities/","post/生活思考/deep-thoughts/","post/算法/advanced-algorithms/","post/算法/binary-tree-matching/","post/算法/constructing-binary-tree/","post/算法/cpp-acm-input-output/","post/算法/difference-array/","post/算法/heapsort-quicksort-mergesort/","post/算法/interview-add-two/","post/算法/interview-linked-list/","post/算法/kuaishou-merge-k-ascending-linked-lists/","post/算法/maximum-product-of-subarray-or-subsequence/","post/算法/modulo/","post/算法/monotonic-stack/","post/算法/qpow/","post/算法/sieve-of-prime-number/","post/算法/tackle-without-sort-library/","post/算法/tecent-wxg-russian-doll-envelope/","post/算法/union-search/","post/系统与体系结构/a-study-of-linux-file-system-evolution/","post/系统与体系结构/analysis-of-trace-processing/","post/系统与体系结构/debugging-with-gdb/","post/系统与体系结构/distributed-systems-paxos.md/","post/系统与体系结构/distributed-systems-theoretical-foundations/","post/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","post/系统与体系结构/distributed-systems-raft/","post/系统与体系结构/effective-c++/","post/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","post/系统与体系结构/linux-disk-automatic-mounting/","post/系统与体系结构/linux-kernel-io-path/","post/系统与体系结构/linux-partition/","post/系统与体系结构/madam-for-all-flash-array/","post/系统与体系结构/mmap-vs-read-write/","post/系统与体系结构/nvm-top-lab/","post/系统与体系结构/persistent-memory-research-report/","post/编程语言/cpp-copy-constructor/","post/系统与体系结构/pmdk-programming-guidelines/","post/编程语言/cpp-stl/","post/编程语言/cpp-wiki/","post/编程语言/golang-wiki/","post/计算机网络/does-restarting-mean-shutting-down-and-power-on/","post/编程语言/python-wiki/","post/计算机网络/network-ip/","post/计算机网络/reverse-proxy/","post/面经/reverse-interview/","post/经验分享/how-can-undergraduates-enter-bat/","post/面经/interview-review/","post/经验分享/how-to-balance-token-security-and-user-experience/","post/经验分享/technical-writing-experience/","post/面经/job-hunting-guide-for-technical-personnel/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>

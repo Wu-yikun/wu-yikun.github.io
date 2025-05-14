@@ -1,0 +1,868 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>计算机网络中的各类 IP - Yikun Wu</title>
+
+  
+    <meta name="description" content="相信不少电脑用户都曾遇到过使用 localhost 或 127.0.0.1 或直接输入本机 IP 的场景，看上去这三者都可以访问到本机，那为什么会存在这三种形式呢？它们之间又有什么区别呢？看似简单，其实区别还是较大的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络中的各类 IP">
+<meta property="og:url" content="https://wu-yikun.github.io/post/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/network-ip/index.html">
+<meta property="og:site_name" content="Yikun Wu">
+<meta property="og:description" content="相信不少电脑用户都曾遇到过使用 localhost 或 127.0.0.1 或直接输入本机 IP 的场景，看上去这三者都可以访问到本机，那为什么会存在这三种形式呢？它们之间又有什么区别呢？看似简单，其实区别还是较大的。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i0.wp.com/ww1.sinaimg.cn/large/007ZrBGhly1guybb4n54cj60h604bdgs02.jpg">
+<meta property="og:image" content="https://i0.wp.com/ww1.sinaimg.cn/large/007ZrBGhly1guyb9pchoaj60fh043dh502.jpg">
+<meta property="article:published_time" content="2021-09-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-05-13T19:47:56.239Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="计算机网络">
+<meta property="article:tag" content="IP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i0.wp.com/ww1.sinaimg.cn/large/007ZrBGhly1guybb4n54cj60h604bdgs02.jpg">
+  
+  
+  
+  <meta name="keywords" content="计算机网络,IP">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140357298.svg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar" src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">人的梦想是不会结束的</div><div class="sub hover cap" style="opacity:0"> 不是吗</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+    <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">人工智能 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%8D%9A%E5%AE%A2%E5%BC%80%E5%8F%91/">博客开发 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具 (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%94%9F%E6%B4%BB%E6%80%9D%E8%80%83/">生活思考 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%AE%97%E6%B3%95/">算法 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言 (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E9%9D%A2%E7%BB%8F/">面经 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB/">经验分享 (3)</a></div></div></widget>
+
+<widget class="widget-wrapper tagcloud"><div class="widget-header dis-select"><span class="name">标签索引</span></div><div class="widget-body fs14"><a href="/tags/ACPI/" style="font-size: 12px;" class="tag -0">ACPI</a> <a href="/tags/ART/" style="font-size: 12px;" class="tag -0">ART</a> <a href="/tags/All-Flash-Array/" style="font-size: 12px;" class="tag -0">All-Flash Array</a> <a href="/tags/C/" style="font-size: 22px;" class="tag -8">C++</a> <a href="/tags/COW/" style="font-size: 12px;" class="tag -0">COW</a> <a href="/tags/Ceph/" style="font-size: 12px;" class="tag -0">Ceph</a> <a href="/tags/ChatGPT/" style="font-size: 16px;" class="tag -3">ChatGPT</a> <a href="/tags/DP/" style="font-size: 12px;" class="tag -0">DP</a> <a href="/tags/DPDK/" style="font-size: 12px;" class="tag -0">DPDK</a> <a href="/tags/Difference-Array/" style="font-size: 12px;" class="tag -0">Difference Array</a> <a href="/tags/Docker/" style="font-size: 14px;" class="tag -2">Docker</a> <a href="/tags/DuckDB/" style="font-size: 12px;" class="tag -0">DuckDB</a> <a href="/tags/EX4/" style="font-size: 12px;" class="tag -0">EX4</a> <a href="/tags/Embedding/" style="font-size: 12px;" class="tag -0">Embedding</a> <a href="/tags/File-System/" style="font-size: 12px;" class="tag -0">File System</a> <a href="/tags/GitHub/" style="font-size: 12px;" class="tag -0">GitHub</a> <a href="/tags/Golang/" style="font-size: 12px;" class="tag -0">Golang</a> <a href="/tags/Graph/" style="font-size: 12px;" class="tag -0">Graph</a> <a href="/tags/Halo/" style="font-size: 12px;" class="tag -0">Halo</a> <a href="/tags/Hexo/" style="font-size: 12px;" class="tag -0">Hexo</a> <a href="/tags/IP/" style="font-size: 12px;" class="tag -0">IP</a> <a href="/tags/JWT/" style="font-size: 12px;" class="tag -0">JWT</a> <a href="/tags/Kubernetes/" style="font-size: 12px;" class="tag -0">Kubernetes</a> <a href="/tags/LeetCode/" style="font-size: 24px;" class="tag -10">LeetCode</a> <a href="/tags/LinkList/" style="font-size: 12px;" class="tag -0">LinkList</a> <a href="/tags/Linux/" style="font-size: 20px;" class="tag -7">Linux</a> <a href="/tags/Linux-Kernel/" style="font-size: 14px;" class="tag -2">Linux Kernel</a> <a href="/tags/Markdown/" style="font-size: 12px;" class="tag -0">Markdown</a> <a href="/tags/Modulo/" style="font-size: 12px;" class="tag -0">Modulo</a> <a href="/tags/Monotonic-Stack/" style="font-size: 12px;" class="tag -0">Monotonic Stack</a> <a href="/tags/NAT/" style="font-size: 12px;" class="tag -0">NAT</a> <a href="/tags/NVM/" style="font-size: 14px;" class="tag -2">NVM</a> <a href="/tags/Optane-DIMMs/" style="font-size: 12px;" class="tag -0">Optane DIMMs</a> <a href="/tags/PMDK/" style="font-size: 14px;" class="tag -2">PMDK</a> <a href="/tags/POSIX/" style="font-size: 12px;" class="tag -0">POSIX</a> <a href="/tags/Page-Cache/" style="font-size: 12px;" class="tag -0">Page Cache</a> <a href="/tags/Paxos/" style="font-size: 14px;" class="tag -2">Paxos</a> <a href="/tags/Python/" style="font-size: 12px;" class="tag -0">Python</a> <a href="/tags/RAID/" style="font-size: 12px;" class="tag -0">RAID</a> <a href="/tags/Raft/" style="font-size: 14px;" class="tag -2">Raft</a> <a href="/tags/SSD/" style="font-size: 12px;" class="tag -0">SSD</a> <a href="/tags/STL/" style="font-size: 12px;" class="tag -0">STL</a> <a href="/tags/Search/" style="font-size: 12px;" class="tag -0">Search</a> <a href="/tags/Self-Attention/" style="font-size: 14px;" class="tag -2">Self-Attention</a> <a href="/tags/Sieve-of-Prime-Number/" style="font-size: 12px;" class="tag -0">Sieve of Prime Number</a> <a href="/tags/Stellar/" style="font-size: 12px;" class="tag -0">Stellar</a> <a href="/tags/Storage/" style="font-size: 12px;" class="tag -0">Storage</a> <a href="/tags/Sunny-Ngrok/" style="font-size: 12px;" class="tag -0">Sunny-Ngrok</a> <a href="/tags/Syscall/" style="font-size: 12px;" class="tag -0">Syscall</a> <a href="/tags/Tokenizer/" style="font-size: 12px;" class="tag -0">Tokenizer</a> <a href="/tags/Transformer/" style="font-size: 14px;" class="tag -2">Transformer</a> <a href="/tags/Tree/" style="font-size: 16px;" class="tag -3">Tree</a> <a href="/tags/Trie/" style="font-size: 12px;" class="tag -0">Trie</a> <a href="/tags/UCloud/" style="font-size: 12px;" class="tag -0">UCloud</a> <a href="/tags/Union-Search/" style="font-size: 12px;" class="tag -0">Union Search</a> <a href="/tags/VFS/" style="font-size: 14px;" class="tag -2">VFS</a> <a href="/tags/Vector/" style="font-size: 12px;" class="tag -0">Vector</a> <a href="/tags/WAL/" style="font-size: 12px;" class="tag -0">WAL</a> <a href="/tags/Zero-Copy/" style="font-size: 12px;" class="tag -0">Zero Copy</a> <a href="/tags/builtin/" style="font-size: 12px;" class="tag -0">__builtin</a> <a href="/tags/df/" style="font-size: 12px;" class="tag -0">df</a> <a href="/tags/du/" style="font-size: 12px;" class="tag -0">du</a> <a href="/tags/fdisk/" style="font-size: 12px;" class="tag -0">fdisk</a> <a href="/tags/fio/" style="font-size: 12px;" class="tag -0">fio</a> <a href="/tags/fsck/" style="font-size: 12px;" class="tag -0">fsck</a> <a href="/tags/fstab/" style="font-size: 14px;" class="tag -2">fstab</a> <a href="/tags/g/" style="font-size: 12px;" class="tag -0">g++</a> <a href="/tags/gcc/" style="font-size: 12px;" class="tag -0">gcc</a> <a href="/tags/gdb/" style="font-size: 12px;" class="tag -0">gdb</a> <a href="/tags/git/" style="font-size: 16px;" class="tag -3">git</a> <a href="/tags/grub/" style="font-size: 12px;" class="tag -0">grub</a> <a href="/tags/iostat/" style="font-size: 12px;" class="tag -0">iostat</a> <a href="/tags/libpmemobj/" style="font-size: 12px;" class="tag -0">libpmemobj</a> <a href="/tags/lsblk/" style="font-size: 12px;" class="tag -0">lsblk</a> <a href="/tags/mdadm/" style="font-size: 12px;" class="tag -0">mdadm</a> <a href="/tags/mkfs/" style="font-size: 12px;" class="tag -0">mkfs</a> <a href="/tags/mmaloc/" style="font-size: 12px;" class="tag -0">mmaloc</a> <a href="/tags/mmap/" style="font-size: 16px;" class="tag -3">mmap</a> <a href="/tags/mount/" style="font-size: 14px;" class="tag -2">mount</a> <a href="/tags/move/" style="font-size: 12px;" class="tag -0">move</a> <a href="/tags/qpow/" style="font-size: 12px;" class="tag -0">qpow</a> <a href="/tags/ranges/" style="font-size: 12px;" class="tag -0">ranges</a> <a href="/tags/read/" style="font-size: 14px;" class="tag -2">read</a> <a href="/tags/smartctl/" style="font-size: 12px;" class="tag -0">smartctl</a> <a href="/tags/token/" style="font-size: 12px;" class="tag -0">token</a> <a href="/tags/trace/" style="font-size: 12px;" class="tag -0">trace</a> <a href="/tags/wipefs/" style="font-size: 12px;" class="tag -0">wipefs</a> <a href="/tags/write/" style="font-size: 14px;" class="tag -2">write</a> <a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" style="font-size: 12px;" class="tag -0">内网穿透</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/" style="font-size: 18px;" class="tag -5">分布式系统</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 14px;" class="tag -2">博客</a> <a href="/tags/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/" style="font-size: 12px;" class="tag -0">反向代理</a> <a href="/tags/%E5%AE%89%E5%85%A8/" style="font-size: 12px;" class="tag -0">安全</a> <a href="/tags/%E5%B4%A9%E6%BA%83%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 12px;" class="tag -0">崩溃一致性</a> <a href="/tags/%E5%B9%82%E7%AD%89%E6%80%A7/" style="font-size: 12px;" class="tag -0">幂等性</a> <a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/" style="font-size: 18px;" class="tag -5">年终总结</a> <a href="/tags/%E6%8B%9C%E5%8D%A0%E5%BA%AD/" style="font-size: 12px;" class="tag -0">拜占庭</a> <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 14px;" class="tag -2">排序</a> <a href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" style="font-size: 12px;" class="tag -0">服务器</a> <a href="/tags/%E6%9C%AA%E6%9D%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%B9%B8%E5%AD%98%E8%80%85/" style="font-size: 12px;" class="tag -0">未来世界的幸存者</a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Wu-yikun" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418811.svg"></a><a class="social" href="https://leetcode.cn/u/wu-yikun/" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419535.svg"></a><a class="social" href="https://juejin.cn/user/1654082381026734" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419245.svg"></a><a class="social" href="https://www.zhihu.com/people/JayChou" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419020.svg"></a><a class="social" href="https://music.163.com/#/user/home?id=1479129382" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419025.svg"></a><a class="social" href="https://space.bilibili.com/441384986?spm_id_from=333.1007.0.0" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418494.svg"></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202501222200953.png">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/IP/">IP</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2021-09-29T16:00:00.000Z">2021-09-30</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-05-13T19:47:56.239Z">2025-05-14</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>计算机网络中的各类 IP</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>相信不少电脑用户都曾遇到过使用 <code>localhost</code> 或 <code>127.0.0.1</code> 或直接输入<code>本机 IP</code> 的场景，看上去这三者都可以访问到本机，那为什么会存在这三种形式呢？它们之间又有什么区别呢？看似简单，其实区别还是较大的。</p>
+<span id="more"></span>
+
+<p>相信不少电脑用户都曾遇到过使用 <code>localhost</code> 或 <code>127.0.0.1</code> 或直接输入<code>本机 IP</code> 的场景，看上去这三者都可以访问到本机，那为什么会存在这三种形式呢？它们之间又有什么区别呢？看似简单，其实区别还是较大的。</p>
+<p>此外，你可能也对 VPN、公网与私网、网卡与 IP 之间的关系感到困惑，以下为你一一解答。</p>
+<h2 id="本机-IP"><a href="#本机-IP" class="headerlink" title="本机 IP"></a>本机 IP</h2><p><strong>我们电脑主板上都内置了多种网卡</strong>，一般主要有以下几类：</p>
+<ul>
+<li>虚拟网卡（<strong>Loopback</strong>）<ul>
+<li>注意：它是虚拟的，并不是物理网卡，也被称为是本地环回地址（或接口），一般将 <code>127.0.0.1</code> 作为<strong>本地环回地址</strong>。</li>
+</ul>
+</li>
+<li>有线网卡/以太网卡（<strong>Ethernet</strong>）<ul>
+<li>这是以太网（局域网）使用的，我们日常说的网卡指的就是这个，插入的就是网线。</li>
+</ul>
+</li>
+<li>无线网卡（<strong>WLAN</strong>）<ul>
+<li>这是无线局域网所使用的网卡，笔记本上常内置此网卡，它用的是无线电技术，不需要像以太网卡那样插网线。</li>
+</ul>
+</li>
+</ul>
+<p>以上这些网卡都会绑定一个本机 IP…</p>
+<h2 id="localhost-是一种特殊的域名"><a href="#localhost-是一种特殊的域名" class="headerlink" title="localhost 是一种特殊的域名"></a>localhost 是一种特殊的域名</h2><p>首先 <code>localhost</code> 它并不是 IP，而是一种特殊的域名（没有后缀），<strong>默认</strong>的情况下它解析到的是本地 IP（即 <code>127.0.0.1</code>），主要通过本机的 <code>hosts</code> 文件进行管理，如果你愿意，也可以把 <code>localhost</code> 域名解析到某个公网 IP 上去，也可以被配置为任意的 IP 地址（也就是说，可以通过 hosts 这个文件进行更改），不过通常情况下都（如下）指向：</p>
+<ul>
+<li>IPv4：表示 <code>127.0.0.1</code></li>
+<li>IPv6：表示 <code>[::1]</code></li>
+</ul>
+<p><strong>hosts 文件位置</strong>：<code>C:\Windows\System32\drivers\etc</code></p>
+<h2 id="127-0-0-1-是一种本机保留的私有-IP"><a href="#127-0-0-1-是一种本机保留的私有-IP" class="headerlink" title="127.0.0.1 是一种本机保留的私有 IP"></a>127.0.0.1 是一种本机保留的私有 IP</h2><p><code>127.0.0.1</code> 它是一个私有 IP，代表（或者说真正的名称）的就是<strong>本机环回地址</strong>，其实本质上是绑定在虚拟网卡（loopback）上的 IP。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i0.wp.com/ww1.sinaimg.cn/large/007ZrBGhly1guybb4n54cj60h604bdgs02.jpg"></p>
+<hr>
+<p>那什么是环回地址呢？它有什么作用呢？</p>
+<p>环回地址：环回地址是主机用于向自身发送通信的一个特殊地址（也就是一个特殊的目的地址）。</p>
+<p>可以这么说：同一台主机上的两项服务若使用环回地址而非分配的主机地址，就可以绕开 TCP/IP 协议栈的下层（也就是说：不用再通过什么链路层、物理层、以太网传出去了，而是可以直接在自己的网络层，运输层进行处理了）</p>
+<p><strong>网络号为 127 的地址根本就不是一个网络地址，因为产生的 IP 数据报就不会到达外部网络接口中，是不离开主机的包</strong>。</p>
+<p>所以说：<code>127.0.0.1</code> 是保留地址之一，只是被经常的使用，来检验本机 TCP/IP 协议栈而已，如果我们可以 ping 通的话，就说明本机的网卡和 IP 协议安装都没有问题（跟我们当前主机有没有联网没有一点关系）。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i0.wp.com/ww1.sinaimg.cn/large/007ZrBGhly1guyb9pchoaj60fh043dh502.jpg"></p>
+<hr>
+<p><strong>事实上 IPv4 保留 <code>127.0.0.0</code> 整个网段的地址用于环回测试（只是有两个特殊的保留），<code>127.0.0.1</code> 只是其中一个，你可以 ping 通这个网段里的所有地址</strong>，也可以在浏览器中输入任意一个地址访问本机的 Web 服务。另外一个经常被混淆的 IP 地址是 <code>0.0.0.0</code>，它才是真正意义上的本机地址，它的用法跟 <code>127.0.0.1</code> 完全不同。</p>
+<p>举例说明：比如电脑有两块网卡，其中一块使用公网 IP 用于连接互联网，另外一块使用私有 IP 连接局域网，如果本机搭建了 Web 服务，并且希望外网和内网都能正常访问，可以在服务器的配置中将服务器地址改为 <code>0.0.0.0</code>.</p>
+<h2 id="localhost、本机-IP、127-0-0-1-的区别"><a href="#localhost、本机-IP、127-0-0-1-的区别" class="headerlink" title="localhost、本机 IP、127.0.0.1 的区别"></a>localhost、本机 IP、127.0.0.1 的区别</h2><ul>
+<li>网络需求不同<ul>
+<li><code>localhost</code> 和 <code>127.0.0.1</code> 并<strong>不需要联网访问</strong>，即使在无网络环境下访问这两者都能找到本机。</li>
+<li><strong>本机 IP</strong> 中的有线网 IP 和无线网 IP 都是<strong>需要联网</strong>后才能正常分配和访问的，它们是本机对外开放的 IP 地址。</li>
+</ul>
+</li>
+<li><code>localhost</code> 是本机访问；<code>127.0.0.1</code> 是本机访问；本机 IP 是本机或外部访问。</li>
+<li><code>localhost</code> 是域名，默认是指向 <code>127.0.0.1</code>；而本机 IP 就是本机对外放开访问的 IP 地址，这个网址就是<strong>与物理网卡绑定的 IP 地址</strong>。</li>
+<li><strong>在一个局域网里，同一网段</strong>（即同一局域网下的同一网段）的其他电脑就可以用上面的 IP 地址来访问你的电脑（私有地址下文介绍）。</li>
+</ul>
+<h2 id="网卡地址-IP地址"><a href="#网卡地址-IP地址" class="headerlink" title="网卡地址 &amp; IP地址"></a>网卡地址 &amp; IP地址</h2><h3 id="网卡地址"><a href="#网卡地址" class="headerlink" title="网卡地址"></a>网卡地址</h3><p><strong>网卡地址即 MAC 地址</strong>，意译为媒体访问控制，或称为<strong>物理地址</strong>、<strong>硬件地址</strong>，用来定义网络设备的位置。</p>
+<p>在 OSI 模型中，第三层网络层负责 IP 地址，第二层数据链路层则负责 MAC 地址。<strong>因此一个主机会有一个 MAC 地址，而每个网络位置会有一个专属于它的 IP 地址</strong>。  </p>
+<p>MAC 地址是网卡决定的，是固定的，也是唯一的。形象的说，MAC 地址就如同我们身份证上的身份证号码，具有全球唯一性。</p>
+<h3 id="IP-地址"><a href="#IP-地址" class="headerlink" title="IP 地址"></a>IP 地址</h3><p>IP 地址是指互联网协议地址。IP 地址是 IP 协议提供的一种统一的地址格式，它为互联网上的每一个网络和每一台主机分配一个<strong>逻辑地址，以此来屏蔽物理地址的差异。</strong></p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><ul>
+<li><p>通俗来讲就是物理地址是指网卡的硬件地址，一般是<strong>固化在网卡上</strong>的，全球没有任何两块网卡的物理地址是一样的，它具有唯一性！</p>
+</li>
+<li><p>IP 地址是网络分配给网卡使用的软地址，是<strong>可以改变</strong>的！</p>
+</li>
+</ul>
+<p><strong>注</strong>：我们可以使用 <code>ipconfig /all</code> 查看 IP 地址和物理地址。</p>
+<h2 id="公网-IP-与私网-IP"><a href="#公网-IP-与私网-IP" class="headerlink" title="公网 IP 与私网 IP"></a>公网 IP 与私网 IP</h2><p><strong>我们可以通过127.0.0.1访问本机，通过私有IP访问局域网内部的其它设备，通过公网IP访问互联网上的其它设备。</strong></p>
+<h3 id="公有-IP-地址（公网-IP）"><a href="#公有-IP-地址（公网-IP）" class="headerlink" title="公有 IP 地址（公网 IP）"></a>公有 IP 地址（公网 IP）</h3><p>组建一个企业级网络，需要去向 “电信运营商 ISP” 申请一个接入 Internet (我们常说的<strong>接入网</strong>) 的宽带，同时 ISP 还会给我们分配一个或多个 IP 地址，这些 IP 地址可以供我们企业内部上网，这些 ISP 分配给我们的 IP，就是公有 IP。</p>
+<p>公有地址（Public address，也可称为公网地址）由 Internet NIC（Internet Network Information Center 因特网信息中心）负责。这些 IP 地址分配给注册并向 Internet NIC 提出申请的组织机构。通过它<strong>直接访问因特网</strong>，它是<strong>广域网范畴</strong>内的。</p>
+<h3 id="私有-IP-地址（私网-IP）"><a href="#私有-IP-地址（私网-IP）" class="headerlink" title="私有 IP 地址（私网 IP）"></a>私有 IP 地址（私网 IP）</h3><p>我们企业或家庭内部组建局域网用的 IP，一般都会用私有 IP。</p>
+<p>私有地址（Private address，也可称为专网地址）属于非注册地址，专门为组织机构内部使用，它是<strong>局域网范畴</strong>内的，<strong>私有 IP 禁止出现在 Internet 中，在 ISP 连接用户的地方，将来自于私有 IP 的流量全部都会阻止并丢掉</strong>。</p>
+<p>如果在企业内部的电脑要访问 Internet，则需要在企业边界上用 “<strong>NAT 技术</strong>” 将私网 IP 转成公网 IP 才能正常的上网！</p>
+<h3 id="公网与私网的访问"><a href="#公网与私网的访问" class="headerlink" title="公网与私网的访问"></a>公网与私网的访问</h3><p>如果<strong>私网 IP 要访问公网网站</strong>的话，需要在私网和公网接口处，做 <strong>SNAT</strong>。</p>
+<p>一般我们称运营商搭建的网络为公网，主要负责连接各个公司或者家庭的网络，里面的 IP 都是公网 IP，里面也只会出现公网 IP 组成的路由，因此私网 IP 进到公网后，是没有路由的，会被丢弃，所以上面提到私网访问公网的话，需要 SNAT，把私网 IP 换成公网 IP。</p>
+<p>聪明的你肯定会想到，<strong>公网要访问私网</strong>咋办？这其实涉及到 <strong>DNAT</strong>、<strong>VPN</strong> 等技术。</p>
+<p>还有就是两个<strong>私网要跨公网通信</strong>咋办？这可以通过 <strong>VPN</strong> 解决。</p>
+<hr>
+<p><strong>补充</strong>：内网的话，可以简单理解为私网，不过其实这个概念的出发点是对于企业而言，在企业内部叫私网，企业外部就叫外网。</p>
+<p>从概念上讲一个企业以外的网络，可以包括运营商的网络（即公网），也可以包括其他企业或者家庭的网络（即私网）。</p>
+<p>所以说，外网与公网不能化等号的。</p>
+<p>但其实也没有那么特意去区分，公网=外网，私网=内网，可以简单这么理解，没必要去咬文嚼字（但至少还是要懂得我上面说的外网与公网的区别）。</p>
+<h3 id="全部-IP-地址的范围"><a href="#全部-IP-地址的范围" class="headerlink" title="全部 IP 地址的范围"></a>全部 IP 地址的范围</h3><p>IP 地址，一共分成了 5 类，范围分别如下：</p>
+<ul>
+<li>A类 IP：<code>1.0.0.1</code> – <code>127.255.255.254</code></li>
+<li>B类 IP：<code>128.0.0.1</code> – <code>191.255.255.254</code></li>
+<li>C类 IP：<code>192.0.0.1</code> – <code>223.255.255.254</code></li>
+<li>D类 IP：<code>224.0.0.0</code> – <code>239.255.255.255</code></li>
+<li>E类 IP：<code>240.0.0.0</code> – <code>255.255.255.255</code></li>
+</ul>
+<p>而其中，能在 Internet 或被用户使用的有 A、B、C 三类，而D类地址称为广播地址，供特殊协议向选定的节点发送信息时用，E类地址保留给将来使用。</p>
+<p><strong>特殊的网址：</strong></p>
+<ol>
+<li>每一个字节都为 0 的地址（“<code>0.0.0.0</code>”）对应于当前主机；</li>
+<li>IP 地址中的每一个字节都为 1 的 IP 地址（“<code>255.255.255.255</code>”）是当前子网的广播地址；</li>
+<li>IP 地址中凡是以 “11110” 开头的 E 类 IP 地址都保留用于将来和实验使用。</li>
+<li>IP 地址中不能以十进制 “127” 作为开头，该类地址中数字 <code>127.0.0.1</code> 到 <code>127.255.255.255</code> 用于回路测试，如：<code>127.0.0.1</code> 可以代表本机IP地址，用 “<a target="_blank" rel="noopener" href="http://127.0.0.1”/">http://127.0.0.1” <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 就可以测试本机中配置的 Web 服务器。</li>
+<li>网络 ID 的第一个 6 位组也不能全置为 “0”，全 “0” 表示本地网络。</li>
+</ol>
+<h3 id="公有-IP-地址的范围"><a href="#公有-IP-地址的范围" class="headerlink" title="公有 IP 地址的范围"></a>公有 IP 地址的范围</h3><p>在 IP 地址 3 种主要类型里，各保留了 3 个区域作为私有地址，也就是比较常用的 IP 地址。其地址范围如下：</p>
+<ul>
+<li>A 类的公有 IP：<ul>
+<li><code>1.0.0.0</code> ~ <code>9.255.255.255</code></li>
+<li><code>11.0.0.0</code> ~ <code>126.255.255.255</code></li>
+</ul>
+</li>
+<li>B 类的公有 IP：<ul>
+<li><code>128.0.0.0</code> ~ <code>172.15.255.255</code></li>
+<li><code>172.32.0.0</code> ~ <code>191.255.255.255</code></li>
+</ul>
+</li>
+<li>C 类的公有 IP：<ul>
+<li><code>192.0.0.0</code> ~ <code>192.168.255.255</code></li>
+<li><code>192.169.0.0</code> ~ <code>223.255.255.255</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="私有-IP-地址的范围"><a href="#私有-IP-地址的范围" class="headerlink" title="私有 IP 地址的范围"></a>私有 IP 地址的范围</h3><ul>
+<li>A 类私有 IP 地址： <strong><code>10.0.0.0</code> ～ <code>10.255.255.255</code></strong> 即 <strong><code>10.0.0.0/8</code></strong></li>
+<li>B 类私有 IP 地址： <strong><code>172.16.0.0</code> ～ <code>172.31.255.255</code></strong> 即 <strong><code>172.16.0.0/12</code></strong></li>
+<li>C 类私有 IP 地址： <strong><code>192.168.0.0</code> ～ <code>192.168.255.255</code></strong> 即 <strong><code>192.168.0.0/16</code></strong></li>
+</ul>
+<p>这些地址是不会被 Internet 分配的，它们在 Internet 上也不会被<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E8%B7%AF%E7%94%B1">路由 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>，虽然它们不能直接和 Internet 连接，但通过技术手段仍旧可以和  Internet 通讯（NAT 技术）。我们可以根据需要来选择适当的地址类，在内部局域网中将这些地址像公用 IP 地址一样地使用。在 Internet 上，有些不需要与 Internet 通讯的设备，如打印机、可管理<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E9%9B%86%E7%BA%BF%E5%99%A8">集线器 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>等也可以使用这些地址，以节省 IP 地址资源。</p>
+<h2 id="网段-局域网"><a href="#网段-局域网" class="headerlink" title="网段 &amp; 局域网"></a>网段 &amp; 局域网</h2><p>网段是指一个计算机网络使用同一层物理层设备（如集线器，交换机）能够直接通信的那一部分，即每台电脑只能和自己同一网段的电脑直接进行通信。</p>
+<p>局域网是指由交换机构成的一整个网络系统，局域网内的所有设备一般都处于同一网段，因此可以直接进行通信，但是局域网也可以划分成多个网段，如使用 <strong>VLAN</strong>。</p>
+<p>关于 VLAN 的介绍，可以看这篇博客（<strong>强推</strong>）：<a target="_blank" rel="noopener" href="https://info.support.huawei.com/info-finder/encyclopedia/zh/VLAN.html">https://info.support.huawei.com/info-finder/encyclopedia/zh/VLAN.html <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+<p>只有同一局域网内的相同网段的设备才可直接进行通信。所以我的理解，当局域网内只有一个网段时，该局域网就可以等价于网段。</p>
+<h3 id="如何区分是否同一网段"><a href="#如何区分是否同一网段" class="headerlink" title="如何区分是否同一网段"></a>如何区分是否同一网段</h3><p>理解了网段后，我们接下来来讲解下如何判别两网段是否为同一网段。</p>
+<blockquote>
+<p><strong>根据掩码确定 IP 地址网段只需要使用 IP 地址 <code>&amp;</code> 子网掩码即可！</strong> </p>
+</blockquote>
+<h4 id="例-1"><a href="#例-1" class="headerlink" title="例 1"></a>例 1</h4><p>比如以下两个 IP 地址</p>
+<ul>
+<li>IP 地址1：<code>192.168.1.1</code>	子网掩码：<code>255.255.255.0</code></li>
+<li>IP 地址2：<code>192.168.1.2</code>	子网掩码：<code>255.255.255.0</code></li>
+</ul>
+<p>我们可以直接的判断，它们是属于同一个 (<code>192.168.1.0</code>) 网段的 IP 地址。</p>
+<h4 id="例-2"><a href="#例-2" class="headerlink" title="例 2"></a>例 2</h4><p>那么对于下面这样的呢？</p>
+<ul>
+<li>IP 地址1：<code>192.168.1.1</code>	子网掩码：<code>255.255.255.0</code></li>
+<li>IP 地址2：<code>192.168.1.2</code>	子网掩码：<code>255.255.0.0</code></li>
+</ul>
+<p>这两个 IP 地址虽然在不看掩码的情况下，比较像，但他们并不是同一个网段内的。</p>
+<p>这可以<strong>从子网掩码来判断</strong>：</p>
+<p>IP <code>192.168.1.1</code> &amp; 掩码 <code>255.255.255.0</code> 属于 <code>192.168.1.0</code> 网段；</p>
+<p>而 IP <code>192.168.1.2</code> &amp; 掩码 <code>255.255.0.0</code> 则属于 <code>192.168.0.0</code> 网段。</p>
+<h4 id="例-3"><a href="#例-3" class="headerlink" title="例 3"></a>例 3</h4><ul>
+<li>IP 地址1：<code>192.168.1.1</code>	子网掩码：<code>255.255.252.0</code></li>
+<li>IP 地址2：<code>192.168.2.1</code>	子网掩码：<code>255.255.252.0</code></li>
+</ul>
+<p>很明显，我们这个和上面例1 的 IP 地址是一样的，只是子网掩码不一样，如果不看子网掩码，首先可能就误判它们不是同一个网段。</p>
+<p>经过判别，两个 IP 地址都是属于 <code>192.168.0.0</code> 网段，所以它们是同属于一个网段的。</p>
+<h2 id="VPN"><a href="#VPN" class="headerlink" title="VPN"></a>VPN</h2><p>⚠️ 私自架设 VPN 是违法行为！</p>
+<p>这里我们就简单看下维基百科对于 VPN 的介绍：</p>
+<p><strong>虚拟专用网</strong>（英语：virtual private network，缩写：<strong>VPN</strong>）是常用于连接中、大型企业或团体间私人网络的通讯方法。它利用<strong>隧道协议</strong>（Tunneling Protocol）来达到发送端认证、消息保密与准确性等功能。</p>
+<h3 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h3><p>20 世纪 90 年代，计算机网络上的计算机通过非常昂贵的专线和/或拨号连线互连。视站点间的距离，花费可达数千美元（56 kbps连线）或上万美元。</p>
+<p>为了避免租用多条各自连接互联网的专线，因为虚拟专用网可减少网络开支，用户可以安全地交换私密数据，虚拟专用网变得普及，使昂贵的专线变得多余。</p>
+<h3 id="安全性"><a href="#安全性" class="headerlink" title="安全性"></a>安全性</h3><p>安全的虚拟专用网使用<strong>加密穿隧协议</strong>，通过阻止截听与<strong>嗅探</strong>来提供<strong>机密性</strong>，还允许发送者身份验证，以阻止身份伪造，同时通过防止信息被修改提供消息<strong>完整性</strong>。</p>
+<p>某些虚拟专用网不使用加密保护数据。虽然虚拟专用网通常都会提供安全性，但<strong>未加密</strong>的虚拟专用网严格来说是不“<strong>安全</strong>”或不“<strong>可信</strong>”的。例如，一条通过 <strong>GRE</strong> 协议在两台主机间创建的隧道属于虚拟专用网，但既不安全也不可信。</p>
+<p>除以上的 GRE 协议例子外，本地的明文穿隧协议包括 L2TP（不带 IPsec 时）和PPTP（不使用微软点对点加密（MPPE）时）。</p>
+<h3 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h3><p>常用的虚拟专用网协议有：</p>
+<ul>
+<li>PPTP</li>
+<li>L2TP</li>
+<li>IPsec</li>
+<li>SSL VPN</li>
+<li>WireGuard</li>
+<li>OpenVPN</li>
+<li>IKEv2</li>
+</ul>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>许多公司企业的员工等使用虚拟专用网（VPN）来访问其内部的网络，以达到远程办公的作用。</p>
+<p>在中国，由于中国大陆境内对海外网络的限制及屏蔽，中国大陆兴起以采用虚拟专用网连接外国网络的<strong>突破网络审查</strong>方法，俗称<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E7%BF%BB%E5%A2%99/754773">翻墙 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a>。许多外资公司、学术单位因欲连回海外网站，也多自行架设 VPN 或采用付费的 VPN 服务。</p>
+<h3 id="📚补充"><a href="#📚补充" class="headerlink" title="📚补充"></a>📚补充</h3><p><strong>根据《国务院关于修改〈中华人民共和国计算机信息网络国际联网管理暂行规定〉的决定》第六条规定：</strong></p>
+<p>计算机信息网络直接进行国际联网，必须使用邮电部国家公用电信网提供的国际出入口信道。</p>
+<p>任何单位和个人不得自行建立或者使用其他信道进行国际联网。</p>
+<p><strong>万万不可跨越法律底线自行架设 VPN！！！</strong></p>
+<p>更多关于 VPN 的内容：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/402715597">https://zhuanlan.zhihu.com/p/402715597 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a></p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0 <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>分享文章</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.github.io/post/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/network-ip/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.github.io/post/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/network-ip/&amp;title=计算机网络中的各类 IP - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202501222200953.png&amp;summary=相信不少电脑用户都曾遇到过使用 localhost 或 127.0.0.1 或直接输入本机 IP 的场景，看上去这三者都可以访问到本机，那为什么会存在这三种形式呢？它们之间又有什么区别呢？看似简单，其实区别还是较大的。"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=计算机网络中的各类 IP - Yikun Wu&amp;body=https://wu-yikun.github.io/post/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/network-ip/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;复制成功&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.github.io/post/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/network-ip/">
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">上一篇</div><a href="/post/%E7%BB%8F%E9%AA%8C%E5%88%86%E4%BA%AB/how-can-undergraduates-enter-bat/">本科生如何才能进入 BAT 等一流互联网大厂</a></div><div class="item" id="next"><div class="note">下一篇</div><a href="/post/%E7%94%9F%E6%B4%BB%E6%80%9D%E8%80%83/constantly-comparing-yourself-to-others-is-the-tragedy-of-life/">一辈子都要和别人去比较，是人生悲剧的源头</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class="header cmt-title cap theme">
+      
+    </section>
+    <section class="body cmt-body giscus">
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Wu-yikun/wu-yikun.github.io" data-repo-id="R_kgDONub1yw" data-category="Announcements" data-category-id="DIC_kwDONub1y84CmRgw" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async="true"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">@Yikun Wu <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar <span style="white-space: nowrap;"><svg width=".7em" height=".7em" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg"><path d="m13 3l3.293 3.293l-7 7l1.414 1.414l7-7L21 11V3z" fill="currentColor"></path><path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" fill="currentColor"></path></svg></span></a> 主题创建</p>
+<span id="busuanzi_container_site_pv">本站总访问量 <span id="busuanzi_value_site_pv"></span> 次</span><div><span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span></div></div></footer>
+
+
+<script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+  function createtime() {
+    var now = new Date();
+    var grt= new Date("01/25/2025 00:00:00");
+    now.setTime(now.getTime() + 250);
+    days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+    hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+    if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+    mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+    seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+    snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+    document.getElementById("timeDate").innerHTML = "本站已运行 "+dnum+" 天 ";
+    document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+  };
+  setInterval("createtime()",250);
+</script>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%9C%BA-IP"><span class="toc-text">本机 IP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#localhost-%E6%98%AF%E4%B8%80%E7%A7%8D%E7%89%B9%E6%AE%8A%E7%9A%84%E5%9F%9F%E5%90%8D"><span class="toc-text">localhost 是一种特殊的域名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#127-0-0-1-%E6%98%AF%E4%B8%80%E7%A7%8D%E6%9C%AC%E6%9C%BA%E4%BF%9D%E7%95%99%E7%9A%84%E7%A7%81%E6%9C%89-IP"><span class="toc-text">127.0.0.1 是一种本机保留的私有 IP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#localhost%E3%80%81%E6%9C%AC%E6%9C%BA-IP%E3%80%81127-0-0-1-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">localhost、本机 IP、127.0.0.1 的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E5%8D%A1%E5%9C%B0%E5%9D%80-IP%E5%9C%B0%E5%9D%80"><span class="toc-text">网卡地址 &amp; IP地址</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E5%8D%A1%E5%9C%B0%E5%9D%80"><span class="toc-text">网卡地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IP-%E5%9C%B0%E5%9D%80"><span class="toc-text">IP 地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AC%E7%BD%91-IP-%E4%B8%8E%E7%A7%81%E7%BD%91-IP"><span class="toc-text">公网 IP 与私网 IP</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E6%9C%89-IP-%E5%9C%B0%E5%9D%80%EF%BC%88%E5%85%AC%E7%BD%91-IP%EF%BC%89"><span class="toc-text">公有 IP 地址（公网 IP）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%81%E6%9C%89-IP-%E5%9C%B0%E5%9D%80%EF%BC%88%E7%A7%81%E7%BD%91-IP%EF%BC%89"><span class="toc-text">私有 IP 地址（私网 IP）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E7%BD%91%E4%B8%8E%E7%A7%81%E7%BD%91%E7%9A%84%E8%AE%BF%E9%97%AE"><span class="toc-text">公网与私网的访问</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E9%83%A8-IP-%E5%9C%B0%E5%9D%80%E7%9A%84%E8%8C%83%E5%9B%B4"><span class="toc-text">全部 IP 地址的范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E6%9C%89-IP-%E5%9C%B0%E5%9D%80%E7%9A%84%E8%8C%83%E5%9B%B4"><span class="toc-text">公有 IP 地址的范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%81%E6%9C%89-IP-%E5%9C%B0%E5%9D%80%E7%9A%84%E8%8C%83%E5%9B%B4"><span class="toc-text">私有 IP 地址的范围</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E6%AE%B5-%E5%B1%80%E5%9F%9F%E7%BD%91"><span class="toc-text">网段 &amp; 局域网</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%8C%BA%E5%88%86%E6%98%AF%E5%90%A6%E5%90%8C%E4%B8%80%E7%BD%91%E6%AE%B5"><span class="toc-text">如何区分是否同一网段</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VPN"><span class="toc-text">VPN</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%86%E5%8F%B2"><span class="toc-text">历史</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%80%A7"><span class="toc-text">安全性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE"><span class="toc-text">协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8"><span class="toc-text">使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%9A%E8%A1%A5%E5%85%85"><span class="toc-text">📚补充</span></a></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>回到顶部</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>参与讨论</span></a></div></widget>
+</div></aside><div class="float-panel blur">
+  <button type="button" style="display:none" class="laptop-only rightbar-toggle mobile" onclick="sidebar.rightbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" style="display:none" class="mobile-only leftbar-toggle mobile" onclick="sidebar.leftbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer=""></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer="">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"giscus":{"js":"/js/services/giscus_new.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer="" src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div>
+</body></html><script>var posts=["post/人工智能/animated-pictures-to-easily-understand-self-attention/","post/人工智能/how-does-chatgpt-handle-text-input/","post/人工智能/the-soul-of-chatgpt-attention-mechanism/","post/博客开发/building-a-personal-blog-from-scratch/","post/博客开发/hexo-stellar-development-guide/","post/年终总结/「2021」passion/","post/年终总结/「2022」life-is-a-field-not-a-track/","post/开发工具/docker-and-k8s/","post/年终总结/「2023」feel-the-journey/","post/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","post/开发工具/docker-intro/","post/开发工具/git-undo/","post/开发工具/git-principle/","post/开发工具/nat/","post/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","post/开发工具/tips-for-precise-search-on-github/","post/开发工具/understanding-.git-folder/","post/生活思考/choose-one-sentence/","post/生活思考/constantly-comparing-yourself-to-others-is-the-tragedy-of-life/","post/生活思考/don't-limit-your-future-imagination-with-your-current-abilities/","post/生活思考/deep-thoughts/","post/算法/advanced-algorithms/","post/算法/binary-tree-matching/","post/算法/constructing-binary-tree/","post/算法/cpp-acm-input-output/","post/算法/difference-array/","post/算法/heapsort-quicksort-mergesort/","post/算法/interview-add-two/","post/算法/interview-linked-list/","post/算法/kuaishou-merge-k-ascending-linked-lists/","post/算法/maximum-product-of-subarray-or-subsequence/","post/算法/modulo/","post/算法/monotonic-stack/","post/算法/qpow/","post/算法/sieve-of-prime-number/","post/算法/tackle-without-sort-library/","post/算法/tecent-wxg-russian-doll-envelope/","post/算法/union-search/","post/系统与体系结构/a-study-of-linux-file-system-evolution/","post/系统与体系结构/analysis-of-trace-processing/","post/系统与体系结构/debugging-with-gdb/","post/系统与体系结构/distributed-systems-paxos.md/","post/系统与体系结构/distributed-systems-theoretical-foundations/","post/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","post/系统与体系结构/distributed-systems-raft/","post/系统与体系结构/effective-c++/","post/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","post/系统与体系结构/linux-disk-automatic-mounting/","post/系统与体系结构/linux-kernel-io-path/","post/系统与体系结构/linux-partition/","post/系统与体系结构/madam-for-all-flash-array/","post/系统与体系结构/mmap-vs-read-write/","post/系统与体系结构/nvm-top-lab/","post/系统与体系结构/persistent-memory-research-report/","post/编程语言/cpp-copy-constructor/","post/系统与体系结构/pmdk-programming-guidelines/","post/编程语言/cpp-stl/","post/编程语言/cpp-wiki/","post/编程语言/golang-wiki/","post/计算机网络/does-restarting-mean-shutting-down-and-power-on/","post/编程语言/python-wiki/","post/计算机网络/network-ip/","post/计算机网络/reverse-proxy/","post/面经/reverse-interview/","post/经验分享/how-can-undergraduates-enter-bat/","post/面经/interview-review/","post/经验分享/how-to-balance-token-security-and-user-experience/","post/经验分享/technical-writing-experience/","post/面经/job-hunting-guide-for-technical-personnel/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>
