@@ -1622,7 +1622,6 @@ div.toast.show {
   right: 0.75rem;
   background: #1cd0fd;
   border-radius: 2px;
-  pointer-events: none;
 }
 .navbar nav a:hover {
   background: var(--block-hover);
@@ -1634,8 +1633,7 @@ div.toast.show {
 .navbar nav a.active {
   background: var(--card);
   box-shadow: 0 0 2px 0px rgba(0,0,0,0.04), 0 0 8px 0px rgba(0,0,0,0.04);
-  cursor: default;
-  pointer-events: none;
+  cursor: pointer;
 }
 .navbar nav a.active:after {
   content: '';
