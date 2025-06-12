@@ -63,7 +63,7 @@
   --text-p3: #808080;
   --text-p4: #999;
   --text-meta: #ccc;
-  --text-code: #14181f;
+  --text-code: #f25221;
 }
 :root[data-theme="dark"] {
   --site-bg: #1c1e21;
@@ -84,7 +84,7 @@
   --text-p3: #858585;
   --text-p4: #707070;
   --text-meta: #4d4d4d;
-  --text-code: #fff;
+  --text-code: #f25727;
 }
 @media screen and (max-width: 667px) {
   :root[data-theme="dark"] {
@@ -110,7 +110,7 @@
   --text-p3: #808080;
   --text-p4: #999;
   --text-meta: #ccc;
-  --text-code: #14181f;
+  --text-code: #f25221;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
@@ -132,7 +132,7 @@
     --text-p3: #858585;
     --text-p4: #707070;
     --text-meta: #4d4d4d;
-    --text-code: #fff;
+    --text-code: #f25727;
   }
 }
 @media screen and (prefers-color-scheme: dark) and (max-width: 667px) {
@@ -142,7 +142,7 @@
 }
 pre {
   font-family: consolaslxgw, Menlo, Monaco, Consolas, system-ui, "Courier New", monospace, sans-serif;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   tab-size: 4;
   -moz-tab-size: 4;
   -o-tab-size: 4;
@@ -199,7 +199,7 @@ table:not([class]) tr:hover {
   background: var(--block);
 }
 *[ff=title] {
-  font-family: consolaslxgw, system-ui, "Microsoft Yahei", "Segoe UI", -apple-system, Roboto, Ubuntu, "Helvetica Neue", Arial, "WenQuanYi Micro Hei", sans-serif;
+  font-family: system-ui, "Microsoft Yahei", "Segoe UI", -apple-system, Roboto, Ubuntu, "Helvetica Neue", Arial, "WenQuanYi Micro Hei", sans-serif;
 }
 blockquote {
   display: block;
@@ -542,7 +542,7 @@ pre:not([class]):has(>code) {
 }
 .md-text .highlight figcaption {
   color: var(--text-p2);
-  font-size: 0.8125rem;
+  font-size: 1rem;
   font-weight: 500;
   margin-left: 0.5rem;
   display: inline-block;
