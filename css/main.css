@@ -4103,45 +4103,54 @@ p>strong>span.tag-plugin.icon {
   font-size: calc(var(--fsp) + 2px);
   color: var(--text);
 }
-.md-text .tag-plugin.quot .content[type=text]:before,
-.md-text .tag-plugin.quot .content[type=text]:after {
-  content: "";
-  position: absolute;
-  width: 8px;
-  height: 14px;
-}
-.md-text .tag-plugin.quot .content[type=text]:before {
-  top: -8px;
-  left: 0;
-  border-top: 6px solid #ff5724;
-  border-left: 6px solid #ff5724;
-}
-.md-text .tag-plugin.quot .content[type=text]:after {
-  right: 0;
-  bottom: -8px;
-  border-right: 6px solid #ff5724;
-  border-bottom: 6px solid #ff5724;
-}
-.md-text .tag-plugin.quot h1.content[type=text]:before,
-.md-text .tag-plugin.quot h1.content[type=text]:after {
-  width: 12px;
-  height: 20px;
-  border-width: 8px;
-}
-.md-text .tag-plugin.quot .content[type=icon] img,
-.md-text .tag-plugin.quot .content[type=icon] svg {
+.md-text .tag-plugin.quot img,
+.md-text .tag-plugin.quot svg {
   height: 1.5em;
   display: inline-block;
   color: #ff5724;
   border-radius: 0;
   flex-shrink: 0;
 }
-.md-text .tag-plugin.quot .content[type=icon] span.text {
+.md-text .tag-plugin.quot span.text {
   margin: 0 0.5rem;
   padding-top: 1px;
 }
-.md-text .tag-plugin.quot .content[type=icon] span.empty {
+.md-text .tag-plugin.quot span.empty {
   padding: 0 8px;
+}
+.md-text .tag-plugin.quot.p .content {
+  transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -webkit-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+}
+.md-text .tag-plugin.quot.p .content .text {
+  position: relative;
+}
+.md-text .tag-plugin.quot.p .content .text:after {
+  content: "";
+  position: absolute;
+  --width: 90%;
+  width: var(--width);
+  height: 4px;
+  left: calc(50% - var(--width) / 2);
+  bottom: -8px;
+  border-radius: 100%;
+  background: var(--text);
+  opacity: 0.1;
+  filter: blur(2px);
+  transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -webkit-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+}
+.md-text .tag-plugin.quot.p:hover .content {
+  transform: translateY(-4px) scale(1.05);
+}
+.md-text .tag-plugin.quot.p:hover .content .text:after {
+  opacity: 0.2;
+  filter: blur(8px);
+  transform: translateY(4px) scale(1.2, 1.5);
 }
 .sites-wrap .grid-box {
   display: grid;
