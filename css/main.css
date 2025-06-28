@@ -6593,20 +6593,18 @@ body>.sitebg .siteblur:hover {
 .md-text iframe {
   display: block;
 }
-.md-text.content h1,
 .md-text.content h2,
 .md-text.content h3,
 .md-text.content h4,
 .md-text.content h5,
 .md-text.content h6 {
   color: var(--text);
-  line-height: 1.8;
-  margin: 1.5em 0 1em;
+  line-height: 1.4;
+  margin: 0.5em 0 0.5em;
   font-weight: 600;
   position: relative;
   padding-left: 1.8em;
 }
-.md-text.content h1:before,
 .md-text.content h2:before,
 .md-text.content h3:before,
 .md-text.content h4:before,
@@ -6619,14 +6617,15 @@ body>.sitebg .siteblur:hover {
   font-family: monospace;
 }
 .md-text.content h1 {
-  font-size: 1.8em;
+  font-size: 2em;
+  text-align: center;
 }
 .md-text.content h1:before {
   content: '# ';
 }
 .md-text.content h2 {
   font-size: 1.5em;
-  padding-bottom: 0.3em;
+  padding-bottom: 0.15em;
   border-bottom: 1px solid var(--theme-link-opa);
 }
 .md-text.content h2:before {
@@ -6701,10 +6700,8 @@ table a:not([class]) {
   -moz-transition: all 0.2s ease-out;
   -webkit-transition: all 0.2s ease-out;
   -o-transition: all 0.2s ease-out;
-  padding: 0 2px;
   border-radius: 0;
-  color: inherit;
-  background: linear-gradient(0deg, var(--theme-link), var(--theme-link)) no-repeat left 100%/100% 1px;
+  background: linear-gradient(0deg, var(--block-border), var(--block-border)) no-repeat left 100%/100% 2px;
 }
 li:not([class]) a:not([class]):hover,
 p:not([class]) a:not([class]):hover,
@@ -6718,7 +6715,6 @@ li:not([class]) a:not([class]):has(img),
 p:not([class]) a:not([class]):has(img),
 table a:not([class]):has(img) {
   background: none;
-  padding: 0;
 }
 li:not([class]) a:not([class]):has(img):hover,
 p:not([class]) a:not([class]):has(img):hover,
