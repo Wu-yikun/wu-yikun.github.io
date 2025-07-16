@@ -6649,21 +6649,21 @@ body>.sitebg .siteblur:hover {
 }
 .md-text.content h4 {
   font-size: 1.2em;
-  padding-left: 2.6em;
+  padding-left: 2.7em;
 }
 .md-text.content h4:before {
   content: '#### ';
 }
 .md-text.content h5 {
   font-size: 1.1em;
-  padding-left: 3em;
+  padding-left: 3.2em;
 }
 .md-text.content h5:before {
   content: '##### ';
 }
 .md-text.content h6 {
   font-size: 1em;
-  padding-left: 3.4em;
+  padding-left: 3.8em;
 }
 .md-text.content h6:before {
   content: '###### ';
