@@ -14,36 +14,36 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
   <meta name="theme-color" content="#f9fafb">
   
-  <title>动图轻松理解 Self-Attention (自注意力机制) - Yikun Wu</title>
+  <title>ChatGPT 是如何处理文字输入的？ - Yikun Wu</title>
 
   
-    <meta name="description" content="Self-Attention 是 Transformer 中最核心的思想，我们在阅读 Transformer 论文的过程中，最难理解的可能就是自注意力机制实现的过程和繁杂的公式。">
+    <meta name="description" content="在 ChatGPT 计算处理完之后，也需要将结果再做逆转换，形成文字形式，反馈给用户。这种转换包括 Tokenizer 和 Embedding，本文要介绍这两个模块。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="动图轻松理解 Self-Attention (自注意力机制)">
-<meta property="og:url" content="https://wu-yikun.com/post/AI%20Infra/animated-pictures-to-easily-understand-self-attention/index.html">
+<meta property="og:title" content="ChatGPT 是如何处理文字输入的？">
+<meta property="og:url" content="https://wu-yikun.com/post/AI-Infra/how-does-chatgpt-handle-text-input/index.html">
 <meta property="og:site_name" content="Yikun Wu">
-<meta property="og:description" content="Self-Attention 是 Transformer 中最核心的思想，我们在阅读 Transformer 论文的过程中，最难理解的可能就是自注意力机制实现的过程和繁杂的公式。">
+<meta property="og:description" content="在 ChatGPT 计算处理完之后，也需要将结果再做逆转换，形成文字形式，反馈给用户。这种转换包括 Tokenizer 和 Embedding，本文要介绍这两个模块。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504140113572.jpg">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301514309.gif">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301515895.gif">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301515966.gif">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301519982.gif">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301518558.gif">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301524780.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300027011.awebp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300036542.awebp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300933980.awebp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300937866.awebp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300945970.awebp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300946471.awebp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300947899.awebp">
 <meta property="article:published_time" content="2025-04-11T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-07-17T10:28:28.453Z">
+<meta property="article:modified_time" content="2025-07-31T15:23:30.752Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="LLM">
-<meta property="article:tag" content="Self-Attention">
 <meta property="article:tag" content="ChatGPT">
-<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="Tokenizer">
+<meta property="article:tag" content="Embedding">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504140113572.jpg">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300027011.awebp">
   
   
   
-  <meta name="keywords" content="LLM,Self-Attention,ChatGPT,Transformer">
+  <meta name="keywords" content="LLM,ChatGPT,Tokenizer,Embedding">
 
   <!-- feed -->
   
@@ -63,7 +63,7 @@
 <div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
 
 
-<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg"></a><a class="title" href="/about/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">无限进步</div><div class="sub hover cap" style="opacity:0"> 無限進步</div></a></div></header>
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar" src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg';"></a><a class="title" href="/about/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">无限进步</div><div class="sub hover cap" style="opacity:0"> 無限進步</div></a></div></header>
 
 <div class="nav-area">
 <div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="Search"></form><div id="search-result"></div><div class="search-no-result">No Results!</div></div>
@@ -73,10 +73,6 @@
 </div>
 <div class="widgets">
     <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                <path d="M18 10h-5" opacity=".5"></path>
-                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
-                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
-            </svg><a href="/categories/AI-Infra/">AI Infra (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
                 <path d="M18 10h-5" opacity=".5"></path>
                 <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
                 <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
@@ -93,10 +89,6 @@
                 <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
                 <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
             </svg><a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E9%9D%A2%E7%BB%8F/">互联网面经 (6)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                <path d="M18 10h-5" opacity=".5"></path>
-                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
-                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
-            </svg><a href="/categories/OI-Wiki/">OI Wiki (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
                 <path d="M18 10h-5" opacity=".5"></path>
                 <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
                 <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
@@ -144,7 +136,15 @@
                 <path d="M18 10h-5" opacity=".5"></path>
                 <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
                 <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
-            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div></div></widget>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/AI-Infra/">AI-Infra (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/OI-Wiki/">OI-Wiki (1)</a></div></div></widget>
 
 <widget class="widget-wrapper timeline"><div class="widget-header dis-select"><span class="name">最新评论</span></div><div class="widget-body fs14"><div class="tag-plugin timeline ds-giscus" api="https://recent-comment-gnmy.vercel.app/" limit="10"></div></div></widget>
 </div>
@@ -155,106 +155,191 @@
 
 
 
-<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504140118653.png">
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504140119342.png">
   <div class="content">
     <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">Home</a>
-<span class="sep"></span><a class="cap breadcrumb" href="/">Post</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/AI-Infra/">AI Infra</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/ChatGPT/">ChatGPT</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/LLM/">LLM</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Self-Attention/">Self-Attention</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Transformer/">Transformer</a>&nbsp;</div>
-<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-04-11T16:00:00.000Z">2025-04-12</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-07-17T10:28:28.453Z">2025-07-17</time></span></div></div></div>
+<span class="sep"></span><a class="cap breadcrumb" href="/">Post</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/AI-Infra/">AI-Infra</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/ChatGPT/">ChatGPT</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Embedding/">Embedding</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/LLM/">LLM</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Tokenizer/">Tokenizer</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-04-11T16:00:00.000Z">2025-04-12</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-07-31T15:23:30.752Z">2025-07-31</time></span></div></div></div>
     
     <div class="bottom only-title">
       
       <div class="text-area">
-        <h1 class="text title"><span>动图轻松理解 Self-Attention (自注意力机制)</span></h1>
+        <h1 class="text title"><span>ChatGPT 是如何处理文字输入的？</span></h1>
         
       </div>
     </div>
     
   </div>
-  </div><article class="md-text content"><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504140113572.jpg" alt="动图轻松理解Self-Attention(自注意力机制)"></p>
-<p>Self-Attention 是 Transformer 中最核心的思想。我们在阅读 Transformer 论文的过程中，最难理解的可能就是自注意力机制实现的过程和繁杂的公式。本文在 <a href="https://link.zhihu.com/?target=https://sh-tsang.medium.com/brief-review-on-the-relationship-between-self-attention-and-convolutional-layers-509a75230478">Illustrated: Self-Attention</a> 这篇文章的基础上，加上了自己对 Self-Attention 的理解，力求通俗易懂。希望大家批评指正。</p>
-<h2 id="1-Self-Attention-是什么？"><a href="#1-Self-Attention-是什么？" class="headerlink" title="1. Self-Attention 是什么？"></a>1. Self-Attention 是什么？</h2><p>我们再来讲解一个重要的概念，即 <strong>query</strong>、<strong>key</strong> 和 <strong>value</strong>。这三个词翻译成中文就是查询、键、值，看到这中文的意思，还是迷迷糊糊的。我们来举个例子：小明想在 b 站搜索深度学习，他把深度学习四个字输入到搜索栏，按下搜索键。搜索引擎就会将他的查询 query 映射到数据库中相关的标签 key，如吴恩达、神经网络等等，然后向小明展示最匹配的结果 value。</p>
-<p>最后我们来说说 Self-Attention。和 Attention 类似，他们都是一种注意力机制。不同的是 <strong>Attention 是 source 对 target，输入的 source 和输出的 target 内容不同</strong>。例如英译中，输入英文，输出中文。<strong>而 Self-Attention 是 source 对 source，是 source 内部元素之间或者 target 内部元素之间发生的 Attention 机制</strong>，也可以理解为 Target=Source 这种特殊情况下的注意力机制。</p>
-<p>下面我们通过一个简单的例子，来了解 Self-Attention 的计算步骤。</p>
-<h2 id="2-计算步骤"><a href="#2-计算步骤" class="headerlink" title="2. 计算步骤"></a>2. 计算步骤</h2><h3 id="2-1-定义-input"><a href="#2-1-定义-input" class="headerlink" title="2.1 定义 input"></a>2.1 定义 input</h3><p>在进行 Self - Attention 之前，我们首先定义 3 个 1×4 的 input。 pytorch 代码如下：</p>
-<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line">x = [</span><br><span class="line">    [<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>],  <span class="comment"># input 1</span></span><br><span class="line">    [<span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">2</span>],  <span class="comment"># input 2</span></span><br><span class="line">    [<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>]   <span class="comment"># input 3</span></span><br><span class="line">    ]</span><br><span class="line">x = torch.tensor(x, dtype=torch.float32)</span><br></pre></td></tr></tbody></table></figure>
-
-<h3 id="2-2-初始化权重"><a href="#2-2-初始化权重" class="headerlink" title="2.2 初始化权重"></a>2.2 初始化权重</h3><p>每个 input 和三个权重矩阵分别相乘会得到三个新的矩阵，分别是 key(橙色)，query(红色)，value(紫色)。我们已经令 input 的 shape 为 1×4，key、query、value 的 shape 为 1×3，因此可以推出与 input 相乘的权重矩阵的 shape 为 4×3。 代码如下：</p>
+  </div><article class="md-text content"><p>我们清楚了 ChatGPT 模型的输入和输出，实际上就是将文字输入 ChatGPT 模型当中，然后再让模型预测出文字，本质上就是一个“文字接龙”式的<strong>语言模型</strong>。</p>
+<p>而文字在进入 ChatGPT 模型之前，需要先经过一个转换，形成另外一种数据形式。在 ChatGPT 计算处理完之后，也需要将结果再做逆转换，形成文字形式，反馈给用户。这种转换包括两个步骤，Tokenizer 和 Embedding。本文主要介绍这两个模块。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300027011.awebp" alt="4-1.png"></p>
+<h2 id="Tokenizer"><a href="#Tokenizer" class="headerlink" title="Tokenizer"></a>Tokenizer</h2><p>ChatGPT 官方目前已经开始对服务收费了，收费方式主要是计算用户使用的 token 数，数量越多，收费越高。</p>
 <blockquote>
-<p>这三个不同的权重矩阵（$W_Q、W_K、W_V$）是通过神经网络模型的训练过程自动学习而来的。在自注意力机制中，这些矩阵是模型参数的一部分，它们的初值通常是随机初始化的。然后，通过训练数据和反向传播算法，模型会逐渐调整这些矩阵的值，以最小化预测误差（比如分类任务中的交叉熵损失）。</p>
+<p>例如，用户提问了一条文本，文字（带标点和各种特殊符号）共有 50 个字符，但耗费了 30 个 token，ChatGPT 根据输入生成一条回答，总计 200 个 token，逆转换为文字总共 300 个字，那么用户一共消费的 token 数就是 30+200=230 个。那什么是 token 呢？</p>
 </blockquote>
-<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">w_key = [</span><br><span class="line">  [<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>],</span><br><span class="line">  [<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>],</span><br><span class="line">  [<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>],</span><br><span class="line">  [<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>]</span><br><span class="line">]  </span><br><span class="line">w_query = [</span><br><span class="line">  [<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>],</span><br><span class="line">  [<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>],</span><br><span class="line">  [<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>],</span><br><span class="line">  [<span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>]</span><br><span class="line">]</span><br><span class="line">w_value = [</span><br><span class="line">  [<span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>],</span><br><span class="line">  [<span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>],</span><br><span class="line">  [<span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>],</span><br><span class="line">  [<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>]</span><br><span class="line">]</span><br><span class="line">w_key = torch.tensor(w_key, dtype=torch.float32)</span><br><span class="line">w_query = torch.tensor(w_query, dtype=torch.float32)</span><br><span class="line">w_value = torch.tensor(w_value, dtype=torch.float32)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Weights for key: \n"</span>, w_key)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Weights for query: \n"</span>, w_query)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Weights for value: \n"</span>, w_value)</span><br></pre></td></tr></tbody></table></figure>
-
-<h3 id="2-3-计算-key-query-和-value"><a href="#2-3-计算-key-query-和-value" class="headerlink" title="2.3 计算 key, query 和 value"></a>2.3 计算 key, query 和 value</h3><p>现在我们计算 key, query 和 value 矩阵的值，计算的过程也很简单，运用矩阵乘法即可：</p>
+<p><strong>token 是任何 NLP 神经网络 模型接收用户输入的最小粒度。</strong> token 本身就是一些字符的组合，如英文单词<code>#cat</code>、中文词汇<code>鞋子</code>、英文词缀<code>ly</code>、中文汉字<code>珂</code>等，都可以看作是一个 token。</p>
+<p><strong>将用户输入的文本转换为 token 序列的过程就叫做 Tokenizer</strong>。它包含两部分，一部分是从文字转换为 token（设置在进入 ChatGPT 之前），另一部分是将 token 转换为文字，也就是逆转换（设置在 ChatGPT 模型输出之后）。</p>
+<h3 id="Tokenizer-算法-BPE-执行流程"><a href="#Tokenizer-算法-BPE-执行流程" class="headerlink" title="Tokenizer 算法 BPE 执行流程"></a>Tokenizer 算法 BPE 执行流程</h3><p>Tokenizer 目前最流行的实现方法是 <strong>字符对编码</strong> <strong>BPE（Byte Pair Encoding） 算法</strong>，它也是 ChatGPT 采用的算法。BPE 算法是根据一份 token 词表（Vocabulary），将输入的文本拆解成若干个 token。其中，每一个 token 都存在于词表。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300036542.awebp" alt="4-2.png"></p>
+<p>具体以如下一条输入模型的文本为例：</p>
+<blockquote>
+<p><em>The newest car has a lower price and the lowest fuel.</em></p>
+</blockquote>
+<p>这条文本中，包含了 53 个字符（包含字母、空格和标点，以及任何键盘可以打出的特殊符号，均输入 ChatGPT 中）。</p>
+<p>一般地，模型训练所使用的词表中 token 数量大约从几万~几十万不等。假设 BPE 算法已经生成一个 <strong>Token 词表（Vocabulary）</strong> ，其部分词表 token 内容如下：</p>
+<table>
+<thead>
+<tr>
+<th>#low</th>
+<th>est</th>
+<th>#new</th>
+<th>er</th>
+<th>#the</th>
+<th>#car</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#and</td>
+<td>#fuel</td>
+<td>#a</td>
+<td>#has</td>
+<td>#have</td>
+<td>and</td>
+</tr>
+<tr>
+<td>#thailand</td>
+<td>#price</td>
+<td>#dog</td>
+<td>#old</td>
+<td>#most</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<p>BPE 算法就是根据上述 token 词表对文本进行匹配，从文本中拆分出存在于词表中的 token，将文本转换成如下的形式：</p>
+<blockquote>
+<p>The newest car has a lower price and the lowest fuel.</p>
+<p>==&gt;</p>
+<p><code>#The</code>, <code>#new</code>, <code>est</code>, <code>#car</code>, <code>#has</code>, <code>#a</code>, <code>#low</code>, <code>er</code>, <code>#price</code>, <code>#and</code>, <code>#the</code>, <code>#low</code>, <code>est</code>, <code>#fuel</code>.</p>
+</blockquote>
+<p>在这条例子中，文本被拆分成 15 个 token。由于英文单词是以空格形式进行分割的，因此，每一个单词的首字母都添加<code>#</code>为单词起始的标识，它可以理解为一个空格，<strong>不加<code>#</code>的token表示无法独立成词</strong>。一些单词被拆分成若干部分，如<code>newest</code>被拆分成两部分，<code>#new</code> 和 <code>est</code>。然后，模型就接收这样的 token 数据做进一步处理计算。</p>
+<p>从上面的例子中，我们可以看出，token 中一般都是以非常<strong>高频</strong>的字符组合构成的，而且这些 token 往往具备一定的语义。例如，<code>newest</code>被拆解为<code>#new</code> 和 <code>est</code>，前半部分是单词词根，后半部分是英文形容词最高级。</p>
+<p>同样地，ChatGPT 模型在回答用户问题，输出答案时，也是首先输出 token 序列，再将 token 序列反转为正常的自然语言文本，这个操作叫做 <strong>De-tokenization</strong>。它与 Tokenization 是完全<strong>互逆</strong>的操作。读者可以尝试把上面的 token 序列合并成完整的文本句子。</p>
+<blockquote>
+<p>对于中文而言，常用汉字大约为 7000 个左右，而且文本之间不存在空格。因此，也可以采用上述的算法来完成，唯一的区别就是中文的 token 的开头不添加 <code>#</code> 符号。一些极为常见的中文单词可能合并为一个 token，如<code>我们</code>，而考虑到词频，绝大多数中文依然以单字独立成 token。</p>
+</blockquote>
+<h3 id="Byte-level-BPE-算法"><a href="#Byte-level-BPE-算法" class="headerlink" title="Byte-level BPE 算法"></a>Byte-level BPE 算法</h3><p>之前介绍的 BPE 算法是基于<strong>字符</strong>的，除此之外，还有一种基于<strong>字节</strong>的 BPE 算法（Byte-level BPE）。这种方法，主要是为了克服基于字符的 token 词表，由于各种特殊字符数量太庞大导致效果变差。</p>
+<p>除了我们常用的中文外，ChatGPT 可以随意操作英文、日文、韩文、法文等至少二十多种文字。这些语言的文字和符号更是多种多样，有英文拉丁字母<code>ABCDabcd</code>，中文汉字<code>千百花鸟风月</code>，西里尔字母<code>БГД</code>，日语假名<code>ピンイ</code>，当然也包括很多 emoji 特殊符号<code>💁👌🎍😍</code>。</p>
+<p>所有的字符在计算机中都是以 <strong>Unicode</strong> 编码格式实现的。</p>
+<blockquote>
+<p><strong>Unicode 编码</strong>是一种用于计算机表示全球范围内各种语言文字字符的标准编码方式，<strong>它为世界上所有的字符都分配了一个唯一的数字编号</strong>，解决不同国家和地区使用不同语言文字、字符集的问题。 Unicode 编码采用 16 进制表示，每个字符都有一个唯一的码点，例如汉字“<strong>中</strong>”在 Unicode 编码中的码点是U+4E2D，其中 U+ 表示 Unicode 编码，4E2D 是该字符的 16 进制码点。若以 UTF-8 编码为例，汉字“中”被转换为 <strong>3 个字节（byte）</strong> 的二进制数据：11100100 10111000 10101101。</p>
+</blockquote>
+<p>Unicode 常用字符目前总量大约有十多万，如果直接基于字符形式，构造 token 词表的话，那么词表可能会变得非常庞大，达到几十万。过于庞大的词表会对 ChatGPT 模型产生很强的不确定性因素，让模型难以训练。</p>
+<p>因此，Byte-level BPE 算法应运而生。这种算法的执行步骤和上述的 BPE 算法完全一致，唯一的区别在于，<strong>BPE 算法直接操作 Unicode 字符，而 Byte-level BPE 算法把文本的字节作为直接操作的对象</strong>。</p>
+<blockquote>
+<p>由于操作的基本单位是字节而不是字符，因此即使是复杂的、多样化的文字系统（如中文、日文等），其基础元素也仅仅是256个可能的字节值。这相较于直接基于字符的BPE算法，其可能需要包含成千上万个不同的字符，词表大小显著减少。小型词表意味着模型训练和推理时的内存和存储需求大大降低。</p>
+</blockquote>
+<p>例如，在 BPE 算法中，<code>中</code> 字被当作一个字符进行 token 匹配。而在 Byte-level 算法中，它被当作 3 个字符进行匹配（因其 Unicode 占用 3 个字节）。而英文字母如 <code>p</code> 则在两种算法中，都被当作一个字符处理，因为字母的 Unicode 编码只占用一个字节。所有的字节个数全部加起来不过 256 （即一个字节所表示的符号个数 $1\ Byte = 8\ bit = 2^8$）个，这对模型训练是一个巨大的利好。</p>
+<p>Byte-level BPE 算法的代码链接：<a target="_blank" rel="noopener" href="https://github.com/dongrixinyu/JioNLP/blob/master/jionlp/algorithm/bpe/encoder_decoder.py">Byte-level BPE</a>，感兴趣的可以阅读一下。</p>
+<h3 id="BPE-的词表是如何训练得到的？"><a href="#BPE-的词表是如何训练得到的？" class="headerlink" title="BPE 的词表是如何训练得到的？"></a>BPE 的词表是如何训练得到的？</h3><p>BPE 的词表主要是根据训练文本语料统计得到的，训练的语料数量越大，得到的 BPE 词表越准确，越具有词根语义。</p>
+<p>假设根据一份语料数据，我们可以统计得到如下<strong>词汇</strong>和其对应出现的次数。</p>
+<table>
+<thead>
+<tr>
+<th>#lowest</th>
+<th>7</th>
+<th>#lower</th>
+<th>4</th>
+<th>#newest</th>
+<th>5</th>
+<th>#older</th>
+<th>5</th>
+<th>#newer</th>
+<th>4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#and</td>
+<td>10</td>
+<td>#fuel</td>
+<td>4</td>
+<td>#a</td>
+<td>14</td>
+<td>#has</td>
+<td>4</td>
+<td>#oldest</td>
+<td>5</td>
+</tr>
+<tr>
+<td>#thailand</td>
+<td>3</td>
+<td>#price</td>
+<td>6</td>
+<td>#new</td>
+<td>7</td>
+<td>#old</td>
+<td>6</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<p>以上均为文本中存在的完整的词汇。</p>
 <ul>
-<li>key = input * w_key;</li>
-<li>query = input * w_query;</li>
-<li>value = input * w_value;</li>
+<li>接下来，我们可以按字母进行统计，得到频率最高的字符对为标红的 “es”，共计出现 17 次。我们单独把 “es” 提出来，<strong>并把语料中的所有 “es” 看作一个整体</strong>。</li>
+<li>再重复上面的过程，<strong>可以发现“est”可以看作是“es” 和 “t” 的结合体</strong>，总计也出现 17 次。因此，可以把“est” 看作一个整体，放入词表，<strong>并把语料中所有的 “est” 看作一个整体</strong>。</li>
+<li>再重复上面的过程，可以发现，“#a” 的频率仅次于 “est”，为 14 次。因此，把 “#a” 放入词表中。</li>
+<li>再重复，可以把 “er” 这个字符对提取出来。</li>
+<li>以此类推，我们可以逐渐将高频的字符对提取出来，不断放入词表中。</li>
+<li>当放入词表中的 token 数达到了预定的最大数 N 时（一般从几万到几十万不等），得到最终的词表，即可用于 BPE 算法的执行流程，拆分每一条文本为若干 token。</li>
 </ul>
-<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">keys = x @ w_key</span><br><span class="line">querys = x @ w_query</span><br><span class="line">values = x @ w_value</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Keys: \n"</span>, keys)</span><br><span class="line"><span class="comment"># tensor([[0., 1., 1.],</span></span><br><span class="line"><span class="comment">#         [4., 4., 0.],</span></span><br><span class="line"><span class="comment">#         [2., 3., 1.]])</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Querys: \n"</span>, querys)</span><br><span class="line"><span class="comment"># tensor([[1., 0., 2.],</span></span><br><span class="line"><span class="comment">#         [2., 2., 2.],</span></span><br><span class="line"><span class="comment">#         [2., 1., 3.]])</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Values: \n"</span>, values)</span><br><span class="line"><span class="comment"># tensor([[1., 2., 3.],</span></span><br><span class="line"><span class="comment">#         [2., 8., 0.],</span></span><br><span class="line"><span class="comment">#         [2., 6., 3.]])</span></span><br></pre></td></tr></tbody></table></figure>
-
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301514309.gif" alt="img"></p>
-<h3 id="2-4-计算-attention-scores"><a href="#2-4-计算-attention-scores" class="headerlink" title="2.4 计算 attention scores"></a>2.4 计算 attention scores</h3><p>例如：为了获得 input1 的注意力分数 (attention scores)，我们将 input1 的 query(红色)与 input1、2、3 的 key(橙色) 的转置分别作点积，得到 3 个 attention scores(蓝色)。 同理，我们也可以得到 input2 和 input3 的 attention scores。</p>
-<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">attn_scores = querys @ keys.T</span><br><span class="line"><span class="built_in">print</span>(attn_scores)</span><br><span class="line"></span><br><span class="line"><span class="comment"># tensor([[ 2.,  4.,  4.],  # attention scores from Query 1</span></span><br><span class="line"><span class="comment">#         [ 4., 16., 12.],  # attention scores from Query 2</span></span><br><span class="line"><span class="comment">#         [ 4., 12., 10.]]) # attention scores from Query 3</span></span><br></pre></td></tr></tbody></table></figure>
-
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301515895.gif" alt="img"></p>
-<h3 id="2-5-对-attention-scores-作-softmax"><a href="#2-5-对-attention-scores-作-softmax" class="headerlink" title="2.5 对 attention scores 作 softmax"></a>2.5 对 attention scores 作 softmax</h3><p>上一步得到了 attention scores 矩阵后，我们对 attention scores 矩阵作 softmax 计算。softmax 的作用为归一化，使得其中各项相加后为 1。这样做的好处是凸显矩阵中最大的值并抑制远低于最大值的其他分量。</p>
-<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.nn.functional <span class="keyword">import</span> softmax</span><br><span class="line"></span><br><span class="line">attn_scores_softmax = softmax(attn_scores, dim=-<span class="number">1</span>)</span><br><span class="line"><span class="built_in">print</span>(attn_scores_softmax)</span><br><span class="line"><span class="comment"># tensor([[6.3379e-02, 4.6831e-01, 4.6831e-01],</span></span><br><span class="line"><span class="comment">#         [6.0337e-06, 9.8201e-01, 1.7986e-02],</span></span><br><span class="line"><span class="comment">#         [2.9539e-04, 8.8054e-01, 1.1917e-01]])</span></span><br><span class="line"></span><br><span class="line">attn_scores_softmax = [</span><br><span class="line">  [<span class="number">0.0</span>, <span class="number">0.5</span>, <span class="number">0.5</span>],</span><br><span class="line">  [<span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>],</span><br><span class="line">  [<span class="number">0.0</span>, <span class="number">0.9</span>, <span class="number">0.1</span>]</span><br><span class="line">]</span><br><span class="line">attn_scores_softmax = torch.tensor(attn_scores_softmax)</span><br><span class="line"><span class="built_in">print</span>(attn_scores_softmax)</span><br></pre></td></tr></tbody></table></figure>
-
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301515966.gif" alt="img"></p>
-<h3 id="2-6-将-attention-scores-与-values-相乘"><a href="#2-6-将-attention-scores-与-values-相乘" class="headerlink" title="2.6 将 attention scores 与 values 相乘"></a>2.6 将 attention scores 与 values 相乘</h3><p>每个 score(蓝色)乘以其对应的 value(紫色)得到 3 个 alignment vectors(黄色)。在本教程中，我们将它们称为 weighted values(加权值)。</p>
-<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">weighted_values = values[:,<span class="literal">None</span>] * attn_scores_softmax.T[:,:,<span class="literal">None</span>]</span><br><span class="line"><span class="built_in">print</span>(weighted_values)</span><br></pre></td></tr></tbody></table></figure>
-
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301519982.gif" alt="img"></p>
-<h3 id="2-7-对-weighted-values-求和得到-output"><a href="#2-7-对-weighted-values-求和得到-output" class="headerlink" title="2.7 对 weighted values 求和得到 output"></a>2.7 对 weighted values 求和得到 output</h3><p>从图中可以看出，每个 input 生成 3 个 weighed values(黄色)，我们将这 3 个 weighted values 相加，得到 output(深绿)。图中一共有 3 个 input，所以最终生成 3 个 output。</p>
-<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">outputs = weighted_values.<span class="built_in">sum</span>(dim=<span class="number">0</span>)</span><br><span class="line"><span class="built_in">print</span>(outputs)</span><br><span class="line"></span><br><span class="line"><span class="comment"># tensor([[2.0000, 7.0000, 1.5000],  # Output 1</span></span><br><span class="line"><span class="comment">#         [2.0000, 8.0000, 0.0000],  # Output 2</span></span><br><span class="line"><span class="comment">#         [2.0000, 7.8000, 0.3000]]) # Output 3</span></span><br></pre></td></tr></tbody></table></figure>
-
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301518558.gif" alt="img"></p>
-<h2 id="3-回到论文"><a href="#3-回到论文" class="headerlink" title="3. 回到论文"></a>3. 回到论文</h2><p>我们在 <a href="https://link.zhihu.com/?target=https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf">Attention is all you need</a> 这篇论文中，可以看到这样一个公式：</p>
-<p>$$<br>Attention(Q,K,V)=softmax(\frac{QK^T}{\sqrt{d_k}})V<br>$$<br>其实，这个公式就是描述了我们上面计算的过程。我们首先将 Query 与 Key 的转置作点积，然后将结果除以 $\sqrt{d_k}$ ，再作 softmax 计算，最后将计算的结果与 Value 作矩阵乘法得到 output。</p>
-<p>这里有一个点，就是为什么要除以 $\sqrt{d_k}$？$d_k$ 表示的是词向量的维度。我们除以 $\sqrt{d_k}$ 是为了防止 $QK^T$ 值过大，导致 softmax 计算时上溢出 (overflow)。其次，使用 $d_k$ 可以使 $QK^T$ 的结果满足期望为 0，方差为 1 的分布。</p>
-<h2 id="4-为什么这样计算？"><a href="#4-为什么这样计算？" class="headerlink" title="4. 为什么这样计算？"></a>4. 为什么这样计算？</h2><p>最后的问题是，为什么要像公式那样计算呢？</p>
-<p>我们先从 $QK^T$ 看起，从几何角度看，点积是两个向量的长度与它们夹角余弦的积。</p>
-<ul>
-<li>如果两向量夹角为 90°，那么结果为 0，代表两个向量线性无关。</li>
-<li>如果两个向量夹角越小，两向量在方向上相关性也越强，结果也越大。</li>
+<h3 id="Tokenizer-的好处"><a href="#Tokenizer-的好处" class="headerlink" title="Tokenizer 的好处"></a>Tokenizer 的好处</h3><h4 id="克服长尾效应-OOV"><a href="#克服长尾效应-OOV" class="headerlink" title="克服长尾效应 OOV"></a>克服长尾效应 OOV</h4><p>在英文单词中，最常出现的 5000 个单词占据了实际使用量的 90%。而那些<strong>极低频</strong>的单词数量极多，但总共加起来的实际使用量也不超过 2%。这就是自然语言的<strong>长尾效应</strong> <strong>，</strong> 这种现象也出现在其它语言中。</p>
+<p>直接把极低频的单词和字符当作 token，本身意味着数据量的缺乏，会导致它有可能不在词表中（Out Of Vocabulary，OOV），对 NLP 模型的性能产生很大的影响。因此，引入 Tokenizer，采用 BPE 算法可以避免低频词作为 token。</p>
+<p>例如，根据上述训练例子得到的词表，<code>#strangest</code> 这个词在训练语料中词频较低，可能不出现在 token 词表中，但 “<code>#strang</code>” 和 “<code>est</code>” 一定以较高的频率出现在 token 词表中。</p>
+<h4 id="多语言支持"><a href="#多语言支持" class="headerlink" title="多语言支持"></a>多语言支持</h4><p>在早期，NLP 神经网络模型功能十分单一，且仅支持某一种语言。一个针对英文的文本分类模型，并不能支持中文的文本分类。而 BPE 算法，包括 Byte-level BPE 算法的设计，使得一份词表中包含了多种语言的字符，支持模型的多语言处理功能。</p>
+<h2 id="词嵌入｜Embedding"><a href="#词嵌入｜Embedding" class="headerlink" title="词嵌入｜Embedding"></a>词嵌入｜Embedding</h2><p>ChatGPT 的输入文字转换为 token 之后，还需要将 token 再转换为张量，这个过程叫做词嵌入（ <strong>Embedding</strong>），同时 embedding 也指被转换后得到的张量本身。</p>
+<p>在神经网络中，<strong>张量</strong>（Tensor）是指多维数组，它可以存储和处理大量的数据，是神经网络中最基本的数据结构。张量一般都以浮点数（小数的一种计算机表示形式）作为元素进行填充。</p>
+<blockquote>
+<p>例如，$a=[[1.034,0.932,−0.347],[0.023,−1.025,0.256]]$ 就是一个 $(2,3)$ 形状的张量，是一个多维数组。</p>
+</blockquote>
+<p>而<strong>向量（vector）</strong>，就是高中数学中的概念，一般就可以看作是一维张量。</p>
+<p>ChatGPT 从功能上看，是一个语言模型，但从结构上看，它是一个多层的、复杂的神经网络模型，每一层的神经网络都在进行浮点数张量（Tensor）的数字计算，而 ChatGPT 的输入是文字符号，token 也是文字符号。因此，<strong>token 需要先转换为浮点数字</strong>，再进入模型中进行计算。将用户输入的 token 转换为浮点数张量的过程，就叫做<strong>词嵌入（Embedding）</strong> 。当模型将结果计算完，也要将最终的浮点数转换为具体的 token，作为输出。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300933980.awebp" alt="4-3.png"></p>
+<blockquote>
+<p><code>#The</code>, <code>#new</code>, <code>est</code>, <code>#car</code>, <code>#has</code>, <code>#a</code>, <code>#low</code>, <code>er</code>, <code>#price</code>, <code>#and</code>, <code>#the</code>, <code>#low</code>, <code>est</code>, <code>#fuel</code>.</p>
+</blockquote>
+<p>仍以上述句子为例，假设 token 词表（Vocabulary）的数量总共为 N，每一个 token 都用一个 M 维的浮点数张量表示，其中<strong>每一个 token 都对应了一行张量</strong>，即该 token 的 embedding 表示。</p>
+<p>例如，<code>#price</code> 这个 token 对应的 embedding 是一个 M 维向量：</p>
+<blockquote>
+<p>$#price→ [0.103,0.034,0.129,−0.219,−0.156,…,0.0284,−0.172]$</p>
+</blockquote>
+<p>这组数据就可以传入 ChatGPT 模型中，做模型的训练和使用。所有的词表组成了一个 $N × M$ 维度的张量，如下图左侧方阵。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300937866.awebp" alt="4-4.png"></p>
+<p>根据例子中的前四个 token，我们可以将其对应的 embedding 抽取出来，按 token 的顺序排列成一组 $N_{输入token数}×M$  的张量，这组张量即可输入 ChatGPT 进行操作，图中白色部分表示词表中的词汇未匹配到 token 序列。换句话说，它完成了由 token 到其对应张量的映射。</p>
+<p>在实际模型当中，一次性输入给模型的 token 数量 $N_{输入token数}$ 并不是无限大的，例如，在 ChatGPT 的 <code>gpt-3.5-turbo</code> 版本中，最大的输入 token 数量为 4097 个，超出这个范围则会被模型自动截断。</p>
+<p>在自然语言中，<strong>文字的顺序是非常重要的</strong>，“我喜欢你”，和 “你喜欢我” 表达的含义是完全不同的。所以，ChatGPT 考虑到模型的每个 token 相互之间的顺序不能改变，需要明确地在输入端标识出每个 token 的位置张量（<strong>Position Embedding</strong>），其大小和 token 的 embedding 是一致的。两者以如下形式融合起来：$embedding_{input}=UW_e+W_p$。</p>
+<p>其中，$W_e$ 是 token embedding 矩阵，$W_p$ 是 position embedding 矩阵。而其中的 $U$ 是一个<strong>上下文矩阵</strong>。根据第 3 节的语言模型原理，模型在建模时有上下文限制，针对当前的一个 token，模型只能关注该 token 之前的 $k$ 个 token。因此，$U=(u_{-k},…,u_{-2},u_{-1})$，它是一个单位矩阵。</p>
+<p>假设 token 数量小于模型可接收的最大数量，那么，上述公式可以退化为：$embedding_{input}=W_e+W_p$。</p>
+<p>由此，即可输入 ChatGPT 模型进行计算。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300945970.awebp" alt="4-5.png"></p>
+<p>第 1 节中提到，ChatGPT 是有多轮对话能力的。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300946471.awebp" alt="4-6.png"></p>
+<p>在模型中，需要从输入端将输入1（Q1）、输出1（A1）、输入2（Q2）等部分信息区分出来。这几个部分信息分别叫做一个 segment，其中每一个 segment 都包含了多个 token，它们共享了同一个 segment embedding。具体方式如下：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403300947899.awebp" alt="4-7.png"></p>
+<p>上图中做了假设：Q1、A1、Q2 分别包含了 4 个 token。当然，在实际输入中，每个 segment 包含的 token 数都是可以灵活变化的；上面对话的轮数仅有两轮，而实际输入中，对话轮数可以非常多，形如 Q1、A1、Q2、A2、…、Qn， 只要所有 segment 对应的 token 总数加起来不超过模型允许的最大 token 数即可。</p>
+<p>因此，输入给 ChatGPT 的 embedding可以表示为如下公式：<br>$$<br>embedding=embedding_{segment}+embedding_{position}+embedding_{token}<br>$$</p>
+<h3 id="Embedding-的好处"><a href="#Embedding-的好处" class="headerlink" title="Embedding 的好处"></a>Embedding 的好处</h3><p>最早的时候，NLP 是直接处理文本字符串，没有 Embedding 这个操作的。Embedding 这个操作最早是由 <strong>word2vec 模型</strong>提出并实施的，GPT 系列模型，包括 ChatGPT 已将此操作作为了固定默认步骤。</p>
+<h4 id="Embedding-方便接入大规模神经网络"><a href="#Embedding-方便接入大规模神经网络" class="headerlink" title="Embedding 方便接入大规模神经网络"></a>Embedding 方便接入大规模神经网络</h4><p>我们在第 2 节中论述了，AI 想要有较高水平的智能，其模型规模必然比较大，参数量众多。在机器学习领域，神经网络模型是最容易扩展其模型规模的。我们会在第 8 节讲解神经网络相关的概念。</p>
+<p><strong>如果没有 Embedding 操作，那么 NLP 领域依然停留在直接处理字符的层面上，模型的规模扩展难度较大。embedding 将文字对应的 token 转换为抽象的固定维度的张量，标志着 NLP 迈入了深度神经网络的大门。</strong></p>
+<h4 id="Embedding-抽象了-token-的语义"><a href="#Embedding-抽象了-token-的语义" class="headerlink" title="Embedding 抽象了 token 的语义"></a>Embedding 抽象了 token 的语义</h4><p>当我们训练好 ChatGPT 这个模型之后，假设我们抽取出如下 token 对应的 embedding 向量：</p>
+<p><code>#price</code>（价格），<code>#cost</code>（开销），<code>#trunk</code>（卡车），<code>#texi</code>（出租车）</p>
+<p>其对应的均为 M 维 embedding 向量。计算两个向量相似度的方式主要采用余弦距离，则一定有：<br>$$<br>cos(price,cost)&gt;cos(price,truck) \<br>cos(truck,texi)&gt;cos(cost,texi)<br>$$<br>其含义为，price 和 cost 在 embedding 上的相似度，要大于 price 和 truck 的相似度，这符合人们的语言直觉。可以得出结论，在自然语言中，语义相近的两个词汇，其 embedding 向量之间的数学意义上的距离更相近。</p>
+<p>换句话说，<strong>Embedding</strong> 建立了自然语言的语义与数学之间的关联关系。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>Tokenizer 将模型输入的文字转换为 token 序列。</li>
+<li>ChatGPT 使用了 BPE 算法实现 Tokenizer。</li>
+<li>Embedding 将 token 序列映射为张量矩阵，方便模型进行张量矩阵运算。</li>
 </ul>
-<p><strong>点积反映了两个向量在方向上的相似度，结果越大越相似。</strong></p>
-<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202403301524780.jpg" alt="img"></p>
-<p>对 $QK^T$ 进行相似度的计算后，再使用 softmax 归一化。最后将归一化的结果与 $V$ 作乘法，<strong>计算的结果就是输入经过注意力机制加权求和之后的表示</strong>。</p>
 
 <div class="article-footer fs14">
-    <section id="references">
-      <div class="header"><span>References</span></div>
-      <div class="body">
-        <ul>
-        <li class="post-title">
-          <p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/48508221">详解 Transformer</a></p>
-
-        </li>
-        
-        <li class="post-title">
-          <p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/410776234">超详细图解 Self-Attention</a></p>
-
-        </li>
-        
-        <li class="post-title">
-          <p><a href="https://link.zhihu.com/?target=http://t.csdn.cn/GFTC2">Attention 机制与 Self-Attention 机制的区别</a></p>
-
-        </li>
-        
-        <li class="post-title">
-          <p><a href="https://link.zhihu.com/?target=https://towardsdatascience.com/illustrated-self-attention-2d627e33b20a">Illustrated-Self-Attention</a></p>
-
-        </li>
-        
-        <li class="post-title">
-          <p><a href="https://link.zhihu.com/?target=http://t.csdn.cn/oaOIq">self-attention 为什么要除以根号 d_k</a></p>
-
-        </li>
-        </ul>
-      </div>
-    </section>
-    
     <section id="license">
       <div class="header"><span>License</span></div>
       <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu</a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
@@ -264,18 +349,18 @@
     <section id="share">
       <div class="header"><span>Share</span></div>
       <div class="body">
-        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.com/post/AI%20Infra/animated-pictures-to-easily-understand-self-attention/"></div>
-        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.com/post/AI%20Infra/animated-pictures-to-easily-understand-self-attention/&amp;title=动图轻松理解 Self-Attention (自注意力机制) - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504140118653.png&amp;summary=Self-Attention 是 Transformer 中最核心的思想，我们在阅读 Transformer 论文的过程中，最难理解的可能就是自注意力机制实现的过程和繁杂的公式。"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=动图轻松理解 Self-Attention (自注意力机制) - Yikun Wu&amp;body=https://wu-yikun.com/post/AI%20Infra/animated-pictures-to-easily-understand-self-attention/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;Copied!&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.com/post/AI-Infra/how-does-chatgpt-handle-text-input/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.com/post/AI-Infra/how-does-chatgpt-handle-text-input/&amp;title=ChatGPT 是如何处理文字输入的？ - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504140119342.png&amp;summary=在 ChatGPT 计算处理完之后，也需要将结果再做逆转换，形成文字形式，反馈给用户。这种转换包括 Tokenizer 和 Embedding，本文要介绍这两个模块。"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=ChatGPT 是如何处理文字输入的？ - Yikun Wu&amp;body=https://wu-yikun.com/post/AI-Infra/how-does-chatgpt-handle-text-input/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;Copied!&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
         
         <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
-          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.com/post/AI%20Infra/animated-pictures-to-easily-understand-self-attention/">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.com/post/AI-Infra/how-does-chatgpt-handle-text-input/">
         </div>
         
       </div>
     </section>
     </div>
 </article>
-<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">Prev</div><a href="/post/AI%20Infra/how-does-chatgpt-handle-text-input/">ChatGPT 是如何处理文字输入的？</a></div><div class="item" id="next"><div class="note">Next</div><a href="/post/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/distributed-systems-theoretical-foundations/">分布式系统｜理论基础</a></div></section></div>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">Prev</div><a href="/post/AI-Infra/animated-pictures-to-easily-understand-self-attention/">动图轻松理解 Self-Attention (自注意力机制)</a></div><div class="item" id="next"><div class="note">Next</div><a href="/post/AI-Infra/the-soul-of-chatgpt-attention-mechanism/">ChatGPT 的灵魂：Attention 注意力机制</a></div></section></div>
 
 
 
@@ -322,7 +407,7 @@
 <div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
 <div class="widgets">
 
-<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Self-Attention-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1. Self-Attention 是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E8%AE%A1%E7%AE%97%E6%AD%A5%E9%AA%A4"><span class="toc-text">2. 计算步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%AE%9A%E4%B9%89-input"><span class="toc-text">2.1 定义 input</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%88%9D%E5%A7%8B%E5%8C%96%E6%9D%83%E9%87%8D"><span class="toc-text">2.2 初始化权重</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%AE%A1%E7%AE%97-key-query-%E5%92%8C-value"><span class="toc-text">2.3 计算 key, query 和 value</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E8%AE%A1%E7%AE%97-attention-scores"><span class="toc-text">2.4 计算 attention scores</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%AF%B9-attention-scores-%E4%BD%9C-softmax"><span class="toc-text">2.5 对 attention scores 作 softmax</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E5%B0%86-attention-scores-%E4%B8%8E-values-%E7%9B%B8%E4%B9%98"><span class="toc-text">2.6 将 attention scores 与 values 相乘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E5%AF%B9-weighted-values-%E6%B1%82%E5%92%8C%E5%BE%97%E5%88%B0-output"><span class="toc-text">2.7 对 weighted values 求和得到 output</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%9B%9E%E5%88%B0%E8%AE%BA%E6%96%87"><span class="toc-text">3. 回到论文</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%A0%B7%E8%AE%A1%E7%AE%97%EF%BC%9F"><span class="toc-text">4. 为什么这样计算？</span></a></li></ol></div><div class="widget-footer">
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Tokenizer"><span class="toc-text">Tokenizer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tokenizer-%E7%AE%97%E6%B3%95-BPE-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-text">Tokenizer 算法 BPE 执行流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Byte-level-BPE-%E7%AE%97%E6%B3%95"><span class="toc-text">Byte-level BPE 算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BPE-%E7%9A%84%E8%AF%8D%E8%A1%A8%E6%98%AF%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E5%BE%97%E5%88%B0%E7%9A%84%EF%BC%9F"><span class="toc-text">BPE 的词表是如何训练得到的？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tokenizer-%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="toc-text">Tokenizer 的好处</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%8D%E5%B5%8C%E5%85%A5%EF%BD%9CEmbedding"><span class="toc-text">词嵌入｜Embedding</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Embedding-%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="toc-text">Embedding 的好处</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></div><div class="widget-footer">
 
 <a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>Scroll to Top</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>Join Discussion</span></a></div></widget>
 </div></aside><div class="float-panel blur">
@@ -834,4 +919,4 @@ MathJax.Hub.Queue(function() {
 
 <!-- inject -->
 </div>
-</body></html><script>var posts=["post/AI Infra/ai-infra-in-the-era-of-llm/","post/AI Infra/animated-pictures-to-easily-understand-self-attention/","post/AI Infra/how-does-chatgpt-handle-text-input/","post/AI Infra/recommendation-system-architecture/","post/AI Infra/the-soul-of-chatgpt-attention-mechanism/","post/C++/cpp-copy-constructor/","post/Golang/golang-wiki/","post/C++/cpp-stl/","post/C++/cpp-wiki/","post/C++/effective-c++/","post/C++/from-posix-pthread-to-c++11-thread/","post/C++/network-programming-and-io-multiplexing/","post/C++/when-nanoseconds-matter-ultrafas-trading-systems-in-C++/","post/Python/python-wiki/","post/互联网面经/0521-huawei/","post/互联网面经/2025-autumn-recruitment/","post/互联网面经/26-top-talent/","post/互联网面经/reverse-interview/","post/OI Wiki/oi-wiki/","post/小吳日寄/2025-04-09/","post/互联网面经/intern-interview/","post/小吳日寄/2025-06-11/","post/小吳日寄/2025-06-14/","post/互联网面经/job-hunting-guide-for-technical-personnel/","post/小吳日寄/2025-06-17/","post/小吳日寄/2025-06-18/","post/小吳日寄/2025-06-28/","post/小吳日寄/2025-07-08/","post/博客开发/building-a-personal-blog-from-scratch/","post/年终总结/「2021」passion/","post/博客开发/hexo-stellar-deployment-guide/","post/年终总结/「2022」life-is-a-field-not-a-track/","post/年终总结/「2023」feel-the-journey/","post/公务员/civil-servant-examination-preparation-plan/","post/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","post/公务员/how-to-improve-essay-writing/","post/开发工具/docker-and-k8s/","post/开发工具/docker-intro/","post/开发工具/git-undo/","post/开发工具/git-workflow/","post/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","post/开发工具/nat/","post/开发工具/tips-for-precise-search-on-github/","post/开发工具/understanding-.git-folder/","post/摄影日志/camera-and-photography/","post/摄影日志/chengdu_2024-07-14/","post/摄影日志/dongshandao_2024-10-30/","post/摄影日志/fjnu_2023-06-14/","post/摄影日志/fuzhou_2024-10-01/","post/摄影日志/fuzhou_2025-06-14/","post/摄影日志/guangzhou_2024-11-29/","post/摄影日志/hangzhou_2023-04-28/","post/摄影日志/hangzhou_2024-06-15/","post/摄影日志/quanzhou_2024-01-28/","post/摄影日志/shenzhen_2023-10-27/","post/摄影日志/shot/","post/摄影日志/wuhan_2023-04-04/","post/摄影日志/xi'an_2024-06-24/","post/摄影日志/xiamen_2023-12-24/","post/摄影日志/zhangzhou_2024-05-01/","post/未来世界的幸存者/choose-one-sentence/","post/摄影日志/yinchuan_2024-07-27/","post/未来世界的幸存者/don't-limit-your-future-imagination-with-your-current-abilities/","post/未来世界的幸存者/how-can-undergraduates-enter-bat/","post/未来世界的幸存者/internet-companies-or-state-owned-enterprises/","post/未来世界的幸存者/technical-writing-experience/","post/未来世界的幸存者/the-future-world/","post/科研/eurosys-24-volley/","post/科研/fast-24-term/","post/科研/fast-25-gogetafs/","post/科研/osdi-23-chardonnay/","post/科研/osdi-23-smart/","post/科研/osdi-24-atlas/","post/数据结构与算法/advanced-algorithms/","post/数据结构与算法/binary-tree-matching/","post/数据结构与算法/cpp-acm-input-output/","post/数据结构与算法/difference-array/","post/数据结构与算法/constructing-binary-tree/","post/数据结构与算法/interview-add-two/","post/数据结构与算法/interview-linked-list/","post/数据结构与算法/kuaishou-merge-k-ascending-linked-lists/","post/数据结构与算法/maximum-product-of-subarray-or-subsequence/","post/数据结构与算法/modulo/","post/数据结构与算法/monotonic-stack/","post/数据结构与算法/qpow/","post/数据结构与算法/sieve-of-prime-number/","post/数据结构与算法/tackle-without-sort-library/","post/数据结构与算法/tecent-wxg-russian-doll-envelope/","post/数据结构与算法/union-search/","post/藏书阁/siddhartha/","post/系统与体系结构/a-study-of-linux-file-system-evolution/","post/系统与体系结构/analysis-of-trace-processing/","post/系统与体系结构/debugging-with-gdb/","post/系统与体系结构/distributed-systems-paxos.md/","post/系统与体系结构/distributed-systems-raft/","post/系统与体系结构/distributed-systems-theoretical-foundations/","post/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","post/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","post/系统与体系结构/linux-disk-automatic-mounting/","post/系统与体系结构/linux-kernel-io-path/","post/系统与体系结构/linux-partition/","post/系统与体系结构/madam-for-all-flash-array/","post/系统与体系结构/mmap-vs-read-write/","post/系统与体系结构/nvm-top-lab/","post/系统与体系结构/persistent-memory-research-report/","post/系统与体系结构/pmdk-programming-guidelines/","post/计算机网络/does-restarting-mean-shutting-down-and-power-on/","post/计算机网络/network-ip/","post/计算机网络/reverse-proxy/","post/科研/fast-20-empirical-guide-of-pm/","post/数据结构与算法/priority_queue/","post/数据结构与算法/sort-algorithm/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>
+</body></html><script>var posts=["post/C++/cpp-copy-constructor/","post/Golang/golang-wiki/","post/C++/cpp-stl/","post/C++/cpp-wiki/","post/C++/effective-c++/","post/C++/from-posix-pthread-to-c++11-thread/","post/C++/network-programming-and-io-multiplexing/","post/C++/when-nanoseconds-matter-ultrafas-trading-systems-in-C++/","post/Python/python-wiki/","post/互联网面经/0521-huawei/","post/互联网面经/2025-autumn-recruitment/","post/互联网面经/26-top-talent/","post/互联网面经/reverse-interview/","post/小吳日寄/2025-04-09/","post/互联网面经/intern-interview/","post/小吳日寄/2025-06-11/","post/小吳日寄/2025-06-14/","post/互联网面经/job-hunting-guide-for-technical-personnel/","post/小吳日寄/2025-06-17/","post/小吳日寄/2025-06-18/","post/小吳日寄/2025-06-28/","post/小吳日寄/2025-07-08/","post/博客开发/building-a-personal-blog-from-scratch/","post/年终总结/「2021」passion/","post/博客开发/hexo-stellar-deployment-guide/","post/年终总结/「2022」life-is-a-field-not-a-track/","post/年终总结/「2023」feel-the-journey/","post/公务员/civil-servant-examination-preparation-plan/","post/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","post/公务员/how-to-improve-essay-writing/","post/开发工具/docker-and-k8s/","post/开发工具/docker-intro/","post/开发工具/git-undo/","post/开发工具/git-workflow/","post/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","post/开发工具/nat/","post/开发工具/tips-for-precise-search-on-github/","post/开发工具/understanding-.git-folder/","post/摄影日志/camera-and-photography/","post/摄影日志/chengdu_2024-07-14/","post/摄影日志/dongshandao_2024-10-30/","post/摄影日志/fjnu_2023-06-14/","post/摄影日志/fuzhou_2024-10-01/","post/摄影日志/fuzhou_2025-06-14/","post/摄影日志/guangzhou_2024-11-29/","post/摄影日志/hangzhou_2023-04-28/","post/摄影日志/hangzhou_2024-06-15/","post/摄影日志/quanzhou_2024-01-28/","post/摄影日志/shenzhen_2023-10-27/","post/摄影日志/shot/","post/摄影日志/wuhan_2023-04-04/","post/摄影日志/xi'an_2024-06-24/","post/摄影日志/xiamen_2023-12-24/","post/摄影日志/zhangzhou_2024-05-01/","post/未来世界的幸存者/choose-one-sentence/","post/摄影日志/yinchuan_2024-07-27/","post/未来世界的幸存者/don't-limit-your-future-imagination-with-your-current-abilities/","post/未来世界的幸存者/how-can-undergraduates-enter-bat/","post/未来世界的幸存者/internet-companies-or-state-owned-enterprises/","post/未来世界的幸存者/technical-writing-experience/","post/未来世界的幸存者/the-future-world/","post/科研/eurosys-24-volley/","post/科研/fast-24-term/","post/科研/fast-25-gogetafs/","post/科研/osdi-23-chardonnay/","post/科研/osdi-23-smart/","post/科研/osdi-24-atlas/","post/数据结构与算法/advanced-algorithms/","post/数据结构与算法/binary-tree-matching/","post/数据结构与算法/cpp-acm-input-output/","post/数据结构与算法/difference-array/","post/数据结构与算法/constructing-binary-tree/","post/数据结构与算法/interview-add-two/","post/数据结构与算法/interview-linked-list/","post/数据结构与算法/kuaishou-merge-k-ascending-linked-lists/","post/数据结构与算法/maximum-product-of-subarray-or-subsequence/","post/数据结构与算法/modulo/","post/数据结构与算法/monotonic-stack/","post/数据结构与算法/qpow/","post/数据结构与算法/sieve-of-prime-number/","post/数据结构与算法/tackle-without-sort-library/","post/数据结构与算法/tecent-wxg-russian-doll-envelope/","post/数据结构与算法/union-search/","post/藏书阁/siddhartha/","post/系统与体系结构/a-study-of-linux-file-system-evolution/","post/系统与体系结构/analysis-of-trace-processing/","post/系统与体系结构/debugging-with-gdb/","post/系统与体系结构/distributed-systems-paxos.md/","post/系统与体系结构/distributed-systems-raft/","post/系统与体系结构/distributed-systems-theoretical-foundations/","post/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","post/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","post/系统与体系结构/linux-disk-automatic-mounting/","post/系统与体系结构/linux-kernel-io-path/","post/系统与体系结构/linux-partition/","post/系统与体系结构/madam-for-all-flash-array/","post/系统与体系结构/mmap-vs-read-write/","post/系统与体系结构/nvm-top-lab/","post/系统与体系结构/persistent-memory-research-report/","post/系统与体系结构/pmdk-programming-guidelines/","post/计算机网络/does-restarting-mean-shutting-down-and-power-on/","post/计算机网络/network-ip/","post/计算机网络/reverse-proxy/","post/科研/fast-20-empirical-guide-of-pm/","post/数据结构与算法/priority_queue/","post/数据结构与算法/sort-algorithm/","post/AI-Infra/the-soul-of-chatgpt-attention-mechanism/","post/AI-Infra/how-does-chatgpt-handle-text-input/","post/AI-Infra/animated-pictures-to-easily-understand-self-attention/","post/OI-Wiki/wiki/","post/AI-Infra/recommendation-system-architecture/","post/AI-Infra/ai-infra-in-the-era-of-llm/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>
