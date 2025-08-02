@@ -1,0 +1,1072 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/Wu-yikun/wu-yikun.github.io//tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>AI Infra 与 Infra - Yikun Wu</title>
+
+  
+    <meta name="description" content="近些年来，关于 AI Infra 和传统 Infra 之间的差异引发了广泛讨论。一些工程师认为，AI Infra 与他们熟悉的传统 Infra 相距甚远，尤其是面对 GPU、KVCache、3D 并行等新概念时，难免感到困惑和不安。究竟 AI Infra 真的与传统 Infra 有着天壤之别，还是说它们之间其实是某种延续与演变？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Infra 与 Infra">
+<meta property="og:url" content="https://wu-yikun.com/post/AI-Infra/ai-infra-vs-traditional-infra/index.html">
+<meta property="og:site_name" content="Yikun Wu">
+<meta property="og:description" content="近些年来，关于 AI Infra 和传统 Infra 之间的差异引发了广泛讨论。一些工程师认为，AI Infra 与他们熟悉的传统 Infra 相距甚远，尤其是面对 GPU、KVCache、3D 并行等新概念时，难免感到困惑和不安。究竟 AI Infra 真的与传统 Infra 有着天壤之别，还是说它们之间其实是某种延续与演变？">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-xuBu7X.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-Rfsd6Z.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-RuxC1g.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-oiVLOc.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-VNo8HU.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-VXd8Cs.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-NPAXjQ.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-r89YFS.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-7Gyeqh.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-00zjlo.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-8YlNEU.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-64fqnG.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-Z3cX84.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-RQsZ6u.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-rqtuDt.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-xYa1FK.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-MMrks0.gif">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-bm4PMg.webp">
+<meta property="article:published_time" content="2025-07-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-02T17:16:14.135Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="AI Infra">
+<meta property="article:tag" content="Infra">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-xuBu7X.jpg">
+  
+  
+  
+  <meta name="keywords" content="AI Infra,Infra">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140357298.svg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg"></a><a class="title" href="/about/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">无限进步</div><div class="sub hover cap" style="opacity:0"> 無限進步</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="Search"></form><div id="search-result"></div><div class="search-no-result">No Results!</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+    <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/Python/">Python (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/Golang/">Golang (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/AI-Infra/">AI-Infra (6)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/C/">C++ (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/OI-Wiki/">OI-Wiki (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%8D%9A%E5%AE%A2%E5%BC%80%E5%8F%91/">博客开发 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B0%8F%E5%90%B3%E6%97%A5%E5%AF%84/">小吳日寄 (7)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%85%AC%E5%8A%A1%E5%91%98/">公务员 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E9%9D%A2%E7%BB%8F/">互联网面经 (6)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具 (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法 (18)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%A7%91%E7%A0%94/">科研 (7)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%9C%AA%E6%9D%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%B9%B8%E5%AD%98%E8%80%85/">未来世界的幸存者 (6)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%97%8F%E4%B9%A6%E9%98%81/">藏书阁 (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构 (16)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%91%84%E5%BD%B1%E6%97%A5%E5%BF%97/">摄影日志 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div></div></widget>
+
+<widget class="widget-wrapper timeline"><div class="widget-header dis-select"><span class="name">最新评论</span></div><div class="widget-body fs14"><div class="tag-plugin timeline ds-giscus" api="https://recent-comment-gnmy.vercel.app/" limit="10"></div></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Wu-yikun" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418811.svg"></a><a class="social" href="https://leetcode.cn/u/wu-yikun/" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419535.svg"></a><a class="social" href="https://juejin.cn/user/1654082381026734" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419245.svg"></a><a class="social" href="https://www.zhihu.com/people/JayChou" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419020.svg"></a><a class="social" href="https://music.163.com/#/user/home?id=1479129382" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419025.svg"></a><a class="social" href="https://space.bilibili.com/441384986?spm_id_from=333.1007.0.0" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418494.svg"></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/Wu-yikun/OSS/master/uPic/20250801-3dppmo.png">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">Home</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">Post</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/AI-Infra/">AI-Infra</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/AI-Infra/">AI Infra</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/Infra/">Infra</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-07-31T16:00:00.000Z">2025-08-01</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-08-02T17:16:14.135Z">2025-08-03</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>AI Infra 与 Infra</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>随着大模型技术的爆发，AI Infra 已成为基础设施领域的核心战场。过去 1 年多的时间，QQ 基础架构算法工程团队落地了多个大模型应用，包括语音合成大模型、内容理解多模态大模型、生成式推荐大模型，跑通大模型训练到推理的全链路。那 AI Infra 真的是和传统 Infra 差异很大的新体系吗，还是说它其实是过去 Infra 经验的演化？</p>
+<p>本文将分享传统后台工程师积累的技术栈和方法论，如何延续并迁移到 AI 系统，并系统性拆解 AI Infra 的硬件、软件、训练和推理挑战。</p>
+<h2 id="硬件演进"><a href="#硬件演进" class="headerlink" title="硬件演进"></a>硬件演进</h2><p>经济基础决定上层建筑。软件层面的架构设计，无法脱离硬件约束。了解现代 AI 硬件特性非常有必要。</p>
+<blockquote>
+<p>一台高性能的 GPU 服务器可以换一套深圳房子</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-xuBu7X.jpg" alt="img"></p>
+<h3 id="从-CPU-为中心到-GPU-为中心"><a href="#从-CPU-为中心到-GPU-为中心" class="headerlink" title="从 CPU 为中心到 GPU 为中心"></a>从 CPU 为中心到 GPU 为中心</h3><p>传统基础设施以 CPU 为核心，通过多线程和微服务构建分布式系统，处理高并发请求（如 Web 服务），这些都有成熟的方法论了（如“海量服务之道”），主要工作是<strong>逻辑事务</strong>的处理，瓶颈在网络 I/O 和 CPU 核心数量。发展到今天，硬件已经很少是制约 CPU 系统设计的瓶颈。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-Rfsd6Z.jpg" alt="img"></p>
+<p>而 AI Infra 以 GPU 为核心，其设计目标从<strong>逻辑事务</strong>处理转向<strong>高吞吐浮点计算</strong>。</p>
+<p>此时 CPU 多线程被 GPU 并行计算替代，内存被显存替代。</p>
+<p>如下图所示，H20 单卡 96GB 显存，可以提供 44TFLOPS 的单精度浮点运算，算力和访存带宽是主流 CPU 数十倍甚至数百倍。每台机器安装 8 卡 = 768GB 显存，另外还有 CPU 192 核 384 线程 + 2.3 TB 内存。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-RuxC1g.jpg" alt="img"></p>
+<p>GPU 成为核心是因为 LLM 大模型每次生成一个 <code>token</code>，都需要<strong>读取全量的模型参数</strong>。传统的【CPU + 内存】的算力和带宽无法满足如此恐怖的计算密度，计算和通信都必须转移（offload）到 GPU 内完成。</p>
+<p>CPU 成为数据搬运工和“辅助处理器”。</p>
+<p>为了更直观地理解这个计算密度，做一个简单的计算。不考虑计算的延时，LLM 大模型生成一个 <code>token</code> 的耗时公式计算为：<br>$$<br>计算耗时=\frac{模型参数量*数据精度}{显存带宽}<br>$$<br>以 DeepSeek-R1-671B-A37B-FP8 模型为例，计算一个 <code>token</code> 耗时：</p>
+<ul>
+<li>H20：37B × 1byte ÷ 4000GB/s = <strong>9 ms</strong></li>
+<li>CPU：37B × 1byte ÷ 64GB/s = <strong>578 ms</strong></li>
+</ul>
+<h3 id="从“去-IOE”到“AI-大型机”"><a href="#从“去-IOE”到“AI-大型机”" class="headerlink" title="从“去 IOE”到“AI 大型机”"></a>从“去 IOE”到“AI 大型机”</h3><p>显而易见，我们的现在身处新的一轮烈火烹油的硬件革命的历史进程中，各种专用硬件、专用网络层出不穷。DeepSeek-R1 和 QWen3-235B 千亿级参数训练需千卡 GPU 集群协同，通过专用网络互联构建“AI 超算”，其设计逻辑与以前的 IBM 大型机惊人相似——以硬件集中化换取极致性能与可靠性。</p>
+<blockquote>
+<p>IBM 大型机</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-oiVLOc.jpg" alt="img"></p>
+<blockquote>
+<p>传统 Infra 的分布式理念貌似在 AI 时代失效了？</p>
+</blockquote>
+<p>传统 Infra 追求横向扩展，而 AI Infra 呈现“AI 大型机”特性，是因为传统后台服务的可以容忍毫秒级延迟，但 AI 集群不行，GPU 的算力是 CPU 的数百倍，微秒级的延时等待也会造成很大的算力损耗，需要硬件的高度集成。在可预见的 1-3 年的未来，这样的专用硬件 + 网络的集中式架构很难发生比较大的改变。</p>
+<p>回顾历史，我们总是在寻求科技平权。前人推动“去 IOE”（IBM 小型机、Oracle 数据库、EMC 存储），用分布式廉价 x86 PC 机替代集中式高端硬件，本质上是利用软件创新重构一个高可用 + 低成本的互联网基础设施。”AI 大型机”是技术发展必由之路，但不是终极形态。长期（5 年）来看，必然会出现 “AI 去 NVIDIA 化”，重演“去 IOE”的历史。</p>
+<h2 id="软件演进"><a href="#软件演进" class="headerlink" title="软件演进"></a>软件演进</h2><p>说完硬件体系的革命，接下来再关注下软件层面的变化。</p>
+<p>相比传统后台应用的增删查改，AI 应用的新范式是<strong>模型训练和推理</strong></p>
+<ul>
+<li>模型训练：通过海量数据拟合出一个复杂的神经网络模型</li>
+<li>模型推理：利用训练好的神经网络模型进行运算，输入的新数据来获得新的结论</li>
+</ul>
+<p>举个例子，训练就是根据 &lt;年龄, 身高&gt; 的分布使用最小二乘法拟合模型 <code>y = ax + b</code>，推理就是利用这个模型 <code>y = ax + b</code>，输入一个新的年龄，预测身高。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-VNo8HU.jpg" alt="img"></p>
+<h3 id="深度学习框架"><a href="#深度学习框架" class="headerlink" title="深度学习框架"></a>深度学习框架</h3><blockquote>
+<p>工欲善其事，必先利其器</p>
+</blockquote>
+<p>传统后台应用依赖 tRPC 或 Spring 等微服务框架，帮助我们屏蔽负载均衡、网络通信等底层细节，我们可以把精力放在业务实现上。</p>
+<p>与之相似，AI 应用则依赖深度学习框架。如果没有深度学习框架，我们就可能陷入在茫茫的数学深渊中，挣扎于痛苦的 GPU 编程泥潭里。有了深度学习框架，我们才可以把所有精力花在设计模型和创新本身上，而不用关注底层的实现细节，极大降低了 AI 应用的门槛。</p>
+<p>大家可能听说过不同的深度学习框架——Tensorflow，PyTorch。现在是 2025 年，不用纠结选哪个，因为 <strong>PyTorch 就是 AI 模型训练、推理的深度学习框架的事实标准</strong>，开源模型和代码都是 PyTorch 一边倒。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-VXd8Cs.jpg" alt="img"></p>
+<p>得益于<strong>动态计算图</strong>、<strong>自动微分</strong>和丰富的 Tensor <strong>操作算子</strong>，PyTorch 能帮助我们快速实现模型设计。如下图所示，只需要描述模型结构 + 待学习的网络参数，不需要关心数学计算和 GPU 编程的细节。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-NPAXjQ.jpg" alt="img"></p>
+<h3 id="GPU-编程"><a href="#GPU-编程" class="headerlink" title="GPU 编程"></a>GPU 编程</h3><p>绝大部分的 AI 应用，的确不需要我们手写数学计算的 GPU 代码。但为了满足模型创新的需求，有必要学习 GPU 编程。</p>
+<p>例如 Meta 发布的 HSTU 生成式推荐模型，核心的 <code>hstu_attn</code> 计算：</p>
+<ul>
+<li>如果直接用 PyTorch 框架算子组合实现，则时间复杂度为 $O(M * N^2)$ ，其中 $M$ 和 $N$ 是一个数量级，相当于 $O(N^3)$</li>
+<li>但是通过自定义内核，可以优化到 $O(N^2)$</li>
+</ul>
+<p>在 GPU 核心上运行的代码片段称为内核。编写高性能的 CUDA 内核需要丰富的经验，并且学习曲线陡峭。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/497036659">如何理解 SIMD 和 SIMT</a></p>
+</blockquote>
+<p>因为我们习惯于传统 CPU 编程处理串行的计算任务（即 SIMD, Single Instruction Multiple Data），通过多线程提高并发度。而 GPU 采用 SIMT (Single Instruction Multiple Thread) 架构，有大量计算单元（CUDA Cores）和数万个线程，但是被<strong>分组后的线程同一时刻只能执行相同的指令</strong>。这与<strong>传统 CPU 的串行思维、不同线程处理不同任务</strong>，存在根本性冲突，导致 GPU 编程学习难度大。</p>
+<blockquote>
+<p>现实生活中的 SIMT 架构</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-r89YFS.jpg" alt="img"></p>
+<p>现在推荐使用 Triton 编程语言完成 GPU kernel 的开发，它提供类似 Python 的语法，无需深入理解 GPU 硬件细节（如线程调度、共享内存管理），而且和 PyTorch 深度学习框架的生态结合更好。推荐这个 <a href="https://link.zhihu.com/?target=https://github.com/SiriusNEO/Triton-Puzzles-Lite/">Triton-Puzzles-Lite</a> 项目用作 Triton 的入门学习。</p>
+<h3 id="Python-编程"><a href="#Python-编程" class="headerlink" title="Python 编程"></a>Python 编程</h3><p>正如客户端开发离不开 Kotlin/Objective-C，AI Infra 编程的第一公民就是 Python。</p>
+<p>PyTorch 深度学习框架的设计哲学强调 Python 优先 。</p>
+<p>以前大部分模型还可以轻松导出 ONNX、TorchScript 等用 C++ 部署，现在随着对模型的细粒度优化和控制越来越多，比如 KV Cache、MoE/模型并行、复杂的 if/for 控制流、自定义 Triton 算子等，模型越来越难以脱离 Python 的控制部署。</p>
+<h2 id="模型训练-de-挑战"><a href="#模型训练-de-挑战" class="headerlink" title="模型训练 de 挑战"></a>模型训练 de 挑战</h2><p>我们一直追求更大的模型，DeepSeek-R1 有数千亿参数，使用了数十万亿 token 的训练数据，涉及算力、存储、通信等多维度的工程挑战。有了 PyTorch 深度学习框架，只是 AI 应用落地的万里长征第一步。接下来我们将讨论深度学习框架之上的模型训练的挑战。</p>
+<h3 id="存得下"><a href="#存得下" class="headerlink" title="存得下"></a>存得下</h3><p>DeepSeek-R1 模型大小为 670GB，而一台 GPU 服务器有 8 张 H20 卡，提供 768GB 显存，足够存下一个完整的 DeepSeek 模型。那整个行业为什么还投入大量的人力物力，顶着通信延时造成的算力损耗，也要建设分布式 GPU 集群？</p>
+<p>核心原因是单台 GPU 服务器“存不下”。</p>
+<h4 id="显存刺客：中间激活"><a href="#显存刺客：中间激活" class="headerlink" title="显存刺客：中间激活"></a>显存刺客：中间激活</h4><p>如下图所示的模型，<code>x1/x2/x3/x4</code> 这些中间变量就是“中间激活”。它们是神经网络前向传播的“堆栈帧”—— <strong>记录每一层处理后的数据快照，确保反向传播可回溯梯度</strong>，根据预测误差调整模型权重，最小化损失函数。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-7Gyeqh.jpg" alt="img"></p>
+<p>这些中间激活为什么会成为“显存刺客”？是因为中间激活的空间复杂度是和输入数据长度正相关的，特别的，对于 LLM 来说是 $O(N^2)$，<strong>正比于输入数据长度的平方</strong>，这是一个指数爆炸式增长的数字。类似函数递归不断增长的“堆栈帧”导致的内存溢出，我们遇到了 <strong>AI Infra 的 OOM（Out of Memory）挑战</strong>。</p>
+<p>借助 PyTorch 的 profiler 工具，我们可以直观地看到这个 OOM。下图是训练过程中不同阶段的显存分配，包括：</p>
+<ul>
+<li>模型参数（Parameter）</li>
+<li>优化器状态（Optimizer State）</li>
+<li>中间激活（Activation）</li>
+<li>梯度（Gradient）</li>
+</ul>
+<p>在前向传播结束后出现一个显存占用（中间激活）的尖峰，远大于模型参数本身。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-00zjlo.jpg" alt="img"></p>
+<h4 id="模型并行"><a href="#模型并行" class="headerlink" title="模型并行"></a>模型并行</h4><p>**传统后台服务使用分片（Sharding）策略解决单机存不下的问题。**与之相似，<strong>AI Infra 提出“模型并行”</strong>，就是将单个大模型拆分为多个子模块，并分布到不同 GPU 上协同工作，通过通信来共享数据。有不同的“拆分模型”策略，例如按模型模块划分，按张量（Tensor）划分的，也可以将多种拆分方法结合起来一起使用。PyTorch 深度学习框架和开源方案 Megatron 都能帮助我们高效地实现模型并行。</p>
+<blockquote>
+<p>不同的模型并行策略</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-8YlNEU.jpg" alt="img"></p>
+<h3 id="算得快"><a href="#算得快" class="headerlink" title="算得快"></a>算得快</h3><p>建设分布式 GPU 集群的原因，一个是因为“单机存不下”，另外一个是提升训练速度。但简单的机器堆叠，算力不一定有线性的增长。<strong>因为分布式训练并不是简单地把原来一个 GPU 做的事情分给多个 GPU 各自做</strong>。需要协调多个 GPU 机器计算任务分配，<strong>GPU 机器之间的数据传输会引入网络 I/O 和通信开销</strong>，降低训练速度。</p>
+<h4 id="通信计算重叠"><a href="#通信计算重叠" class="headerlink" title="通信计算重叠"></a>通信计算重叠</h4><p>如下图所示的常规训练时序是串联式的，存在许多网络 I/O，GPU 利用率低，训练速度慢。我们希望 GPU 大部分时间都在计算，而不是花在数据传输或等待其他 GPU 的工作上。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-64fqnG.jpg" alt="img"></p>
+<p><strong>传统后台服务我们通过多线程或异步 I/O 避免阻塞 CPU 主线程</strong>。与之相似，<strong>AI Infra 提出通信计算重叠</strong>的方法论。</p>
+<p>GPU 编程模型中有流（stream）的概念，一个流表示一个 GPU 操作队列，该队列中的操作将以添加到流中的先后顺序而依次执行。<strong>不同流之间可以并行执行，那么通过令计算和通信操作加入不同的流中，可以做到二者的执行在时间上重叠</strong>。例如 <a target="_blank" rel="noopener" href="https://github.com/pytorch/torchrec">TorchRec</a> 的训练流水线能帮助我们实现高效的通信计算重叠。</p>
+<h2 id="模型推理-de-挑战"><a href="#模型推理-de-挑战" class="headerlink" title="模型推理 de 挑战"></a>模型推理 de 挑战</h2><p>AI 模型训练成本很高，优秀如 DeepSeek 也要烧掉 500 万美金，但再贵也只是一劳永逸的。而模型推理的成本更高，因为用户越多，AI 模型推理次数越多，总成本越高。AI Infra 模型推理面对的挑战和传统 Infra 非常相似，主要是 2 个挑战：</p>
+<ul>
+<li>高吞吐（降本）</li>
+<li>低延时（增效）</li>
+</ul>
+<h3 id="降低延时"><a href="#降低延时" class="headerlink" title="降低延时"></a>降低延时</h3><p>现在的 AI 模型越来越多地直面终端用户，需要和用户进行实时的交互，例如文本对话和语音合成。模型推理耗时过高，会直接造成用户体验受损，用户流失与转化率下降。</p>
+<p><strong>传统后台服务我们使用链接复用、缓存、柔性等技术降低系统响应时间</strong>。AI Infra 也有相似的做法。</p>
+<h4 id="CUDA-Graph"><a href="#CUDA-Graph" class="headerlink" title="CUDA Graph"></a>CUDA Graph</h4><p>在 GPU 编程模型中，CPU 和 GPU 是异构的，CPU 通过 API（例如 CUDA API） 向 GPU 提交任务，然后异步等待 GPU 的计算结果返回。GPU 收到任务后，会执行内核启动、内存拷贝、计算等操作。这个过程中，涉及到 CPU 与 GPU 之间的通信、驱动程序的处理以及 GPU 任务的调度等环节，会产生一定的延迟。</p>
+<blockquote>
+<p>CPU 与 GPU 通信</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-Z3cX84.jpg" alt="img"></p>
+<p>模型推理需要执行大量重复的 GPU 操作，每个的 GPU 操作都要重复执行上述环节，这些非核心的 GPU 开销会成倍数地放大，影响最终响应时间。</p>
+<p>在传统后台服务，我们使用 Redis 的 <code>Lua</code> 脚本封装多个 Redis 操作和计算逻辑，一次提交，减少网络开销。与之相似，<strong>AI Infra 利用 CUDA Graph 技术将多个 GPU 操作转化为一个有向无环图（DAG），然后一次性提交整个 DAG 提交到 GPU 执行，由 GPU 自身来管理这些操作的依赖关系和执行顺序，从而减少 CPU 与 GPU 之间的交互开销。</strong></p>
+<blockquote>
+<p>多个 GPU 内核启动转化为 CUDA Graph</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-RQsZ6u.jpg" alt="img"></p>
+<h4 id="KV-Cache-——-空间换时间"><a href="#KV-Cache-——-空间换时间" class="headerlink" title="KV Cache —— 空间换时间"></a>KV Cache —— 空间换时间</h4><p>LLM 大模型推理存在大量矩阵乘法运算，且高度依赖上下文信息。每次推理都需要将之前生成过的词重新输入模型进行计算（即上下文）。这种计算方式使得复杂度达到了 $O(N^2)$，其中必然存在大量的重复计算。</p>
+<p>例如，给定“天气”，模型会逐个预测剩下的字，假设接下来预测的两个字为“真好。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-rqtuDt.jpg" alt="img"></p>
+<p>将“真”拼接到“天气”的后面，即新的输入为“天气真”，再预测“好”。</p>
+<blockquote>
+<p>KV Cache 的部分</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-xYa1FK.jpg" alt="img"></p>
+<p>观察到，经过多次预测后，<code>X @ W_K</code> 和 <code>X @ W_V</code> 的结果上半部分都是相同的，这是由于 LLM 模型结构的特殊设计导致的。<strong>这些重复计算的结果可以缓存（即 KV Cache）下来，空间换时间，减少计算量</strong>。几乎所有的 LLM 推理框架都支持了 KV Cache，例如 <a target="_blank" rel="noopener" href="https://github.com/vllm-project/vllm">vLLM</a> 。</p>
+<h4 id="流式响应"><a href="#流式响应" class="headerlink" title="流式响应"></a>流式响应</h4><p>有时候模型推理延时实在避免不了，可以从工程交互上想办法。</p>
+<p>传统后台服务的 RPC 通信是一问一答方式，这种方式不太适合语音合成或者文本对话的场景。因为大模型推理需要几秒～几十秒，如果等待模型推理结束才展示结果，用户会等待较长的时间，体验很差。</p>
+<p>流式响应就是当模型推理计算得到第一个 token 或者第一个音频帧的时候，立马展示或者播放给用户，同时后续的模型推理结果在已经建立的 TCP 流上继续顺序传输。<strong>工程上从关注模型推理的整体耗时，改为关注首 token 或首个音频帧的耗时</strong>。几乎所有的 LLM 推理框架都支持了流式响应。</p>
+<h3 id="提高吞吐量"><a href="#提高吞吐量" class="headerlink" title="提高吞吐量"></a>提高吞吐量</h3><p>提高吞吐量是程序员在传统 Infra 领域孜孜不倦的追求，因为更高的吞吐量意味着更低的机器成本。<strong>实现 AI 应用的高吞吐本质上就是提高昂贵的 GPU 的利用率</strong>，让 GPU 单位时间能完成更多的任务。</p>
+<p>尽管模型推理需要执行万亿次浮点运算，但 <strong>GPU 有大量的计算单元（CUDA Cores），单个请求的模型推理很难令 GPU 利用率达到饱和</strong>。</p>
+<p>提高 GPU 利用率有 2 个方法：传统批处理和连续批处理。这里的“传统批处理”是相对于“连续批处理”这样的新型批处理方式而言的。</p>
+<h4 id="传统批处理"><a href="#传统批处理" class="headerlink" title="传统批处理"></a>传统批处理</h4><ul>
+<li>其实传统后台服务也大量使用了批处理，例如 Redis 的 <code>MGet</code> 命令，单次请求就完成所有 key 的获取，将 N 次网络往返（RTT）压缩为1次。</li>
+<li>与之相似，模型推理的批处理就是将多个输入样本打包（<code>batch</code>），<strong>将原本串行的 N 次轻量的推理计算，合并为 1 次重量的计算</strong>，实现单位时间内处理更多的请求，提高了 GPU 利用率。</li>
+</ul>
+<p>“打包输入样本”是一个共性需求，大部分推理框架都提供该功能，例如 <em>Triton Inference Server</em> 的 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/user_guide/batcher.html">Batcher</a>.</p>
+<blockquote>
+<p>模型批量推理流程图</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-MMrks0.gif" alt="模型批量推理流程图"></p>
+<h4 id="连续批处理"><a href="#连续批处理" class="headerlink" title="连续批处理"></a>连续批处理</h4><p>传统批处理类似“固定班次的公交车”：乘客（请求）必须等待发车时间（组建一个 batch），发车后所有乘客同步前进。即使有乘客提前下车（短请求完成），车辆仍需等待所有乘客到达终点（长请求完成）才能返程接新乘客。传统批处理存在着资源浪费：GPU 要等待长请求处理完，不能处理新的请求而空闲。</p>
+<p>这个问题在 LLM 应用领域显得特别突出，因为不同用户请求 Prompt，模型的回答结果长度差异巨大，如果使用传统批处理，GPU 空闲率很高。这个本质上是个任务调度问题，<strong>传统后台服务我们使用工作窃取算法（Work Stealing）解决线程空闲问题</strong>，与之相似，<strong>AI Infra 提出“连续批处理”解决这个问题</strong>。</p>
+<p>连续批处理类似“随时随地拼车的顺风车”，每辆车（GPU）在行程中可随时上/下客：</p>
+<ul>
+<li>新乘客（请求）直接加入当前车辆的空位（空闲计算单元）</li>
+<li>已完成的乘客立即下车（释放资源）</li>
+</ul>
+<p>几乎所有的 LLM 推理框架都支持了连续批处理能力，例如 vLLM 的 <a target="_blank" rel="noopener" href="https://github.com/vllm-project/vllm">Continuous Batching</a>.</p>
+<blockquote>
+<p>连续批推理流程图</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-bm4PMg.webp" alt="动图"></p>
+<h2 id="AI-Infra-vs-Infra"><a href="#AI-Infra-vs-Infra" class="headerlink" title="AI Infra vs. Infra"></a>AI Infra vs. Infra</h2><blockquote>
+<p>AI Infra 入门教程：<a target="_blank" rel="noopener" href="https://github.com/stas00/ml-engineering/">https://github.com/stas00/ml-engineering/</a></p>
+</blockquote>
+<p>关于传统 Infra 和 AI Infra 的差异，总的来说就是觉得这套东西和传统 Infra 差太远了。很多熟悉网络，计算，存储等传统 infra 的工程师，会觉得自己原来的经验在 AI 场景里难以直接利用，尤其是看到 <strong>GPU</strong>，<strong>KV Cache</strong>，<strong>3D parallelism</strong> 这些新概念时，容易产生一种感觉完全换了一套体系的落差感。</p>
+<p>我个人感觉这些看法其实挺有代表性的，反映出很多工程师对 AI Infra 的第一印象：陌生，高门槛，甚至有些割裂感。下文就想聊聊我的一些粗浅的理解。AI Infra 真的是和传统 Infra 差异很大的新体系吗，还是说它其实是过去 Infra 经验的演化？</p>
+<h3 id="传统-Infra-与-AI-Infra-概念"><a href="#传统-Infra-与-AI-Infra-概念" class="headerlink" title="传统 Infra 与 AI Infra 概念"></a>传统 Infra 与 AI Infra 概念</h3><p>✅ 我的答案是：差异其实不大。AI Infra 是对传统 Infra 在新场景下的重构与延展。AI Infra 面对的工程挑战，例如计算、存储、通信，大部分是新时代的老问题，我们在传统 Infra 领域都能找到对应的场景和解决思路。差异只在于战场从 CPU 转移到 GPU，传统后台工程师积累的方法论，依然可以衔接到 AI Infra。</p>
+<p>🌟 如果从表面看起来，传统 Infra 和 AI Infra 确实很不一样：</p>
+<ul>
+<li>设计目标从<strong>逻辑事务</strong>处理转向<strong>高吞吐浮点计算</strong><ul>
+<li>传统 Infra 处理的是 web request，数据存储，和分布式服务协调</li>
+<li>而 AI Infra（特别是大模型）更多围绕的是 GPU 推理，KV Cache 管理，以及大模型训练框架等全新领域</li>
+</ul>
+</li>
+<li>请求形态也不一样<ul>
+<li>web request 通常是毫秒级的 request，stateless</li>
+<li>而 LLM 推理一个 session 往往持续数秒甚至更久（随着 context window 和模型大小增加），还要动态维护 token-level 的上下文状态</li>
+</ul>
+</li>
+<li>tech stack 看起来也不同<ul>
+<li>传统用的是 Kubernetes + Docker</li>
+<li>现在大家在用 GPU, vLLM, DeepSpeed, FlashAttention, Triton, NCCL 这些仅仅从名字上听起来就很高大上的架构</li>
+</ul>
+</li>
+</ul>
+<p>从这点来看，说传统经验无法直接迁移确实没错，但这只是表面的现象，不是本质。</p>
+<p>🔥 本质其实没变，仍然是系统设计和资源调度的问题</p>
+<p>回到工程本身，<strong>其实我们仍然在面对和传统 Infra 极其类似的问题</strong>：</p>
+<ul>
+<li>如何调度资源（从 <strong>CPU/内存</strong> 变成了 <strong>GPU 显存</strong>）</li>
+<li>如何处理高并发请求（从 <strong>http resource request</strong> ，变成了 <strong>prompt request</strong>）</li>
+</ul>
+<p>我们来看一组对比：</p>
+<table>
+<thead>
+<tr>
+<th>传统 Infra 概念</th>
+<th>AI Infra 相对应概念</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Data Sharding</td>
+<td>Data Parallelism</td>
+</tr>
+<tr>
+<td>Load Balancer</td>
+<td>MoE Router</td>
+</tr>
+<tr>
+<td>OS Paging</td>
+<td>vLLM 的 KV Cache 分页机制</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>MoE Router：将 token 分发给多个 expert network，保证某一些 expert 不会overload（Deepseek，llama-4 使用的架构）</p>
+</blockquote>
+<p><strong>这些机制其实都是传统 Infra 思维方式在 AI 场景中的利用</strong>。</p>
+<p>🌰 拿 vLLM 举个例子：它像是给 LLM 写了一个操作系统，用来调度页面（KV Cache），管理进程（Request），本质上是引用了 OS 的内存管理 Principles 用来管理 KV Cache。</p>
+<h3 id="Infra-的“三大难题”：Scaling-Sharding-Copying"><a href="#Infra-的“三大难题”：Scaling-Sharding-Copying" class="headerlink" title="Infra 的“三大难题”：Scaling &amp; Sharding &amp; Copying"></a>Infra 的“三大难题”：Scaling &amp; Sharding &amp; Copying</h3><p>所有系统的底层挑战，基本都绕不开这三个关键词：</p>
+<ul>
+<li><strong>Scaling（扩展）</strong>：系统如何支持更大的规模和更高的并发？<ul>
+<li>在传统 Infra 中，这意味着如何横向扩展服务器，部署更多容器，使用负载均衡（load balancing）来分散请求</li>
+<li>在 AI Infra 中，这些问题转化为如何通过<strong>数据并行，模型并行，流水线并行</strong>来分布和执行 GPU workload，以支持超大模型的训练以及 large number of inference requests</li>
+</ul>
+</li>
+<li><strong>Sharding（切片）</strong>：系统如何切分状态和计算，以实现并行处理？<ul>
+<li>在数据库系统中，这是将数据按照主键或范围切分到不同的分区，以支持高吞吐访问</li>
+<li>在 AI Infra 中，sharding 变成了对模型参数，KV Cache，activation，gradients，以及 optimizer states 的 split，比如 tensor parallelism 和 KV Paging 等，是实现分布式推理和训练的前提</li>
+</ul>
+</li>
+<li><strong>Copying（复制）</strong>：系统如何高效同步数据或状态？<ul>
+<li>传统系统中，复制体现在数据库副本同步或者缓存预热，以及 Kafka Replication</li>
+<li>在 AI Infra 中，复制的代价更加显著，比如 data parallelism 怎么 copy model to different GPUs（所以会有 ZeRO optimization 来 shard 参数，gradient 等等），通常需要依赖高性能通信机制（比如 RDMA 和 NCCL）</li>
+</ul>
+</li>
+</ul>
+<p>这些挑战的本质没有变：<strong>仍然是如何高效并且低成本地协调跨不同机器的资源</strong>。但在 AI Infra 中，由于 GPU 显存 limited，large context window，以及模型参数量大，它们变得更加脆弱和重要，<strong>也更需要更好的工程策略去解决这些问题</strong>。</p>
+<h3 id="The-Core-of-Infra-Cost-Estimation-and-Identifying-Key-Issues-after-Deployment-from-Jeff-Dean"><a href="#The-Core-of-Infra-Cost-Estimation-and-Identifying-Key-Issues-after-Deployment-from-Jeff-Dean" class="headerlink" title="The Core of Infra: Cost Estimation and Identifying Key Issues after Deployment (from Jeff Dean)"></a>The Core of Infra: Cost Estimation and Identifying Key Issues after Deployment (from Jeff Dean)</h3><p>Google 的 Jeff Dean 曾整理出一份广为流传的延迟参考 <strong>Key Numbers Every Programmer Should Know</strong>。这些数据强调：在设计基础设施时，<strong>需要通过 estimate latency 来部署基础 system</strong>。</p>
+<p>深入理解这些延迟数据，能让你在系统设计时更加 aware 真正的 bottleneck 是什么，这样也能在部署后迅速找到性能 bottleneck，然后及时修复。</p>
+<h4 id="延迟参考值"><a href="#延迟参考值" class="headerlink" title="延迟参考值"></a>延迟参考值</h4><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>延迟范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L1 缓存访问</td>
+<td>~0.5 ns</td>
+</tr>
+<tr>
+<td>L2 缓存访问</td>
+<td>~7 ns</td>
+</tr>
+<tr>
+<td>主内存访问</td>
+<td>~100 ns</td>
+</tr>
+<tr>
+<td>压缩 1 KB（Snappy）</td>
+<td>~3 µs</td>
+</tr>
+<tr>
+<td>通过 1 Gbps 网络发 1 KB</td>
+<td>~10 µs</td>
+</tr>
+<tr>
+<td>SSD 随机读 4 KB</td>
+<td>~150 µs</td>
+</tr>
+<tr>
+<td>数据中心内往返延迟</td>
+<td>~0.5 ms</td>
+</tr>
+<tr>
+<td>顺序读取 1 MB SSD 数据</td>
+<td>~1 ms</td>
+</tr>
+<tr>
+<td>磁盘 seek</td>
+<td>~10 ms</td>
+</tr>
+<tr>
+<td>读取 1 MB 磁盘数据</td>
+<td>~20 ms</td>
+</tr>
+<tr>
+<td>跨洋网络延迟</td>
+<td>~150 ms</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>这些数值会随硬件不同而略有不同，但是相对的数量级非常值得记住，这是做系统设计时最基本的参考。</p>
+</blockquote>
+<h4 id="在-AI-Infra-中的-mapping"><a href="#在-AI-Infra-中的-mapping" class="headerlink" title="在 AI Infra 中的 mapping"></a>在 AI Infra 中的 mapping</h4><ul>
+<li><strong>Token-level KV Cache</strong>：GPU 全局显存访问</li>
+<li><strong>多个 GPU 通信</strong>：通过 NCCL/RDMA 进行同步</li>
+<li><strong>跨机（cross server）通信</strong>：比如在多个 server 之间调度推理任务</li>
+</ul>
+<h4 id="为什么会估算很重要？"><a href="#为什么会估算很重要？" class="headerlink" title="为什么会估算很重要？"></a>为什么会估算很重要？</h4><p>就像在基础数据结构与算法课程中，我们必须熟练掌握各种数据结构以及算法的时间与空间复杂度，如：</p>
+<ul>
+<li>哈希查找 Average Time Complexity 是 $O(1)$</li>
+<li>快排是 $O(nlog⁡n)$</li>
+</ul>
+<p>在数据库系统中，需要算 disk I/O 次数以及 index cost estimate。或者像以上的这些延迟参考值，应该是每一位做传统 infra 都应该牢牢记住并且经常会用到的。</p>
+<p>🕙 在 <strong>AI Infra</strong>，我们也同样也需要估算大致**延迟（Latency）<strong>与</strong>带宽（Bandwidth）**方面的数字，以便：</p>
+<ul>
+<li><strong>事前估算</strong>：训练一个模型需要多少时间，推理吞吐量，token latency 都应基于这些 latency numbers 进行初步估计</li>
+<li><strong>事后诊断</strong>：部署之后，如果性能不是很好，理解这些延迟能帮助你<strong>快速定位瓶颈究竟在哪里</strong>（是 communication，memory bandwidth，or compute bound？）</li>
+<li><strong>案例参考</strong>：据说 Meta 在训练 LLaMA 系列模型时，GPU 报错或任务失败每几十分钟就会发生一次。因此，高质量的 log, error tracing 和 profiling 工具，对 LLM training Infra 稳定性至关重要。</li>
+</ul>
+<p>🔥 非常推荐大家看一下李博杰的这篇博客（<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/655402388">4090 适合做 training or inference 吗？</a>）。这篇博客通过数据/模型大小以及 gpu compute/memory/通讯层面，讲解了为什么 4090 不适合用于 training，但适合用于 inference。</p>
+<p>🔥 真正有经验的 Infra 工程师，不仅仅是能搭件一个 working 的系统，而是有能力去<strong>从头到尾追踪每一个延迟点</strong>，把系统之间的关联和可能存在的 bottleneck 拆解成一系列可量化的问题，并在上线后持续做 cost/performance profiling。<strong>这正是 AI Infra （或者传统 Infra）对工程基本功要求极高的原因</strong>。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>感觉现在有很多讨论 AI Infra，并且有点把它过度“神化”了。</p>
+<p>是的，LLM 的发展带来了<strong>新形态，新需求，和新的资源瓶颈</strong>（主要是 GPU memory 和 communication bottleneck，GPU 本身设计就是算力非常强，因为有非常多的 cores）。但是，解决这些问题的工程本质从来没有变：<strong>系统的目标仍然是优化资源利用（降低成本），保障 service 的稳定性，提升吞吐量以及响应能力</strong>。</p>
+<p>而这些问题，在传统 Infra 中我们已经解决过很多次了。只不过这次，我们需要重新设计整个框架，让它在 GPU 上，高并发 LLM 请求下，仍然能够跑得快，跑得稳。</p>
+<p><strong>AI Infra 的门槛确实高</strong>，但是它的高门槛不在于你熟不熟悉神经网络，而<strong>在于你能不能把已有的工程能力（system design thinking and implementation skills）转化为新的问题的视角</strong>。</p>
+<ul>
+<li>如果你做过网络通信：你会发现 NCCL 的 ring topology 其实跟设计高性能集群异构调度非常像</li>
+<li>如果你知道缓存以及 OS Paging，你会非常快地理解 KV Cache 的重要性以及管理思路</li>
+<li>如果你写过服务调度器，那 dynamic batching 会让你产生一种这是流水线并发的熟悉感</li>
+</ul>
+<p><strong>我越来越觉得，AI Infra 是对传统 Infra 知识体系的一种融合以及拓展，是一些旧的问题在新的范式中的 rephrasing</strong>；真正有竞争力的 AI Infra 工程师，不是只懂如何调个 prompt 或者跑个 inference/finetuning，而是<strong>能把底层系统逻辑与模型特性融合起来的人</strong></p>
+<p>这种 shift of thinking 并不容易，但如果你愿意去搭建起传统 Infra → AI infra 的 mental map，会发现很多传统经验看起来和 AI 毫不相干的东西，其实都有非常相似的部分（俗话说，换汤不换药）。</p>
+<p>所以，传统 Infra 的经验/思维同样适用于 AI Infra，它们两之间有很多关联。</p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>License</span></div>
+      <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu</a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>Share</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.com/post/AI-Infra/ai-infra-vs-traditional-infra/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.com/post/AI-Infra/ai-infra-vs-traditional-infra/&amp;title=AI Infra 与 Infra - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-PAiqX0.png&amp;summary=近些年来，关于 AI Infra 和传统 Infra 之间的差异引发了广泛讨论。一些工程师认为，AI Infra 与他们熟悉的传统 Infra 相距甚远，尤其是面对 GPU、KVCache、3D 并行等新概念时，难免感到困惑和不安。究..."><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=AI Infra 与 Infra - Yikun Wu&amp;body=https://wu-yikun.com/post/AI-Infra/ai-infra-vs-traditional-infra/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;Copied!&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.com/post/AI-Infra/ai-infra-vs-traditional-infra/">
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">Prev</div><a href="/post/OI-Wiki/wiki/">🎓 OI Wiki</a></div><div class="item" id="next"><div class="note">Next</div><a href="/post/C++/from-double-free-to-shared_ptr/">从一次 double free 深入理解 shared_ptr 的原理与最佳实践</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class="header cmt-title cap theme">
+      <p>Join discussion～</p>
+
+    </section>
+    <section class="body cmt-body giscus">
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Wu-yikun/wu-yikun.github.io" data-repo-id="R_kgDONub1yw" data-category="Q&amp;A" data-category-id="DIC_kwDONub1y84CmRgy" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="en" data-loading="lazy" crossorigin="anonymous"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><script defer="" src="https://vercount.one/js"></script>
+<p><span id="busuanzi_container_site_pv">本站总访问量 <span id="busuanzi_value_site_pv"></span> 次</span></p>
+<span class="totalcount">本站共发表 114 篇文章 · </span><span class="post-count">总计 399.7k 字</span><div><span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span></div></div></footer>
+
+
+<script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+  function createtime() {
+    var now = new Date();
+    var grt= new Date("01/25/2025 00:00:00");
+    now.setTime(now.getTime() + 250);
+    days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+    hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+    if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+    mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+    seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+    snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+    document.getElementById("timeDate").innerHTML = "本站已运行 "+dnum+" 天 ";
+    document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+  };
+  setInterval("createtime()",250);
+</script>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E6%BC%94%E8%BF%9B"><span class="toc-text">硬件演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E-CPU-%E4%B8%BA%E4%B8%AD%E5%BF%83%E5%88%B0-GPU-%E4%B8%BA%E4%B8%AD%E5%BF%83"><span class="toc-text">从 CPU 为中心到 GPU 为中心</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E2%80%9C%E5%8E%BB-IOE%E2%80%9D%E5%88%B0%E2%80%9CAI-%E5%A4%A7%E5%9E%8B%E6%9C%BA%E2%80%9D"><span class="toc-text">从“去 IOE”到“AI 大型机”</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6%E6%BC%94%E8%BF%9B"><span class="toc-text">软件演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6"><span class="toc-text">深度学习框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GPU-%E7%BC%96%E7%A8%8B"><span class="toc-text">GPU 编程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Python-%E7%BC%96%E7%A8%8B"><span class="toc-text">Python 编程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83-de-%E6%8C%91%E6%88%98"><span class="toc-text">模型训练 de 挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%BE%97%E4%B8%8B"><span class="toc-text">存得下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E5%BE%97%E5%BF%AB"><span class="toc-text">算得快</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86-de-%E6%8C%91%E6%88%98"><span class="toc-text">模型推理 de 挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%8D%E4%BD%8E%E5%BB%B6%E6%97%B6"><span class="toc-text">降低延时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E9%AB%98%E5%90%9E%E5%90%90%E9%87%8F"><span class="toc-text">提高吞吐量</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AI-Infra-vs-Infra"><span class="toc-text">AI Infra vs. Infra</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%A0%E7%BB%9F-Infra-%E4%B8%8E-AI-Infra-%E6%A6%82%E5%BF%B5"><span class="toc-text">传统 Infra 与 AI Infra 概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Infra-%E7%9A%84%E2%80%9C%E4%B8%89%E5%A4%A7%E9%9A%BE%E9%A2%98%E2%80%9D%EF%BC%9AScaling-Sharding-Copying"><span class="toc-text">Infra 的“三大难题”：Scaling &amp; Sharding &amp; Copying</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#The-Core-of-Infra-Cost-Estimation-and-Identifying-Key-Issues-after-Deployment-from-Jeff-Dean"><span class="toc-text">The Core of Infra: Cost Estimation and Identifying Key Issues after Deployment (from Jeff Dean)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-text">结语</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>Scroll to Top</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>Join Discussion</span></a></div></widget>
+</div></aside><div class="float-panel blur">
+  <button type="button" style="display:none" class="laptop-only rightbar-toggle mobile" onclick="sidebar.rightbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" style="display:none" class="mobile-only leftbar-toggle mobile" onclick="sidebar.leftbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `Just`,
+      min: `minutes ago`,
+      hour: `hours ago`,
+      day: `days ago`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer=""></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `Switched to Light Mode`,
+      dark: `Switched to Dark Mode`,
+      auto: `Switched to Auto Mode`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer="">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"giscus":{"js":"/js/services/giscus_new.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer="" src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+    processEscapes: true
+  }
+});
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  }
+});
+MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for(i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+</div>
+<script>var posts=["post/Python/python-wiki/","post/Golang/golang-wiki/","post/AI-Infra/animated-pictures-to-easily-understand-self-attention/","post/AI-Infra/ai-infra-in-the-era-of-llm/","post/AI-Infra/ai-infra-vs-traditional-infra/","post/AI-Infra/how-does-chatgpt-handle-text-input/","post/AI-Infra/recommendation-system-architecture/","post/AI-Infra/the-soul-of-chatgpt-attention-mechanism/","post/C++/cpp-copy-constructor/","post/C++/cpp-wiki/","post/C++/cpp-stl/","post/C++/effective-c++/","post/C++/from-posix-pthread-to-c++11-thread/","post/C++/from-double-free-to-shared_ptr/","post/C++/network-programming-and-io-multiplexing/","post/C++/when-nanoseconds-matter-ultrafas-trading-systems-in-C++/","post/OI-Wiki/wiki/","post/博客开发/building-a-personal-blog-from-scratch/","post/博客开发/hexo-stellar-deployment-guide/","post/小吳日寄/2025-04-09/","post/小吳日寄/2025-06-11/","post/小吳日寄/2025-06-14/","post/小吳日寄/2025-06-18/","post/小吳日寄/2025-06-28/","post/小吳日寄/2025-06-17/","post/小吳日寄/2025-07-08/","post/公务员/civil-servant-examination-preparation-plan/","post/公务员/how-to-improve-essay-writing/","post/年终总结/「2021」passion/","post/年终总结/「2022」life-is-a-field-not-a-track/","post/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","post/互联网面经/0521-huawei/","post/互联网面经/2025-autumn-recruitment/","post/年终总结/「2023」feel-the-journey/","post/互联网面经/26-top-talent/","post/互联网面经/reverse-interview/","post/开发工具/docker-and-k8s/","post/互联网面经/intern-interview/","post/开发工具/nat/","post/开发工具/docker-intro/","post/开发工具/git-undo/","post/互联网面经/job-hunting-guide-for-technical-personnel/","post/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","post/开发工具/git-workflow/","post/数据结构与算法/advanced-algorithms/","post/开发工具/understanding-.git-folder/","post/数据结构与算法/binary-tree-matching/","post/数据结构与算法/constructing-binary-tree/","post/数据结构与算法/cpp-acm-input-output/","post/数据结构与算法/difference-array/","post/数据结构与算法/interview-add-two/","post/数据结构与算法/interview-linked-list/","post/数据结构与算法/kuaishou-merge-k-ascending-linked-lists/","post/数据结构与算法/maximum-product-of-subarray-or-subsequence/","post/数据结构与算法/monotonic-stack/","post/开发工具/tips-for-precise-search-on-github/","post/数据结构与算法/modulo/","post/数据结构与算法/priority_queue/","post/数据结构与算法/qpow/","post/数据结构与算法/sieve-of-prime-number/","post/数据结构与算法/sort-algorithm/","post/数据结构与算法/tackle-without-sort-library/","post/数据结构与算法/tecent-wxg-russian-doll-envelope/","post/数据结构与算法/union-search/","post/科研/eurosys-24-volley/","post/科研/fast-24-term/","post/科研/fast-20-empirical-guide-of-pm/","post/科研/fast-25-gogetafs/","post/科研/osdi-23-smart/","post/科研/osdi-24-atlas/","post/未来世界的幸存者/choose-one-sentence/","post/未来世界的幸存者/don't-limit-your-future-imagination-with-your-current-abilities/","post/未来世界的幸存者/how-can-undergraduates-enter-bat/","post/未来世界的幸存者/internet-companies-or-state-owned-enterprises/","post/未来世界的幸存者/technical-writing-experience/","post/科研/osdi-23-chardonnay/","post/未来世界的幸存者/the-future-world/","post/藏书阁/siddhartha/","post/系统与体系结构/a-study-of-linux-file-system-evolution/","post/系统与体系结构/analysis-of-trace-processing/","post/系统与体系结构/debugging-with-gdb/","post/系统与体系结构/distributed-systems-paxos.md/","post/系统与体系结构/distributed-systems-raft/","post/系统与体系结构/distributed-systems-theoretical-foundations/","post/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","post/系统与体系结构/linux-disk-automatic-mounting/","post/系统与体系结构/linux-partition/","post/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","post/系统与体系结构/linux-kernel-io-path/","post/系统与体系结构/madam-for-all-flash-array/","post/系统与体系结构/mmap-vs-read-write/","post/系统与体系结构/nvm-top-lab/","post/系统与体系结构/persistent-memory-research-report/","post/系统与体系结构/pmdk-programming-guidelines/","post/摄影日志/camera-and-photography/","post/摄影日志/chengdu_2024-07-14/","post/摄影日志/dongshandao_2024-10-30/","post/摄影日志/fjnu_2023-06-14/","post/摄影日志/fuzhou_2024-10-01/","post/摄影日志/fuzhou_2025-06-14/","post/摄影日志/hangzhou_2023-04-28/","post/摄影日志/hangzhou_2024-06-15/","post/摄影日志/quanzhou_2024-01-28/","post/摄影日志/guangzhou_2024-11-29/","post/摄影日志/shenzhen_2023-10-27/","post/摄影日志/shot/","post/摄影日志/wuhan_2023-04-04/","post/摄影日志/xi'an_2024-06-24/","post/摄影日志/xiamen_2023-12-24/","post/摄影日志/yinchuan_2024-07-27/","post/摄影日志/zhangzhou_2024-05-01/","post/计算机网络/does-restarting-mean-shutting-down-and-power-on/","post/计算机网络/network-ip/","post/计算机网络/reverse-proxy/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script></body></html>
