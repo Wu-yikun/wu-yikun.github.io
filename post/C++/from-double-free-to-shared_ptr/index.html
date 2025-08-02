@@ -1,0 +1,880 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/Wu-yikun/wu-yikun.github.io//tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>从一次 double free 深入理解 shared_ptr 的原理与最佳实践 - Yikun Wu</title>
+
+  
+    <meta name="description" content="从实际开发中遇到的 double free 问题出发，系统剖析智能指针 shared_ptr 的工作原理与 shared_ptr 的六大使用陷阱，最后提供 shared_ptr 非线程安全版本和基于原子操作的线程安全实现。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从一次 double free 深入理解 shared_ptr 的原理与最佳实践">
+<meta property="og:url" content="https://wu-yikun.com/post/C++/from-double-free-to-shared_ptr/index.html">
+<meta property="og:site_name" content="Yikun Wu">
+<meta property="og:description" content="从实际开发中遇到的 double free 问题出发，系统剖析智能指针 shared_ptr 的工作原理与 shared_ptr 的六大使用陷阱，最后提供 shared_ptr 非线程安全版本和基于原子操作的线程安全实现。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-5imE2S.png">
+<meta property="article:published_time" content="2025-08-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-02T10:57:43.612Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="shared_ptr">
+<meta property="article:tag" content="内存泄露">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-5imE2S.png">
+  
+  
+  
+  <meta name="keywords" content="C++,shared_ptr,内存泄露">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140357298.svg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202412091622716.jpg"></a><a class="title" href="/about/"><div class="main" ff="title">Yikun Wu</div><div class="sub normal cap">无限进步</div><div class="sub hover cap" style="opacity:0"> 無限進步</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="Search"></form><div id="search-result"></div><div class="search-no-result">No Results!</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+    <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/AI-Infra/">AI-Infra (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/Golang/">Golang (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/OI-Wiki/">OI-Wiki (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/Python/">Python (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%85%AC%E5%8A%A1%E5%91%98/">公务员 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E9%9D%A2%E7%BB%8F/">互联网面经 (6)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/C/">C++ (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%8D%9A%E5%AE%A2%E5%BC%80%E5%8F%91/">博客开发 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B0%8F%E5%90%B3%E6%97%A5%E5%AF%84/">小吳日寄 (7)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%91%84%E5%BD%B1%E6%97%A5%E5%BF%97/">摄影日志 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具 (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%9C%AA%E6%9D%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%B9%B8%E5%AD%98%E8%80%85/">未来世界的幸存者 (6)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法 (18)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%A7%91%E7%A0%94/">科研 (7)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%97%8F%E4%B9%A6%E9%98%81/">藏书阁 (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构 (16)</a></div></div></widget>
+
+<widget class="widget-wrapper timeline"><div class="widget-header dis-select"><span class="name">最新评论</span></div><div class="widget-body fs14"><div class="tag-plugin timeline ds-giscus" api="https://recent-comment-gnmy.vercel.app/" limit="10"></div></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Wu-yikun" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418811.svg"></a><a class="social" href="https://leetcode.cn/u/wu-yikun/" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419535.svg"></a><a class="social" href="https://juejin.cn/user/1654082381026734" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419245.svg"></a><a class="social" href="https://www.zhihu.com/people/JayChou" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419020.svg"></a><a class="social" href="https://music.163.com/#/user/home?id=1479129382" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419025.svg"></a><a class="social" href="https://space.bilibili.com/441384986?spm_id_from=333.1007.0.0" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418494.svg"></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-SIa30h.png">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">Home</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">Post</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/C/">C++</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/C/">C++</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/shared-ptr/">shared_ptr</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/">内存泄露</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-08-01T16:00:00.000Z">2025-08-02</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-08-02T10:57:43.612Z">2025-08-02</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>从一次 double free 深入理解 shared_ptr 的原理与最佳实践</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>在使用 C++ 开发过程中，最容易也是最麻烦的问题便是内存泄漏。相较于 Java、Python 或者 Go 语言都拥有垃圾回收机制，在对象没有引用时就会被系统自动回收而且基本上没有指针的概念，但是 C++ 则要求程序员自己管理内存，这一方面让程序员有更大的自由度但是也会很大影响程序员的开发效率。因此 C++11 标准中新推出了 <code>shared_ptr</code>、<code>unique_ptr</code> 和 <code>weak_ptr</code> 三个智能指针来帮助管理内存。</p>
+<p>智能指针就是一个类，当超出了类的作用域时，类会自动调用析构函数，析构函数会自动释放资源，所以智能指针的作用原理就是在函数结束时自动释放内存空间，不需要手动释放。</p>
+<p>笔者在排查一个 <strong>double free</strong> 问题时，重新回顾了 <code>shared_ptr</code> 的工作原理，以及列出一些注意事项，本文着重介绍 <code>shared_ptr</code>，其他智能指针不过多赘述。</p>
+<h2 id="shared-ptr-本质"><a href="#shared-ptr-本质" class="headerlink" title="shared_ptr 本质"></a><code>shared_ptr</code> 本质</h2><p><code>shared_ptr</code> 能够自动记录共享对象的引用次数，并且在引用计数降至 $0$ 时自动删除对象，从而防止内存泄漏。每个 <code>shared_ptr</code> 的拷贝都指向相同的内存，在最后一个 <code>shared_ptr</code> 析构的时候其指向的内存资源才会被释放。</p>
+<p>本质上 <code>shared_ptr</code> 是<strong>有两层析构</strong>：</p>
+<ul>
+<li><code>shared_ptr</code> 本身析构会使得指向的共享对象的引用数 $-1$，当共享对象引用数为 $0$ 时，则调用共享对象本身的析构函数</li>
+<li>这样就可以理解循环引用了：共享对象引用还是 $1$ 时，未调用共享对象本身的析构函数，其中成员 <code>shared_ptr</code> 的析构函数也不会被调用</li>
+</ul>
+<p><code>shared_ptr</code> 初始化方式：</p>
+<ol>
+<li>构造函数</li>
+<li><code>std::make_shared()</code> 辅助函数</li>
+<li><code>reset()</code></li>
+</ol>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">int</span>&gt; <span class="title">p</span><span class="params">(<span class="keyword">new</span> <span class="type">int</span>(<span class="number">1</span>))</span></span>;</span><br><span class="line">std::shared_ptr&lt;<span class="type">int</span>&gt; p2 = p;</span><br><span class="line">std::shared_ptr&lt;A&gt; ap = std::<span class="built_in">make_shared</span>&lt;A&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对于一个未初始化的智能指针，可以通过调用 reset 方法初始化</span></span><br><span class="line">std::shared_ptr&lt;<span class="type">int</span>&gt; ptr;</span><br><span class="line">ptr.<span class="built_in">reset</span>(<span class="keyword">new</span> <span class="built_in">int</span>(<span class="number">1</span>));</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>不能将一个原始指针直接赋值给一个智能指针，如：<code>std::shared_ptr&lt;int&gt; p = new int(1)</code>。</p>
+</blockquote>
+<p>对于一个未初始化的智能指针，可以通过调用 <code>reset</code> 方法初始化，当智能指针中有值的时候，调用 <code>reset</code> 方法会使引用计数减 $1$。当需要获取原指针的时候可以通过 <code>get</code> 方法返回原始指针：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">int</span>&gt; <span class="title">p</span><span class="params">(<span class="keyword">new</span> <span class="type">int</span>(<span class="number">1</span>))</span></span>;</span><br><span class="line"><span class="type">int</span> *ptr = p.<span class="built_in">get</span>();</span><br></pre></td></tr></tbody></table></figure>
+
+<p>智能指针初始化时也可以指定删除器，当其引用计数为 $0$ 时将自动调用删除器来释放对象，删除器可以是一个函数对象。</p>
+<p>比如<strong>当使用 <code>shared_ptr</code> 管理动态数组时，需要指定删除器，因为 <code>shared_ptr</code> 默认删除器不支持数组对象</strong>：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lambda 表达式作为删除器</span></span><br><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">int</span>&gt; <span class="title">p</span><span class="params">(<span class="keyword">new</span> <span class="type">int</span>[<span class="number">10</span>], [](<span class="type">int</span> *p) { <span class="keyword">delete</span> []p; })</span></span></span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="shared-ptr-注意事项"><a href="#shared-ptr-注意事项" class="headerlink" title="shared_ptr 注意事项"></a><code>shared_ptr</code> 注意事项</h2><p>关于 <code>shared_ptr</code> 的注意事项：</p>
+<ul>
+<li><p><strong>不要用一个裸指针初始化多个 <code>shared_ptr</code></strong>，会出现 <em><strong>double_free</strong></em> 导致程序崩溃</p>
+</li>
+<li><p>通过 <code>shared_from_this()</code> 返回 this 指针，不要把 this 指针作为 <code>shared_ptr</code> 返回出来，因为 <code>this</code> 指针本质就是裸指针，通过 this 返回可能会导致重复析构，<strong>不能把 this 指针交给智能指针管理</strong>。</p>
+</li>
+<li><p>尽量使用 <code>std::make_shared&lt;T&gt;()</code>，少用 <code>new</code></p>
+</li>
+<li><p><strong>不要 <code>delete</code> <code>get()</code> 返回的裸指针</strong></p>
+</li>
+<li><p><strong>不是 <code>new</code> 出来的空间要自定义删除器</strong></p>
+</li>
+<li><p><strong>要避免循环引用</strong>，循环引用导致内存永远不会被释放，造成内存泄漏（不在赘述）</p>
+</li>
+</ul>
+<h3 id="1-不要用一个裸指针初始化多个-shared-ptr（会导致-double-free）"><a href="#1-不要用一个裸指针初始化多个-shared-ptr（会导致-double-free）" class="headerlink" title="1. 不要用一个裸指针初始化多个 shared_ptr（会导致 double free）"></a>1. 不要用一个裸指针初始化多个 <code>shared_ptr</code>（会导致 double free）</h3><p>问题场景：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span>* raw_ptr = <span class="keyword">new</span> <span class="built_in">int</span>(<span class="number">42</span>);</span><br><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">int</span>&gt; <span class="title">sp1</span><span class="params">(raw_ptr)</span></span>;</span><br><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">int</span>&gt; <span class="title">sp2</span><span class="params">(raw_ptr)</span></span>;  <span class="comment">// 危险！</span></span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>两个独立的 <code>shared_ptr</code> 会<strong>各自维护</strong>一个引用计数控制块（相互独立）</li>
+<li>当 <code>sp1</code> 和 <code>sp2</code> 销毁时都会尝试释放 <code>raw_ptr</code>，导致 <strong>双重释放</strong>（double free）</li>
+<li>结果通常是程序崩溃或未定义行为</li>
+</ul>
+<p>正确做法：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方法1：直接使用 make_shared</span></span><br><span class="line"><span class="comment">// make_shared 一次性分配内存，包含控制块（引用计数、弱引用计数等）；对象存储空间（存储实际值 42）</span></span><br><span class="line"><span class="keyword">auto</span> sp1 = std::<span class="built_in">make_shared</span>&lt;<span class="type">int</span>&gt;(<span class="number">42</span>);</span><br><span class="line"><span class="keyword">auto</span> sp2 = sp1;  <span class="comment">// 只是复制指针并增加引用计数，两个 shared_ptr 指向同一个控制块，共享所有权</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 方法2：如果必须从裸指针创建，确保只创建一次 shared_ptr</span></span><br><span class="line"><span class="type">int</span>* raw_ptr = <span class="keyword">new</span> <span class="built_in">int</span>(<span class="number">42</span>);</span><br><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">int</span>&gt; <span class="title">sp1</span><span class="params">(raw_ptr)</span></span>;</span><br><span class="line">std::shared_ptr&lt;<span class="type">int</span>&gt; sp2 = sp1;  <span class="comment">// 复制的是控制块指针，不是重新创建控制块，共享同一个控制块</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="2-正确使用-shared-from-this-而不是直接返回-this-指针"><a href="#2-正确使用-shared-from-this-而不是直接返回-this-指针" class="headerlink" title="2. 正确使用 shared_from_this() 而不是直接返回 this 指针"></a>2. 正确使用 <code>shared_from_this()</code> 而不是直接返回 <code>this</code> 指针</h3><p>问题场景：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">BadExample</span> {</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">std::shared_ptr&lt;BadExample&gt; <span class="title">get_this</span><span class="params">()</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> std::<span class="built_in">shared_ptr</span>&lt;BadExample&gt;(<span class="keyword">this</span>);  <span class="comment">// 危险！</span></span><br><span class="line">    }</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> obj = std::<span class="built_in">make_shared</span>&lt;BadExample&gt;();</span><br><span class="line"><span class="keyword">auto</span> another_ref = obj-&gt;<span class="built_in">get_this</span>();  <span class="comment">// 创建了独立的控制块</span></span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>这会创建两个独立的 <code>shared_ptr</code> 控制块</li>
+<li>当两个 <code>shared_ptr</code> 销毁时都会尝试析构同一个对象</li>
+</ul>
+<p>正确做法：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">GoodExample</span> : <span class="keyword">public</span> std::enable_shared_from_this&lt;GoodExample&gt; {</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">std::shared_ptr&lt;GoodExample&gt; <span class="title">get_this</span><span class="params">()</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">shared_from_this</span>();  <span class="comment">// 安全</span></span><br><span class="line">    }</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> obj = std::<span class="built_in">make_shared</span>&lt;GoodExample&gt;();</span><br><span class="line"><span class="keyword">auto</span> another_ref = obj-&gt;<span class="built_in">get_this</span>();  <span class="comment">// 共享同一个控制块</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="3-优先使用-std-make-shared-而不是-new"><a href="#3-优先使用-std-make-shared-而不是-new" class="headerlink" title="3. 优先使用 std::make_shared<T>() 而不是 new"></a>3. 优先使用 <code>std::make_shared&lt;T&gt;()</code> 而不是 <code>new</code></h3><p>问题场景：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 不推荐</span></span><br><span class="line"><span class="function">std::shared_ptr&lt;MyClass&gt; <span class="title">sp</span><span class="params">(<span class="keyword">new</span> MyClass(arg1, arg2))</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 推荐</span></span><br><span class="line"><span class="keyword">auto</span> sp = std::<span class="built_in">make_shared</span>&lt;MyClass&gt;(arg1, arg2);</span><br></pre></td></tr></tbody></table></figure>
+
+<p>优势：</p>
+<ol>
+<li>性能更好：单次内存分配（对象 + 控制块）</li>
+<li>异常安全：不会在 <code>new</code> 和 <code>shared_ptr</code> 构造之间发生泄漏</li>
+<li>代码更简洁：不需要重复类型名称</li>
+<li>缓存友好：对象和控制块内存相邻</li>
+</ol>
+<p>例外情况：</p>
+<ul>
+<li>需要自定义删除器时</li>
+<li>需要指定特殊的内存分配方式时</li>
+</ul>
+<h3 id="4-不要-delete-get-返回的裸指针"><a href="#4-不要-delete-get-返回的裸指针" class="headerlink" title="4. 不要 delete get() 返回的裸指针"></a>4. 不要 <code>delete</code> <code>get()</code> 返回的裸指针</h3><p>问题场景：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> sp = std::<span class="built_in">make_shared</span>&lt;<span class="type">int</span>&gt;(<span class="number">42</span>);</span><br><span class="line"><span class="type">int</span>* raw_ptr = sp.<span class="built_in">get</span>();</span><br><span class="line"><span class="keyword">delete</span> raw_ptr;  <span class="comment">// 灾难性错误！</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 当 sp 超出作用域时，会再次尝试删除已删除的内存</span></span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><code>shared_ptr</code> <strong>仍然拥有内存所有权</strong></li>
+<li>手动 <code>delete</code> 会导致：<ul>
+<li>double free</li>
+<li>控制块状态不一致</li>
+<li>未定义行为（通常崩溃）</li>
+</ul>
+</li>
+</ul>
+<p>正确做法：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> sp = std::<span class="built_in">make_shared</span>&lt;<span class="type">int</span>&gt;(<span class="number">42</span>);</span><br><span class="line"><span class="type">int</span>* raw_ptr = sp.<span class="built_in">get</span>();</span><br><span class="line"><span class="comment">// 仅使用 raw_ptr 进行读取/写入操作，绝不手动删除它</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="5-非-new-分配的内存需要自定义删除器"><a href="#5-非-new-分配的内存需要自定义删除器" class="headerlink" title="5. 非 new 分配的内存需要自定义删除器"></a>5. 非 <code>new</code> 分配的内存需要自定义删除器</h3><p>问题场景：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从 malloc 分配的内存</span></span><br><span class="line"><span class="type">void</span>* mem = <span class="built_in">malloc</span>(<span class="number">1024</span>);</span><br><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">void</span>&gt; <span class="title">sp</span><span class="params">(mem)</span></span>;  <span class="comment">// 错误！会用 delete 而不是 free</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 文件指针</span></span><br><span class="line">FILE* fp = <span class="built_in">fopen</span>(<span class="string">"file.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line"><span class="function">std::shared_ptr&lt;FILE&gt; <span class="title">sp</span><span class="params">(fp)</span></span>;  <span class="comment">// 错误！会用 delete 而不是 fclose</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>正确做法：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用自定义删除器（lambda 表达式作为删除器）</span></span><br><span class="line"><span class="type">void</span>* mem = <span class="built_in">malloc</span>(<span class="number">1024</span>);</span><br><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">void</span>&gt; <span class="title">sp</span><span class="params">(mem, free)</span></span>;  <span class="comment">// 使用 free 作为删除器</span></span><br><span class="line"></span><br><span class="line">FILE* fp = <span class="built_in">fopen</span>(<span class="string">"file.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line"><span class="function">std::shared_ptr&lt;FILE&gt; <span class="title">sp</span><span class="params">(fp, [](FILE* f) { fclose(f); })</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对于数组</span></span><br><span class="line"><span class="type">int</span>* arr = <span class="keyword">new</span> <span class="type">int</span>[<span class="number">10</span>];</span><br><span class="line"><span class="function">std::shared_ptr&lt;<span class="type">int</span>&gt; <span class="title">sp</span><span class="params">(arr, [](<span class="type">int</span>* p) { <span class="keyword">delete</span>[] p; })</span></span>;</span><br></pre></td></tr></tbody></table></figure>
+
+<p>常见删除器场景：</p>
+<ol>
+<li>C 风格内存分配（<code>malloc/calloc/realloc</code>）→ 使用 <code>free</code></li>
+<li>文件操作（<code>fopen</code>）→ 使用 <code>fclose</code></li>
+<li>系统资源（套接字、句柄等）→ 使用对应的释放函数</li>
+<li>数组 → 使用 <code>delete[]</code></li>
+</ol>
+<h3 id="6-避免循环引用导致的内存泄露"><a href="#6-避免循环引用导致的内存泄露" class="headerlink" title="6. 避免循环引用导致的内存泄露"></a>6. 避免循环引用导致的内存泄露</h3><h4 id="问题场景-1"><a href="#问题场景-1" class="headerlink" title="问题场景 1"></a>问题场景 1</h4><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> {</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    std::shared_ptr&lt;B&gt; b;</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span> {</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    std::shared_ptr&lt;A&gt; a;</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>{</span><br><span class="line">    std::shared_ptr&lt;A&gt; ap = std::<span class="built_in">make_shared</span>&lt;A&gt;();</span><br><span class="line">    std::shared_ptr&lt;B&gt; bp = std::<span class="built_in">make_shared</span>&lt;B&gt;();</span><br><span class="line">    ap-&gt;b = bp;</span><br><span class="line">    bp-&gt;a = ap;</span><br><span class="line">    <span class="comment">// 此时，a 和 b 相互持有对方的 shared_ptr，形成循环引用</span></span><br><span class="line">    <span class="comment">// 程序结束时，a 和 b 的引用计数都不会降为零，导致内存泄漏</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="问题场景-2"><a href="#问题场景-2" class="headerlink" title="问题场景 2"></a>问题场景 2</h4><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Node</span> {</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    std::shared_ptr&lt;Node&gt; next;</span><br><span class="line">    std::shared_ptr&lt;Node&gt; prev;  <span class="comment">// 双向链表导致循环引用</span></span><br><span class="line">    ~<span class="built_in">Node</span>() { std::cout &lt;&lt; <span class="string">"Node destroyed\n"</span>; }</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> node1 = std::<span class="built_in">make_shared</span>&lt;Node&gt;();</span><br><span class="line"><span class="keyword">auto</span> node2 = std::<span class="built_in">make_shared</span>&lt;Node&gt;();</span><br><span class="line">node1-&gt;next = node2;</span><br><span class="line">node2-&gt;prev = node1;  <span class="comment">// 循环引用形成！</span></span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>当 <code>node1</code> 和 <code>node2</code> 离开作用域时：<ul>
+<li><code>node1</code> 的引用计数从 1→0？不，因为 <code>node2-&gt;prev</code> 还持有引用（实际从 2→1）</li>
+<li><code>node2</code> 的引用计数同样从 2→1</li>
+</ul>
+</li>
+<li>结果：<strong>两者引用计数永远不为 0</strong>，内存永远不会释放</li>
+</ul>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">node1 [refcount=2] --&gt; Node1对象</span><br><span class="line">  ↑next               ↓prev</span><br><span class="line">Node2对象 &lt;-- [refcount=2] node2</span><br></pre></td></tr></tbody></table></figure>
+
+<p>解决方案：<code>weak_ptr</code></p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SafeNode</span> {</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    std::shared_ptr&lt;SafeNode&gt; next;</span><br><span class="line">    std::weak_ptr&lt;SafeNode&gt; prev;  <span class="comment">// 使用weak_ptr</span></span><br><span class="line">    </span><br><span class="line">    ~<span class="built_in">SafeNode</span>() { std::cout &lt;&lt; <span class="string">"SafeNode destroyed\n"</span>; }</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> node1 = std::<span class="built_in">make_shared</span>&lt;SafeNode&gt;();</span><br><span class="line"><span class="keyword">auto</span> node2 = std::<span class="built_in">make_shared</span>&lt;SafeNode&gt;();</span><br><span class="line">node1-&gt;next = node2;</span><br><span class="line">node2-&gt;prev = node1;  <span class="comment">// weak_ptr不会增加引用计数</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="何时会出现循环引用？"><a href="#何时会出现循环引用？" class="headerlink" title="何时会出现循环引用？"></a>何时会出现循环引用？</h4><ul>
+<li>双向链表、树结构等复杂数据结构</li>
+<li>对象相互持有对方的 <code>shared_ptr</code></li>
+<li>父子对象互相强引用</li>
+<li>观察者模式中主体和观察者互相持有</li>
+</ul>
+<h2 id="手撕-shared-ptr｜面试高频场景题"><a href="#手撕-shared-ptr｜面试高频场景题" class="headerlink" title="手撕 shared_ptr｜面试高频场景题"></a>手撕 <code>shared_ptr</code>｜面试高频场景题</h2><h3 id="1-非线程安全的简单实现"><a href="#1-非线程安全的简单实现" class="headerlink" title="1. 非线程安全的简单实现"></a>1. 非线程安全的简单实现</h3><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">smartPtr</span> {</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    T *_ptr;</span><br><span class="line">    <span class="type">size_t</span>* _count;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">smartPtr</span>(T *ptr = <span class="literal">nullptr</span>):_ptr(ptr) {</span><br><span class="line">        <span class="keyword">if</span> (_ptr) {</span><br><span class="line">            _count = <span class="keyword">new</span> <span class="built_in">size_t</span>(<span class="number">1</span>);</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            _count = <span class="keyword">new</span> <span class="built_in">size_t</span>(<span class="number">0</span>);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="built_in">smartPtr</span>(<span class="type">const</span> smartPtr &amp;ptr) {</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span> != &amp;ptr) {</span><br><span class="line">            <span class="keyword">this</span>-&gt;_ptr = ptr._ptr;</span><br><span class="line">            <span class="keyword">this</span>-&gt;_count = ptr._count;</span><br><span class="line">            ++(*<span class="keyword">this</span>-&gt;_count)   ;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    smartPtr&amp; <span class="keyword">operator</span>=(<span class="type">const</span> smartPtr &amp;ptr) {</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;_ptr == ptr._ptr)</span><br><span class="line">            <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;_ptr) {</span><br><span class="line">            --(*<span class="keyword">this</span>-&gt;_count);</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;_count == <span class="number">0</span>) {</span><br><span class="line">                <span class="keyword">delete</span> <span class="keyword">this</span>-&gt;_ptr;</span><br><span class="line">                <span class="keyword">delete</span> <span class="keyword">this</span>-&gt;_count;</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>-&gt;_ptr = ptr._ptr;</span><br><span class="line">        <span class="keyword">this</span>-&gt;_count = ptr._count;</span><br><span class="line">        ++(*<span class="keyword">this</span>-&gt;_count);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    ~<span class="built_in">smartPtr</span>() {</span><br><span class="line">        --(*<span class="keyword">this</span>-&gt;_count);</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">0</span> == *<span class="keyword">this</span>-&gt;_count) {</span><br><span class="line">            <span class="keyword">delete</span> <span class="keyword">this</span>-&gt;_ptr;</span><br><span class="line">            <span class="keyword">delete</span> <span class="keyword">this</span>-&gt;_count;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">size_t</span> <span class="title">use_count</span><span class="params">()</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>-&gt;_count;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    T&amp; <span class="keyword">operator</span>*() {</span><br><span class="line">        <span class="built_in">assert</span>(<span class="keyword">this</span>-&gt;_ptr == <span class="literal">nullptr</span>);</span><br><span class="line">        <span class="keyword">return</span> *(<span class="keyword">this</span>-&gt;_ptr);</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    T* <span class="keyword">operator</span>-&gt;() {</span><br><span class="line">        <span class="built_in">assert</span>(<span class="keyword">this</span>-&gt;_ptr == <span class="literal">nullptr</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>-&gt;_ptr;</span><br><span class="line">    }</span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="2-基于原子操作的线程安全实现"><a href="#2-基于原子操作的线程安全实现" class="headerlink" title="2. 基于原子操作的线程安全实现"></a>2. 基于原子操作的线程安全实现</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-5imE2S.png" alt="Screenshot 2025-08-02 at 18.49.37"></p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">pragma</span> once</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;atomic&gt;</span>  <span class="comment">// 引入原子操作</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">shared_ptr</span> {</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  T* ptr;                               <span class="comment">// 指向管理的对象</span></span><br><span class="line">  std::atomic&lt;std::<span class="type">size_t</span>&gt;* ref_count;  <span class="comment">// 原子引用计数</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 释放资源</span></span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">release</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="comment">// P.S. 这里使用 std::memory_order_acq_rel 内存序，保证释放资源的同步</span></span><br><span class="line">    <span class="keyword">if</span> (ref_count &amp;&amp; ref_count-&gt;<span class="built_in">fetch_sub</span>(<span class="number">1</span>, std::memory_order_acq_rel) == <span class="number">1</span>) {</span><br><span class="line">      <span class="keyword">delete</span> ptr;</span><br><span class="line">      <span class="keyword">delete</span> ref_count;</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="comment">// 默认构造函数</span></span><br><span class="line">  <span class="built_in">shared_ptr</span>() : <span class="built_in">ptr</span>(<span class="literal">nullptr</span>), <span class="built_in">ref_count</span>(<span class="literal">nullptr</span>) {}</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 构造函数</span></span><br><span class="line">  <span class="comment">// P.S. 这里使用 explicit 关键字，防止隐式类型转换</span></span><br><span class="line">  <span class="comment">// shared_ptr&lt;int&gt; ptr1 = new int(10);  不允许出现</span></span><br><span class="line">  <span class="function"><span class="keyword">explicit</span> <span class="title">shared_ptr</span><span class="params">(T* p)</span> : ptr(p), ref_count(p ? new std::atomic&lt;std::size_t&gt;(<span class="number">1</span>) : nullptr) {</span>}</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 析构函数</span></span><br><span class="line">  ~<span class="built_in">shared_ptr</span>() { <span class="built_in">release</span>(); }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 拷贝构造函数</span></span><br><span class="line">  <span class="built_in">shared_ptr</span>(<span class="type">const</span> shared_ptr&lt;T&gt;&amp; other) : <span class="built_in">ptr</span>(other.ptr), <span class="built_in">ref_count</span>(other.ref_count) {</span><br><span class="line">    <span class="keyword">if</span> (ref_count) {</span><br><span class="line">      ref_count-&gt;<span class="built_in">fetch_add</span>(<span class="number">1</span>, std::memory_order_relaxed);  <span class="comment">// 引用计数增加，不需要强内存序</span></span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 拷贝赋值运算符</span></span><br><span class="line">  shared_ptr&lt;T&gt;&amp; <span class="keyword">operator</span>=(<span class="type">const</span> shared_ptr&lt;T&gt;&amp; other) {</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span> != &amp;other) {</span><br><span class="line">      <span class="built_in">release</span>();  <span class="comment">// 释放当前资源</span></span><br><span class="line">      ptr = other.ptr;</span><br><span class="line">      ref_count = other.ref_count;</span><br><span class="line">      <span class="keyword">if</span> (ref_count) {</span><br><span class="line">        ref_count-&gt;<span class="built_in">fetch_add</span>(<span class="number">1</span>, std::memory_order_relaxed);  <span class="comment">// 引用计数增加</span></span><br><span class="line">      }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">  }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 移动构造函数</span></span><br><span class="line">  <span class="comment">// P.S. noexcept 关键字表示该函数不会抛出异常。</span></span><br><span class="line">  <span class="comment">// 标准库中的某些操作（如 std::swap）要求移动操作是 noexcept 的，以确保异常安全。</span></span><br><span class="line">  <span class="comment">// noexcept 可以帮助编译器生成更高效的代码，因为它不需要为异常处理生成额外的代码。</span></span><br><span class="line">  <span class="built_in">shared_ptr</span>(shared_ptr&lt;T&gt;&amp;&amp; other) <span class="keyword">noexcept</span> : <span class="built_in">ptr</span>(other.ptr), <span class="built_in">ref_count</span>(other.ref_count) {</span><br><span class="line">    other.ptr = <span class="literal">nullptr</span>;</span><br><span class="line">    other.ref_count = <span class="literal">nullptr</span>;</span><br><span class="line">  }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 移动赋值运算符</span></span><br><span class="line">  shared_ptr&lt;T&gt;&amp; <span class="keyword">operator</span>=(shared_ptr&lt;T&gt;&amp;&amp; other) <span class="keyword">noexcept</span> {</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span> != &amp;other) {</span><br><span class="line">      <span class="built_in">release</span>();  <span class="comment">// 释放当前资源</span></span><br><span class="line">      ptr = other.ptr;</span><br><span class="line">      ref_count = other.ref_count;</span><br><span class="line">      other.ptr = <span class="literal">nullptr</span>;</span><br><span class="line">      other.ref_count = <span class="literal">nullptr</span>;</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">  }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 解引用运算符</span></span><br><span class="line">  <span class="comment">// P.S. const 关键字表示该函数不会修改对象的状态。</span></span><br><span class="line">  T&amp; <span class="keyword">operator</span>*() <span class="type">const</span> { <span class="keyword">return</span> *ptr; }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 箭头运算符</span></span><br><span class="line">  T* <span class="keyword">operator</span>-&gt;() <span class="type">const</span> { <span class="keyword">return</span> ptr; }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获取引用计数</span></span><br><span class="line">  <span class="function">std::<span class="type">size_t</span> <span class="title">use_count</span><span class="params">()</span> <span class="type">const</span> </span>{ <span class="keyword">return</span> ref_count ? ref_count-&gt;<span class="built_in">load</span>(std::memory_order_acquire) : <span class="number">0</span>; }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获取原始指针</span></span><br><span class="line">  <span class="function">T* <span class="title">get</span><span class="params">()</span> <span class="type">const</span> </span>{ <span class="keyword">return</span> ptr; }</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 重置指针</span></span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">reset</span><span class="params">(T* p = <span class="literal">nullptr</span>)</span> </span>{</span><br><span class="line">    <span class="built_in">release</span>();</span><br><span class="line">    ptr = p;</span><br><span class="line">    ref_count = p ? <span class="keyword">new</span> std::<span class="built_in">atomic</span>&lt;std::<span class="type">size_t</span>&gt;(<span class="number">1</span>) : <span class="literal">nullptr</span>;</span><br><span class="line">  }</span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>License</span></div>
+      <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu</a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>Share</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.com/post/C++/from-double-free-to-shared_ptr/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.com/post/C++/from-double-free-to-shared_ptr/&amp;title=从一次 double free 深入理解 shared_ptr 的原理与最佳实践 - Yikun Wu&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250802-SIa30h.png&amp;summary=从实际开发中遇到的 double free 问题出发，系统剖析智能指针 shared_ptr 的工作原理与 shared_ptr 的六大使用陷阱，最后提供 shared_ptr 非线程安全版本和基于原子操作的线程安全实现。"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=从一次 double free 深入理解 shared_ptr 的原理与最佳实践 - Yikun Wu&amp;body=https://wu-yikun.com/post/C++/from-double-free-to-shared_ptr/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;Copied!&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.com/post/C++/from-double-free-to-shared_ptr/">
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">Prev</div><a href="/post/OI-Wiki/wiki/">🎓 OI Wiki</a></div><div class="item" id="next"></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class="header cmt-title cap theme">
+      <p>Join discussion～</p>
+
+    </section>
+    <section class="body cmt-body giscus">
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Wu-yikun/wu-yikun.github.io" data-repo-id="R_kgDONub1yw" data-category="Q&amp;A" data-category-id="DIC_kwDONub1y84CmRgy" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="en" data-loading="lazy" crossorigin="anonymous"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><script defer="" src="https://vercount.one/js"></script>
+<p><span id="busuanzi_container_site_pv">本站总访问量 <span id="busuanzi_value_site_pv"></span> 次</span></p>
+<span class="totalcount">本站共发表 113 篇文章 · </span><span class="post-count">总计 392.5k 字</span><div><span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span></div></div></footer>
+
+
+<script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+  function createtime() {
+    var now = new Date();
+    var grt= new Date("01/25/2025 00:00:00");
+    now.setTime(now.getTime() + 250);
+    days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+    hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+    if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+    mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+    seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+    snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+    document.getElementById("timeDate").innerHTML = "本站已运行 "+dnum+" 天 ";
+    document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+  };
+  setInterval("createtime()",250);
+</script>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#shared-ptr-%E6%9C%AC%E8%B4%A8"><span class="toc-text">shared_ptr 本质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#shared-ptr-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">shared_ptr 注意事项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%8D%E8%A6%81%E7%94%A8%E4%B8%80%E4%B8%AA%E8%A3%B8%E6%8C%87%E9%92%88%E5%88%9D%E5%A7%8B%E5%8C%96%E5%A4%9A%E4%B8%AA-shared-ptr%EF%BC%88%E4%BC%9A%E5%AF%BC%E8%87%B4-double-free%EF%BC%89"><span class="toc-text">1. 不要用一个裸指针初始化多个 shared_ptr（会导致 double free）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%AD%A3%E7%A1%AE%E4%BD%BF%E7%94%A8-shared-from-this-%E8%80%8C%E4%B8%8D%E6%98%AF%E7%9B%B4%E6%8E%A5%E8%BF%94%E5%9B%9E-this-%E6%8C%87%E9%92%88"><span class="toc-text">2. 正确使用 shared_from_this() 而不是直接返回 this 指针</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%BC%98%E5%85%88%E4%BD%BF%E7%94%A8-std-make-shared-%E8%80%8C%E4%B8%8D%E6%98%AF-new"><span class="toc-text">3. 优先使用 std::make_shared&lt;T&gt;() 而不是 new</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E4%B8%8D%E8%A6%81-delete-get-%E8%BF%94%E5%9B%9E%E7%9A%84%E8%A3%B8%E6%8C%87%E9%92%88"><span class="toc-text">4. 不要 delete get() 返回的裸指针</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E9%9D%9E-new-%E5%88%86%E9%85%8D%E7%9A%84%E5%86%85%E5%AD%98%E9%9C%80%E8%A6%81%E8%87%AA%E5%AE%9A%E4%B9%89%E5%88%A0%E9%99%A4%E5%99%A8"><span class="toc-text">5. 非 new 分配的内存需要自定义删除器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E9%81%BF%E5%85%8D%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2"><span class="toc-text">6. 避免循环引用导致的内存泄露</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%8B%E6%92%95-shared-ptr%EF%BD%9C%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E5%9C%BA%E6%99%AF%E9%A2%98"><span class="toc-text">手撕 shared_ptr｜面试高频场景题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E9%9D%9E%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0"><span class="toc-text">1. 非线程安全的简单实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%9F%BA%E4%BA%8E%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%AE%9E%E7%8E%B0"><span class="toc-text">2. 基于原子操作的线程安全实现</span></a></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>Scroll to Top</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>Join Discussion</span></a></div></widget>
+</div></aside><div class="float-panel blur">
+  <button type="button" style="display:none" class="laptop-only rightbar-toggle mobile" onclick="sidebar.rightbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" style="display:none" class="mobile-only leftbar-toggle mobile" onclick="sidebar.leftbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `Just`,
+      min: `minutes ago`,
+      hour: `hours ago`,
+      day: `days ago`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer=""></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `Switched to Light Mode`,
+      dark: `Switched to Dark Mode`,
+      auto: `Switched to Auto Mode`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer="">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"giscus":{"js":"/js/services/giscus_new.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer="" src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+    processEscapes: true
+  }
+});
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  }
+});
+MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for(i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+</div>
+</body></html><script>var posts=["post/AI-Infra/ai-infra-in-the-era-of-llm/","post/AI-Infra/animated-pictures-to-easily-understand-self-attention/","post/AI-Infra/how-does-chatgpt-handle-text-input/","post/Golang/golang-wiki/","post/AI-Infra/recommendation-system-architecture/","post/AI-Infra/the-soul-of-chatgpt-attention-mechanism/","post/OI-Wiki/wiki/","post/Python/python-wiki/","post/公务员/civil-servant-examination-preparation-plan/","post/公务员/how-to-improve-essay-writing/","post/互联网面经/0521-huawei/","post/互联网面经/2025-autumn-recruitment/","post/互联网面经/reverse-interview/","post/互联网面经/26-top-talent/","post/C++/cpp-copy-constructor/","post/互联网面经/intern-interview/","post/C++/cpp-stl/","post/C++/cpp-wiki/","post/互联网面经/job-hunting-guide-for-technical-personnel/","post/C++/effective-c++/","post/C++/network-programming-and-io-multiplexing/","post/C++/from-posix-pthread-to-c++11-thread/","post/C++/when-nanoseconds-matter-ultrafas-trading-systems-in-C++/","post/博客开发/building-a-personal-blog-from-scratch/","post/博客开发/hexo-stellar-deployment-guide/","post/小吳日寄/2025-04-09/","post/小吳日寄/2025-06-14/","post/小吳日寄/2025-06-11/","post/小吳日寄/2025-06-17/","post/小吳日寄/2025-06-18/","post/小吳日寄/2025-06-28/","post/小吳日寄/2025-07-08/","post/年终总结/「2022」life-is-a-field-not-a-track/","post/年终总结/「2021」passion/","post/年终总结/「2023」feel-the-journey/","post/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","post/摄影日志/camera-and-photography/","post/摄影日志/dongshandao_2024-10-30/","post/摄影日志/fjnu_2023-06-14/","post/摄影日志/chengdu_2024-07-14/","post/摄影日志/fuzhou_2025-06-14/","post/摄影日志/fuzhou_2024-10-01/","post/摄影日志/guangzhou_2024-11-29/","post/摄影日志/hangzhou_2023-04-28/","post/摄影日志/hangzhou_2024-06-15/","post/摄影日志/quanzhou_2024-01-28/","post/摄影日志/shenzhen_2023-10-27/","post/摄影日志/shot/","post/摄影日志/wuhan_2023-04-04/","post/摄影日志/xi'an_2024-06-24/","post/摄影日志/xiamen_2023-12-24/","post/摄影日志/yinchuan_2024-07-27/","post/摄影日志/zhangzhou_2024-05-01/","post/开发工具/docker-and-k8s/","post/开发工具/docker-intro/","post/开发工具/git-undo/","post/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","post/开发工具/git-workflow/","post/开发工具/nat/","post/开发工具/tips-for-precise-search-on-github/","post/开发工具/understanding-.git-folder/","post/未来世界的幸存者/choose-one-sentence/","post/未来世界的幸存者/how-can-undergraduates-enter-bat/","post/未来世界的幸存者/don't-limit-your-future-imagination-with-your-current-abilities/","post/未来世界的幸存者/internet-companies-or-state-owned-enterprises/","post/未来世界的幸存者/technical-writing-experience/","post/未来世界的幸存者/the-future-world/","post/数据结构与算法/advanced-algorithms/","post/数据结构与算法/binary-tree-matching/","post/数据结构与算法/cpp-acm-input-output/","post/数据结构与算法/constructing-binary-tree/","post/数据结构与算法/interview-add-two/","post/数据结构与算法/interview-linked-list/","post/数据结构与算法/difference-array/","post/数据结构与算法/kuaishou-merge-k-ascending-linked-lists/","post/数据结构与算法/maximum-product-of-subarray-or-subsequence/","post/数据结构与算法/monotonic-stack/","post/数据结构与算法/modulo/","post/数据结构与算法/priority_queue/","post/数据结构与算法/qpow/","post/数据结构与算法/sieve-of-prime-number/","post/数据结构与算法/sort-algorithm/","post/数据结构与算法/tackle-without-sort-library/","post/数据结构与算法/tecent-wxg-russian-doll-envelope/","post/数据结构与算法/union-search/","post/科研/eurosys-24-volley/","post/科研/fast-24-term/","post/科研/fast-20-empirical-guide-of-pm/","post/科研/osdi-23-chardonnay/","post/科研/osdi-23-smart/","post/科研/osdi-24-atlas/","post/科研/fast-25-gogetafs/","post/藏书阁/siddhartha/","post/计算机网络/does-restarting-mean-shutting-down-and-power-on/","post/计算机网络/reverse-proxy/","post/计算机网络/network-ip/","post/系统与体系结构/analysis-of-trace-processing/","post/系统与体系结构/debugging-with-gdb/","post/系统与体系结构/a-study-of-linux-file-system-evolution/","post/系统与体系结构/distributed-systems-paxos.md/","post/系统与体系结构/distributed-systems-raft/","post/系统与体系结构/distributed-systems-theoretical-foundations/","post/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","post/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","post/系统与体系结构/linux-disk-automatic-mounting/","post/系统与体系结构/linux-kernel-io-path/","post/系统与体系结构/linux-partition/","post/系统与体系结构/madam-for-all-flash-array/","post/系统与体系结构/mmap-vs-read-write/","post/系统与体系结构/nvm-top-lab/","post/系统与体系结构/persistent-memory-research-report/","post/系统与体系结构/pmdk-programming-guidelines/","post/C++/from-double-free-to-shared_ptr/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>
