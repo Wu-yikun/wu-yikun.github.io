@@ -1,0 +1,1740 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/Wu-yikun/wu-yikun.github.io//tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>✍️ 八股文 @ 操作系统 - Coredump</title>
+
+  
+    <meta name="description" content="记录面经高频操作系统题，实时更新中...">
+<meta property="og:type" content="article">
+<meta property="og:title" content="✍️ 八股文 @ 操作系统">
+<meta property="og:url" content="https://wu-yikun.com/post/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/2025-os/index.html">
+<meta property="og:site_name" content="Coredump">
+<meta property="og:description" content="记录面经高频操作系统题，实时更新中...">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504301906192.webp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504301939468.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504302052155.webp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010011266.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010024167.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010031653.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010032024.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010044860.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505092142975.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010059018.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010100501.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010102960.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010103584.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010129252.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010215740.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010216153.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010232627.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010200863.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010246557.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010248223.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503290106690.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503290041746.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250820-VwrRqM.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505011505174.jpeg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505011506844.jpeg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505011506976.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505091537400.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100014972.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100017799.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100030243.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100039373.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100100726.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100118027.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100133104.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100139091.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100140052.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100142620.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100146962.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100148456.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100148106.png">
+<meta property="article:published_time" content="2025-08-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-23T10:18:52.462Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="面经">
+<meta property="article:tag" content="八股文">
+<meta property="article:tag" content="操作系统">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504301906192.webp">
+  
+  
+  
+  <meta name="keywords" content="面经,八股文,操作系统">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140357298.svg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post"><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy="" class="avatar lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250809-XpPHak.JPG"></a><a class="title" href="/about/"><div class="main" ff="title">Coredump</div><div class="sub normal cap">无限进步</div><div class="sub hover cap" style="opacity:0"> 無限進步</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="Search"></form><div id="search-result"></div><div class="search-no-result">No Results!</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+    <widget class="widget-wrapper categories-widget"><div class="widget-header categories-header dis-select"><span class="name">分类索引</span></div><div class="widget-body"><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/OI-Wiki/">OI-Wiki (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%85%AC%E5%8A%A1%E5%91%98/">公务员 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/Python/">Python (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/Golang/">Golang (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%8D%9A%E5%AE%A2%E5%BC%80%E5%8F%91/">博客开发 (2)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B0%8F%E5%90%B3%E6%97%A5%E5%AF%84/">小吳日寄 (7)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/AI-Infra/">AI-Infra (6)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结 (4)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/">开发工具 (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%9C%AA%E6%9D%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%B9%B8%E5%AD%98%E8%80%85/">未来世界的幸存者 (5)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/C/">C++ (8)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E6%91%84%E5%BD%B1%E6%97%A5%E5%BF%97/">摄影日志 (17)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%A7%91%E7%A0%94/">科研 (7)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%97%8F%E4%B9%A6%E9%98%81/">藏书阁 (1)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络 (3)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/">秋招指南 (19)</a></div><div class="category "><svg class="category-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 10h-5" opacity=".5"></path>
+                <path d="M10 3h6.5c.464 0 .697 0 .892.026a3 3 0 0 1 2.582 2.582c.026.195.026.428.026.892" opacity=".5"></path>
+                <path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z"></path>
+            </svg><a href="/categories/%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">系统与体系结构 (16)</a></div></div></widget>
+
+<widget class="widget-wrapper timeline"><div class="widget-header dis-select"><span class="name">最新评论</span></div><div class="widget-body fs14"><div class="tag-plugin timeline ds-giscus" api="https://recent-comment-gnmy.vercel.app/" limit="10"></div></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Wu-yikun" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418811.svg"></a><a class="social" href="https://leetcode.cn/u/wu-yikun/" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419535.svg"></a><a class="social" href="https://juejin.cn/user/1654082381026734" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419245.svg"></a><a class="social" href="https://www.zhihu.com/people/JayChou" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419020.svg"></a><a class="social" href="https://music.163.com/#/user/home?id=1479129382" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140419025.svg"></a><a class="social" href="https://space.bilibili.com/441384986?spm_id_from=333.1007.0.0" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505140418494.svg"></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top"><img class="bg lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250823-2j2LWn.png">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">Home</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">Post</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/">秋招指南</a></div><div id="tag"> <span>&nbsp;标签：</span><a class="cap breadcrumb-link" href="/tags/%E5%85%AB%E8%82%A1%E6%96%87/">八股文</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>&nbsp; <a class="cap breadcrumb-link" href="/tags/%E9%9D%A2%E7%BB%8F/">面经</a>&nbsp;</div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-08-22T16:00:00.000Z">2025-08-23</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-08-23T10:18:52.462Z">2025-08-23</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>✍️ 八股文 @ 操作系统</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h2 id="1-进程、线程、协程的区别？"><a href="#1-进程、线程、协程的区别？" class="headerlink" title="1. 进程、线程、协程的区别？"></a>1. 进程、线程、协程的区别？</h2><p>进程提供强隔离但开销大，线程平衡了资源共享和调度效率，协程则以极低开销实现高并发但局限于单线程内。</p>
+<p>实际应用中可根据任务需求（计算密集型 vs. I/O 密集型）、隔离性要求和性能目标选择合适机制。</p>
+<h3 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h3><p><strong>进程</strong>是操作系统进行资源分配和保护的基本单位。</p>
+<p>每个进程拥有独立的虚拟地址空间、文件描述符、系统资源（如打开的文件和信号处理程序）以及安全上下文（例如用户 ID 和权限）。</p>
+<p>进程之间的内存空间是隔离的，一个进程的崩溃通常不会直接影响其他进程，这种隔离性提高了系统的稳定性和安全性。</p>
+<p>进程间的通信（IPC）需要借助操作系统提供的机制，如管道、消息队列、共享内存或套接字，这些方式通常涉及较高的开销。</p>
+<p>进程的创建和销毁需要分配或回收大量资源（如页表和文件描述符表），上下文切换时需保存和恢复完整的 CPU 状态（包括寄存器、内存映射等），因此效率较低。</p>
+<p>🔥【场景】进程适用于需要强隔离性的任务，例如运行独立的应用程序或服务。</p>
+<h3 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h3><p><strong>线程</strong>是进程内的执行单元，一个进程可以包含多个线程。</p>
+<p>所有线程共享同一进程的地址空间和系统资源（如全局变量、打开的文件和堆内存），但每个线程拥有独立的栈空间、寄存器状态和线程局部存储。</p>
+<p>由于共享内存，线程间可以直接读写同一数据，但这也引入了竞态条件和数据一致性问题，因此必须使用同步机制（如互斥锁、信号量或条件变量）来协调访问。</p>
+<p>线程的创建和上下文切换由操作系统内核调度器管理，切换时只需保存和恢复线程独有的状态（如栈指针和寄存器），开销比进程小，但仍需在用户态和内核态之间切换。</p>
+<p>🔥【场景】线程适合用于需要共享数据的并发任务，例如图形界面应用中的后台计算或 I/O 操作。</p>
+<h3 id="协程"><a href="#协程" class="headerlink" title="协程"></a>协程</h3><p><strong>协程</strong>是一种用户态的轻量级线程，其调度完全由程序控制（而非操作系统内核）。</p>
+<p>协程在同一个线程内执行，共享该线程的所有资源，但拥有独立的栈上下文（通常大小可自定义且远小于线程栈）。</p>
+<p>协程的切换无需陷入内核，而是通过代码中的显式让步（yield）或事件循环来触发，仅需保存和恢复少量寄存器状态（如程序计数器和栈指针），因此开销极低，每秒可支持百万次切换。</p>
+<p>然而，协程无法利用多核 CPU 的并行能力，若需跨核执行仍需结合多线程或多进程。</p>
+<p>🔥【场景】协程适用于高并发的 I/O 密集型任务（如网络服务或异步编程），通过非阻塞操作和协作式调度最大化 CPU 利用率。</p>
+<h2 id="2-进程通信的方式是什么？"><a href="#2-进程通信的方式是什么？" class="headerlink" title="2. 进程通信的方式是什么？"></a>2. 进程通信的方式是什么？</h2><p>进程间通信（IPC）用于在不同进程之间传递数据和信号，常见的 IPC 方式包括：</p>
+<ul>
+<li>管道（匿名/命名）</li>
+<li>消息队列</li>
+<li>共享内存</li>
+<li>信号量</li>
+<li>信号</li>
+<li>Socket 套接字</li>
+</ul>
+<p>匿名管道是一种半双工的通信方式，数据只能单向流动，通常用于具有亲缘关系的进程之间，例如父子进程。它可以看成是一种特殊的文件，但只存在于内存中。</p>
+<p>命名管道与管道类似，但它提供了一个路径名与之关联，允许无亲缘关系的进程之间进行通信。</p>
+<p>消息队列是消息的链表，存放在内核中并由消息队列标识符标识。它允许一个或多个进程向队列中写入消息，其他进程从队列中读取消息，克服了管道只能承载无格式字节流以及缓冲区大小受限等缺点。</p>
+<p>共享内存允许多个进程访问同一块内存空间，这是最快的一种进程通信方式，因为数据不需要在进程之间复制。但需要配合信号量等同步机制来避免多个进程同时读写时造成的冲突。</p>
+<p>信号量是一个计数器，用于控制多个进程对共享资源的访问，通常作为一种锁机制来防止多个进程同时访问一个共享资源。</p>
+<p>信号是一种比较复杂的通信方式，用于通知接收进程某个事件已经发生，比如中断处理。</p>
+<p>套接字是一种通用的进程间通信机制，不仅可用于同一台机器上的进程通信，也可用于不同机器之间的网络通信。它支持多种协议，如 TCP 和 UDP，提供了灵活而强大的通信能力。</p>
+<h2 id="3-线程通信-同步的方式是什么？"><a href="#3-线程通信-同步的方式是什么？" class="headerlink" title="3. 线程通信/同步的方式是什么？"></a>3. 线程通信/同步的方式是什么？</h2><p>Linux 系统提供了五种用于线程通信的方式：<strong>互斥锁</strong>、<strong>读写锁</strong>、<strong>条件变量</strong>、<strong>自旋锁</strong>和<strong>信号量</strong>。</p>
+<ul>
+<li><strong>互斥锁</strong>（Mutex）：互斥量从本质上说是一把锁，在访问共享资源前对互斥量进行加锁，在访问完成后释放互斥量上的锁。对互斥量进行加锁以后，任何其他试图再次对互斥锁加锁的线程将会阻塞直到当前线程释放该互斥锁。如果释放互斥锁时有多个线程阻塞，所有在该互斥锁上的阻塞线程都会变成可运行状态，第一个变为运行状态的线程可以对互斥锁加锁，其他线程将会看到互斥锁依然被锁住，只能回去再次等待它重新变为可用。</li>
+<li><strong>条件变量</strong>（Condition Variables）：条件变量是在多线程程序中用来<strong>实现 “等待–&gt;唤醒”</strong> 逻辑常用的方法。条件变量利用线程间共享的全局变量进行同步的一种机制，主要包括两个动作：一个线程等待”条件变量的条件成立”而挂起；另一个线程使“条件成立”。<strong>为了防止竞争，条件变量的使用总是和一个互斥锁结合在一起</strong>。线程在改变条件状态前必须首先锁住互斥量，函数 pthread_cond_wait 把自己放到等待条件的线程列表上，然后对互斥锁解锁（这两个操作是原子操作）。在函数返回时，互斥量再次被锁住。</li>
+<li><strong>自旋锁</strong>（Spinlock）：自旋锁通过 CPU 提供的 CAS 函数（<code>Compare And Swap</code>），在「用户态」完成加锁和解锁操作，不会主动产生线程上下文切换，所以相比互斥锁来说，会快一些，开销也小一些。一般加锁的过程，包含两个步骤：第一步，查看锁的状态，如果锁是空闲的，则执行第二步；第二步，将锁设置为当前线程持有。使用自旋锁的时候，当发生多线程竞争锁的情况，加锁失败的线程会「<strong>忙等待</strong>」，直到它拿到锁。CAS 函数就把这两个步骤合并成一条硬件级指令，形成原子指令，这样就保证了这两个步骤是不可分割的，要么一次性执行完两个步骤，要么两个步骤都不执行。这里的「忙等待」可以用 <code>while</code> 循环等待实现，不过最好是使用 CPU 提供的 <code>PAUSE</code> 指令来实现「忙等待」，因为可以减少循环等待时的耗电量。</li>
+<li><strong>信号量</strong>（Semaphores）：信号量可以是命名的（有名信号量）或无名的（仅限于当前进程内的线程），用于控制对资源的访问次数。通常信号量表示资源的数量，对应的变量是一个整型（sem）变量。另外，还有两个原子操作的系统调用函数来控制信号量的，分别是：P 操作：将 sem 减 1，相减后，如果 sem &lt; 0，则进程/线程进入阻塞等待，否则继续，表明 P 操作可能会阻塞；V 操作：将 sem 加 1，相加后，如果 sem &lt;= 0，唤醒一个等待中的进程/线程，表明 V 操作不会阻塞；</li>
+<li><strong>读写锁</strong>（Read-Write Locks）：读写锁从字面意思我们也可以知道，它由「读锁」和「写锁」两部分构成，如果只读取共享资源用「读锁」加锁，如果要修改共享资源则用「写锁」加锁。所以，<strong>读写锁适用于能明确区分读操作和写操作的场景</strong>。读写锁的工作原理是：当「写锁」没有被线程持有时，多个线程能够并发地持有读锁，这大大提高了共享资源的访问效率，因为「读锁」是用于读取共享资源的场景，所以多个线程同时持有读锁也不会破坏共享资源的数据。但是，一旦「写锁」被线程持有后，读线程的获取读锁的操作会被阻塞，而且其他写线程的获取写锁的操作也会被阻塞。所以说，<strong>写锁是独占锁</strong>，因为任何时刻只能有一个线程持有写锁，类似互斥锁和自旋锁，<strong>而读锁是共享锁</strong>，因为读锁可以被多个线程同时持有。知道了读写锁的工作原理后，我们可以发现，<strong>读写锁在读多写少的场景，能发挥出优势</strong>。</li>
+<li><strong>屏障</strong>（Barrier）：同步多个线程的执行阶段，所有线程到达屏障点后才继续执行（如 <code>pthread_barrier_wait</code>）。</li>
+</ul>
+<blockquote>
+<p>总结，线程通信方式主要依赖于共享内存下的各种同步原语和消息传递机制，这些机制协同工作保证了线程间数据的正确性和程序的并发性。</p>
+</blockquote>
+<h2 id="4-进程上下文切换会发生什么？进程上下文切换场景有哪些？"><a href="#4-进程上下文切换会发生什么？进程上下文切换场景有哪些？" class="headerlink" title="4. 进程上下文切换会发生什么？进程上下文切换场景有哪些？"></a>4. 进程上下文切换会发生什么？进程上下文切换场景有哪些？</h2><p>发生进程切换时操作系统会：</p>
+<ul>
+<li><strong>保存当前进程上下文</strong>：操作系统将当前运行进程的 CPU 状态（包括程序计数器、寄存器内容、栈指针、内存映射表等）保存到其进程控制块（PCB）中。</li>
+<li><strong>调度新进程</strong>：调度器从就绪队列中选择下一个要运行的进程，并加载其 PCB 中存储的上下文信息。</li>
+<li><strong>恢复新进程上下文</strong>：将新进程的寄存器值、程序计数器、栈指针等重新载入 CPU，并切换内存地址空间（更新页表寄存器或 TLB）。</li>
+<li><strong>切换内核栈</strong>：将内核栈指针指向新进程的内核栈，确保系统调用和中断处理能正确执行。</li>
+<li><strong>更新系统状态</strong>：刷新进程调度相关数据（如时间戳、优先级），并可能处理信号或待处理中断。</li>
+</ul>
+<p>进程上下文切换有哪些场景：</p>
+<ul>
+<li><strong>时间片耗尽</strong>：当前进程用完调度器分配的时间片（如 CFS 调度器），被迫让出 CPU。</li>
+<li><strong>更高优先级进程就绪</strong>：高优先级进程进入可运行状态（如实时任务），抢占当前低优先级进程。</li>
+<li><strong>主动阻塞</strong>：进程因等待资源（如 I/O 操作完成、互斥锁释放、信号量申请）主动放弃 CPU。</li>
+<li><strong>中断处理</strong>：硬件中断（如磁盘读写完成、网络包到达）触发中断服务程序，可能唤醒其他高优先级进程。</li>
+<li><strong>系统调用返回</strong>：某些系统调用（如阻塞式 read）返回时，内核可能调度其他进程。</li>
+<li><strong>异常事件</strong>：进程触发异常（如缺页故障），需等待操作系统处理完毕后再恢复执行。</li>
+</ul>
+<h2 id="5-平时会看哪些系统指标？"><a href="#5-平时会看哪些系统指标？" class="headerlink" title="5. 平时会看哪些系统指标？"></a>5. 平时会看哪些系统指标？</h2><p>常看这些核心系统指标：</p>
+<ul>
+<li><strong>CPU 相关指标</strong>：CPU 使用率（包括用户态、内核态、空闲时间）、负载平均值（load average）反映系统整体负载压力，上下文切换次数（context switches）和中断频率（interrupts）可帮助判断调度开销和硬件活动。</li>
+<li><strong>内存相关指标</strong>：内存使用率、可用内存（available memory）、交换分区使用情况（swap usage）以及页错误率（page faults）和内存换入/换出（swap in/out）能揭示内存压力与潜在瓶颈。</li>
+<li><strong>磁盘 I/O 指标</strong>：磁盘利用率、读写吞吐量（throughput）、IOPS（每秒 I/O 操作数）以及响应时间（latency）和队列深度（queue depth）可用于评估存储性能是否达标。</li>
+<li><strong>网络相关指标</strong>：网络接口的带宽使用率、数据包发送/接收速率、错误包和丢包率（packet loss）、TCP 连接数及重传率能反映网络连通质量和负载。</li>
+<li><strong>进程与线程指标</strong>：运行中进程数量、线程数量、僵尸进程（zombie processes）以及关键进程的 CPU 和内存占用情况。</li>
+<li><strong>系统整体指标</strong>：启动时间、系统调用频率（system calls）、文件描述符使用量（file descriptors）以及温度与电源状态（适用于物理机）。</li>
+</ul>
+<p>可通过 <code>top</code>、<code>vmstat</code>、<code>iostat</code>、<code>netstat</code>、<code>dstat</code>、<code>htop</code>、<code>pidstat</code>、<code>sar</code> 等工具查看。</p>
+<h2 id="6-CPU-中断数量怎么看？如果-CPU-中断数量分配不均匀怎么办？"><a href="#6-CPU-中断数量怎么看？如果-CPU-中断数量分配不均匀怎么办？" class="headerlink" title="6. CPU 中断数量怎么看？如果 CPU 中断数量分配不均匀怎么办？"></a>6. CPU 中断数量怎么看？如果 CPU 中断数量分配不均匀怎么办？</h2><h3 id="一、如何查看中断数量？"><a href="#一、如何查看中断数量？" class="headerlink" title="一、如何查看中断数量？"></a>一、如何查看中断数量？</h3><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /proc/interrupts</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>每一行是一个中断源（如网卡、定时器、磁盘等）</li>
+<li>每列是一个 CPU 核心</li>
+<li>数字表示该中断在某 CPU 上被处理的次数</li>
+</ul>
+<h3 id="二、什么是“中断不均匀”？"><a href="#二、什么是“中断不均匀”？" class="headerlink" title="二、什么是“中断不均匀”？"></a>二、什么是“中断不均匀”？</h3><ul>
+<li>某个中断（特别是网卡）<strong>集中在某个 CPU 上处理</strong></li>
+<li>导致该核负载高、其他核闲置</li>
+<li>常见于 <strong>网卡中断（eth0）偏向 CPU 0</strong></li>
+</ul>
+<h3 id="三、怎么解决中断不均匀？"><a href="#三、怎么解决中断不均匀？" class="headerlink" title="三、怎么解决中断不均匀？"></a>三、怎么解决中断不均匀？</h3><blockquote>
+<p>一句话：可以绑中断到线程还是进程，然后再绑核。</p>
+</blockquote>
+<p>方法一：<strong>中断绑定（IRQ Affinity）</strong></p>
+<p>绑定中断到特定 CPU 核，或进行负载均衡：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> 2 &gt; /proc/irq/XX/smp_affinity  <span class="comment"># 绑定到 CPU1</span></span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><code>2</code> 表示 CPU1，<code>1</code> 表示 CPU0，<code>3</code> 表示 CPU0+CPU1（按位）</p>
+</blockquote>
+<p>可以用脚本自动平衡多个中断源到多个核上。</p>
+<p>方法二：<strong>使用 RPS / RFS（软中断调度）</strong></p>
+<ul>
+<li>RPS：Receive Packet Steering，用于软中断在多核间分散</li>
+<li>配置 <code>/sys/class/net/eth0/queues/rx-*/rps_cpus</code> 指定核</li>
+</ul>
+<p>方法三：<strong>开启多队列网卡（RSS）</strong></p>
+<ul>
+<li>RSS（Receive Side Scaling）：硬件级多队列分发中断</li>
+<li>需网卡和驱动支持，查看：</li>
+</ul>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ethtool -l eth0    <span class="comment"># 查看队列</span></span><br><span class="line">ethtool -x eth0    <span class="comment"># 查看中断队列分配</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>CPU 中断不均衡会导致某核过载，通过 <strong>IRQ 绑定、RPS/RFS、RSS</strong> 技术可将中断负载均衡到多个 CPU，提高性能。</p>
+<h2 id="7-用户态和内核态的区别？"><a href="#7-用户态和内核态的区别？" class="headerlink" title="7. 用户态和内核态的区别？"></a>7. 用户态和内核态的区别？</h2><p>内核态和用户态是操作系统中的两种运行模式。它们的主要区别在于权限和可执行的操作：</p>
+<ul>
+<li>在用户态下，进程仅能执行非特权指令，无法直接访问硬件设备或敏感的内核资源（如内存管理单元、I/O 端口），若需执行特权操作（如文件读写、网络通信）必须通过系统调用接口向内核发起请求，由内核代理完成。这种模式限制了用户程序的行为，防止其意外破坏系统或其他进程。</li>
+<li>在内核态下，代码可执行所有CPU指令（包括特权指令），直接操作硬件资源（如内存分配、设备驱动管理），并完全控制系统关键数据结构（如进程调度表、文件系统缓存）。操作系统内核及部分底层驱动运行于此模式，确保核心任务的完整性和高效性。</li>
+</ul>
+<p>内核态的底层操作主要包括：内存管理、进程管理、设备驱动程序控制、系统调用等。这些操作涉及到操作系统的核心功能，需要较高的权限来执行。</p>
+<p>两种模式的切换通过硬件陷阱机制（如软中断、系统调用）触发：当用户程序发起系统调用时，CPU 自动从用户态切换到内核态，内核完成请求后返回结果并切换回用户态。这种设计既隔离了用户程序的错误影响，又保证了系统服务的可控提供。</p>
+<p>分为内核态和用户态的原因主要有以下几点：</p>
+<ul>
+<li><strong>安全性</strong>：通过对权限的划分，用户程序无法直接访问硬件资源，从而避免了恶意程序对系统资源的破坏。</li>
+<li><strong>稳定性</strong>：用户态程序出现问题时，不会影响到整个系统，避免了程序故障导致系统崩溃的风险。</li>
+<li><strong>隔离性</strong>：内核态和用户态的划分使得操作系统内核与用户程序之间有了明确的边界，有利于系统的模块化和维护。</li>
+</ul>
+<h2 id="8-你说到进程是分配资源的基本单位，那么这个资源指的是什么？"><a href="#8-你说到进程是分配资源的基本单位，那么这个资源指的是什么？" class="headerlink" title="8. 你说到进程是分配资源的基本单位，那么这个资源指的是什么？"></a>8. 你说到进程是分配资源的基本单位，那么这个资源指的是什么？</h2><p>虚拟内存、CPU 时间片、文件句柄、信号量等资源。</p>
+<h2 id="9-进程切换和线程切换的区别？"><a href="#9-进程切换和线程切换的区别？" class="headerlink" title="9. 进程切换和线程切换的区别？"></a>9. 进程切换和线程切换的区别？</h2><p>进程切换涉及完整的上下文切换，包括保存和恢复进程的私有资源，如<strong>虚拟内存地址空间</strong>（需切换页表或刷新 TLB）、<strong>寄存器状态</strong>、<strong>内核栈</strong>、<strong>文件描述符表</strong>以及<strong>信号处理</strong>设置等。因为进程拥有独立的地址空间，切换后需要更新内存管理单元（MMU）的映射关系，这一操作通常需要较长时间且可能因 TLB 失效导致性能下降。此外，进程切换必然需要从用户态陷入内核态，由操作系统调度器完成。</p>
+<p>线程切换则发生在同一进程内部，因此无需切换虚拟地址空间（页表保持不变）、文件描述符表等进程级资源。只需保存和恢复线程的私有上下文，如<strong>寄存器值</strong>、<strong>栈指针</strong>以及<strong>线程局部存储</strong>。由于资源共享，线程切换的开销显著低于进程切换，且在某些情况下（如用户级线程）甚至无需陷入内核，由用户空间的线程库即可完成调度。</p>
+<h2 id="10-进程的五种状态如何切换（进程状态图）？"><a href="#10-进程的五种状态如何切换（进程状态图）？" class="headerlink" title="10. 进程的五种状态如何切换（进程状态图）？"></a>10. 进程的五种状态如何切换（进程状态图）？</h2><blockquote>
+<p>一个完整的进程状态的变迁如下图：</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504301906192.webp" alt="img"></p>
+<p>再来详细说明一下进程的状态变迁：</p>
+<ul>
+<li>NULL -&gt; 创建状态：一个新进程被创建时的第一个状态；</li>
+<li>创建状态 -&gt; 就绪状态：当进程被创建完成并初始化后，一切就绪准备运行时，变为就绪状态，这个过程是很快的；</li>
+<li>就绪态 -&gt; 运行状态：处于就绪状态的进程被操作系统的进程调度器选中后，就分配给 CPU 正式运行该进程；</li>
+<li>运行状态 -&gt; 结束状态：当进程已经运行完成或出错时，会被操作系统作结束状态处理；</li>
+<li>运行状态 -&gt; 就绪状态：处于运行状态的进程在运行过程中，由于分配给它的运行时间片用完，操作系统会把该进程变为就绪态，接着从就绪态选中另外一个进程运行；</li>
+<li>运行状态 -&gt; 阻塞状态：当进程请求某个事件且必须等待时，例如请求 I/O 事件；</li>
+<li>阻塞状态 -&gt; 就绪状态：当进程要等待的事件完成时，它从阻塞状态变到就绪状态；</li>
+</ul>
+<h2 id="11-64-bits-的-Linux-默认栈大小？"><a href="#11-64-bits-的-Linux-默认栈大小？" class="headerlink" title="11. 64 bits 的 Linux 默认栈大小？"></a>11. 64 bits 的 Linux 默认栈大小？</h2><p>在 64 位的 Linux 系统上，默认的线程栈大小通常是 <code>8 MB</code>。这个值并不是由内核直接规定的，而是取决于具体的 <code>pthread</code> 线程库的实现（比如 glibc），大多数主流发行版都将其默认设置为 8 MB。</p>
+<p>你可以通过命令 <code>ulimit -s</code> 来查看当前 shell 环境下线程栈的默认大小（以 KB 为单位），通常它显示为 8192。需要注意的是，这个 ulimit 设置是针对进程的主线程以及由当前 shell 启动的程序的新线程的默认值，而在程序中通过 <code>pthread_create</code> 创建新线程时，如果不显式指定栈大小，也会默认使用这个 8 MB 的值。</p>
+<h2 id="12-进程调度算法有哪些？"><a href="#12-进程调度算法有哪些？" class="headerlink" title="12. 进程调度算法有哪些？"></a>12. 进程调度算法有哪些？</h2><h3 id="1️⃣-先来先服务调度算法"><a href="#1️⃣-先来先服务调度算法" class="headerlink" title="1️⃣ 先来先服务调度算法"></a>1️⃣ 先来先服务调度算法</h3><p>最简单的一个调度算法，就是非抢占式的先来先服务算法。每次从就绪队列选择最先进入队列的进程，然后一直运行，直到进程退出或被阻塞，才会继续从队列中选择第一个进程接着运行。这似乎很公平，但是当一个长作业先运行了，那么后面的短作业等待的时间就会很长，不利于短作业。 FCFS 对长作业有利，适用于 CPU 繁忙型作业的系统，而不适用于 I/O 繁忙型作业的系统。</p>
+<h3 id="2️⃣-最短任务优先调度算法"><a href="#2️⃣-最短任务优先调度算法" class="headerlink" title="2️⃣ 最短任务优先调度算法"></a>2️⃣ 最短任务优先调度算法</h3><p>最短作业优先调度算法同样也是顾名思义，它会优先选择运行时间最短的进程来运行，这有助于提高系统的吞吐量。这显然对长作业不利，很容易造成一种极端现象。比如，一个长作业在就绪队列等待运行，而这个就绪队列有非常多的短作业，那么就会使得长作业不断的往后推，周转时间变长，致使长作业长期不会被运行（饥饿）。</p>
+<h3 id="3️⃣-高响应比优先调度算法"><a href="#3️⃣-高响应比优先调度算法" class="headerlink" title="3️⃣ 高响应比优先调度算法"></a>3️⃣ 高响应比优先调度算法</h3><p>前面的「先来先服务调度算法」和「最短作业优先调度算法」都没有很好的权衡短作业和长作业。</p>
+<p>而高响应比优先调度算法主要是权衡了短作业和长作业。</p>
+<p>每次进行进程调度时，先计算「响应比优先级」，然后把「响应比优先级」最高的进程投入运行，「响应比优先级」的计算公式：<br>$$<br>优先权=\frac{等待时间+要求服务时间}{要求服务时间}<br>$$<br>从上面的公式，可以发现：</p>
+<ul>
+<li>如果两个进程的「等待时间」相同时，「要求的服务时间」越短，「响应比」就越高，这样短作业的进程容易被选中运行；</li>
+<li>如果两个进程「要求的服务时间」相同时，「等待时间」越长，「响应比」就越高，这就兼顾到了长作业进程，因为进程的响应比可以随时间等待的增加而提高，当其等待时间足够长时，其响应比便可以升到很高，从而获得运行的机会。</li>
+</ul>
+<h3 id="4️⃣-时间片轮转调度算法"><a href="#4️⃣-时间片轮转调度算法" class="headerlink" title="4️⃣ 时间片轮转调度算法"></a>4️⃣ 时间片轮转调度算法</h3><p>最古老、最简单、最公平且使用最广的算法就是时间片轮转调度算法。</p>
+<p>每个进程被分配一个时间段，称为时间片（Quantum)，即允许该进程在该时间段中运行。</p>
+<ul>
+<li>如果时间片用完，进程还在运行，那么将会把此进程从 CPU 释放出来，并把 CPU 分配另外一个进程；</li>
+<li>如果该进程在时间片结束前阻塞或结束，则 CPU 立即进行切换；</li>
+</ul>
+<p>另外，时间片的长度就是一个很关键的点：</p>
+<ul>
+<li>如果时间片设得太短会导致过多的进程上下文切换，降低了 CPU 效率；</li>
+<li>如果设得太长又可能引起对短作业进程的响应时间变长。</li>
+</ul>
+<p>通常时间片设为 20ms~50ms 通常是一个比较合理的折中值。</p>
+<h3 id="5️⃣-最高优先级调度算法"><a href="#5️⃣-最高优先级调度算法" class="headerlink" title="5️⃣ 最高优先级调度算法"></a>5️⃣ 最高优先级调度算法</h3><p>前面的「时间片轮转算法」做了个假设，即让所有的进程同等重要，也不偏袒谁，大家的运行时间都一样。</p>
+<p>但是，对于多用户计算机系统就有不同的看法了，它们希望调度是有优先级的，即希望调度程序能从就绪队列中选择最高优先级的进程进行运行，这称为最高优先级调度算法。 进程的优先级可以分为，静态优先级或动态优先级：</p>
+<ul>
+<li>静态优先级：创建进程时候，就已经确定了优先级了，然后整个运行时间优先级都不会变化；</li>
+<li>动态优先级：根据进程的动态变化调整优先级，比如如果进程运行时间增加，则降低其优先级，如果进程等待时间（就绪队列的等待时间）增加，则升高其优先级，也就是随着时间的推移增加等待进程的优先级。</li>
+</ul>
+<p>该算法也有两种处理优先级高的方法，非抢占式和抢占式：</p>
+<ul>
+<li>非抢占式：当就绪队列中出现优先级高的进程，运行完当前进程，再选择优先级高的进程。</li>
+<li>抢占式：当就绪队列中出现优先级高的进程，当前进程挂起，调度优先级高的进程运行。</li>
+</ul>
+<p>但是依然有缺点，可能会导致低优先级的进程永远不会运行。</p>
+<h3 id="6️⃣-多级反馈队列调度算法"><a href="#6️⃣-多级反馈队列调度算法" class="headerlink" title="6️⃣ 多级反馈队列调度算法"></a>6️⃣ 多级反馈队列调度算法</h3><p>多级反馈队列调度算法是「时间片轮转算法」和「最高优先级算法」的综合和发展。</p>
+<p>顾名思义：</p>
+<ul>
+<li>「多级」表示有多个队列，每个队列优先级从高到低，同时优先级越高时间片越短</li>
+<li>「反馈」表示如果有新的进程加入优先级高的队列时，立刻停止当前正在运行的进程，转而去运行优先级高的队列</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504301939468.png" alt="img"></p>
+<p>来看看，它是如何工作的：</p>
+<ul>
+<li>设置了多个队列，赋予每个队列不同的优先级，每个队列优先级从高到低，同时优先级越高时间片越短；</li>
+<li>新的进程会被放入到第一级队列的末尾，按先来先服务的原则排队等待被调度，如果在第一级队列规定的时间片没运行完成，则将其转入到第二级队列的末尾，以此类推，直至完成；</li>
+<li>当较高优先级的队列为空，才调度较低优先级的队列中的进程运行。如果进程运行时，有新进程进入较高优先级的队列，则停止当前运行的进程并将其移入到原队列末尾，接着让较高优先级的进程运行；</li>
+</ul>
+<p>可以发现，对于短作业可能可以在第一级队列很快被处理完。</p>
+<p>对于长作业，如果在第一级队列处理不完，可以移入下次队列等待被执行，虽然等待的时间变长了，但是运行时间也会更长了，<strong>所以该算法很好的兼顾了长短作业，同时有较好的响应时间</strong>。</p>
+<h2 id="13-除了互斥锁你还知道什么锁？分别应用于什么场景？"><a href="#13-除了互斥锁你还知道什么锁？分别应用于什么场景？" class="headerlink" title="13. 除了互斥锁你还知道什么锁？分别应用于什么场景？"></a>13. 除了互斥锁你还知道什么锁？分别应用于什么场景？</h2><p>还有读写锁、自旋锁、条件变量、信号量。</p>
+<ol>
+<li>读写锁：读写锁允许多个线程同时读取共享资源，但只允许一个线程进行写操作。适用于<strong>读操作频繁、写操作较少</strong>的场景，可以提高并发性能。</li>
+<li>自旋锁：自旋锁是一种忙等待锁，线程在获取锁时不会进入阻塞状态，而是循环忙等待直到获取到锁。<strong>适用于临界区很小且锁的持有时间很短的场景</strong>，避免线程频繁切换带来的开销。</li>
+<li>条件变量：条件变量用于线程间的同步和通信。它通常与互斥锁一起使用，<strong>线程可以通过条件变量等待某个条件满足</strong>，当条件满足时，其他线程可以通过条件变量发送信号通知等待线程。</li>
+<li>信号量：信号量是一种计数器，用于控制对共享资源的访问。<strong>它可以用来限制同时访问资源的线程数量</strong>，或者用语线程间的同步。</li>
+</ol>
+<h2 id="14-死锁发生条件是什么？"><a href="#14-死锁发生条件是什么？" class="headerlink" title="14. 死锁发生条件是什么？"></a>14. 死锁发生条件是什么？</h2><p>死锁只有同时满足以下四个条件才会发生：</p>
+<ul>
+<li><strong>互斥条件</strong>：互斥条件是指多个线程不能同时使用同一个资源。</li>
+<li><strong>持有并等待条件</strong>：持有并等待条件是指，当线程 A 已经持有了资源 1，又想申请资源 2，而资源 2 已经被线程 C 持有了，所以线程 A 就会处于等待状态，但是线程 A 在等待资源 2 的同时并不会释放自己已经持有的资源 1。</li>
+<li><strong>不可剥夺条件</strong>：不可剥夺条件是指，当线程已经持有了资源 ，在自己使用完之前不能被其他线程获取，线程 B 如果也想使用此资源，则只能在线程 A 使用完并释放后才能获取。</li>
+<li><strong>环路等待条件</strong>：环路等待条件指的是，在死锁发生的时候，两个线程获取资源的顺序构成了环形链。</li>
+</ul>
+<h2 id="15-如何避免死锁？"><a href="#15-如何避免死锁？" class="headerlink" title="15. 如何避免死锁？"></a>15. 如何避免死锁？</h2><p>避免死锁问题就只需要破环其中一个条件就可以，最常见的并且可行的就是<strong>使用资源有序分配法，来破环环路等待条件</strong>。</p>
+<p>那什么是资源有序分配法呢？线程 A 和 线程 B 获取资源的顺序要一样，当线程 A 是先尝试获取资源 A，然后尝试获取资源 B 的时候，线程 B 同样也是先尝试获取资源 A，然后尝试获取资源 B。也就是说，线程 A 和 线程 B 总是以相同的顺序申请自己想要的资源。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202504302052155.webp" alt="img"></p>
+<h2 id="16-聊一聊银行家算法"><a href="#16-聊一聊银行家算法" class="headerlink" title="16. 聊一聊银行家算法"></a>16. 聊一聊银行家算法</h2><p>系统发生死锁是很正常的，我们需要主动去预防死锁，即进行有序的资源分配，使用银行家算法。</p>
+<p>银行家算法是最有代表性的避免死锁的算法。</p>
+<p>为什么叫银行家算法呢？就是这个算法的逻辑很像银行放贷的逻辑，也就是尽可能避免坏账的出现。</p>
+<p>银行家算法的业务逻辑如下。</p>
+<ul>
+<li>不负荷执行：一个进程的最大需求量不超过系统拥有的总资源数，才会被接纳执行。</li>
+<li>可分期：一个进程可以分期请求资源，但总请求书不可超过最大需求量。</li>
+<li>推迟分配：当系统现有资源数小于进程需求时，对进程的需求可以延迟分配，但总让进程在有限时间内获取资源。</li>
+</ul>
+<p>听起来有点绕，我们还是举个例子来说明：<strong>假如系统中有三类互斥资源 R1、R2、R3，可用资源数分别是 9、8、5</strong>，在指定时刻有 P1、P2、P3、P4 和 P5 这五个进程，这些进程的对三类互斥资源的最大需求量和已分配资源数如下表所示，那么系统如何先后运行这五个进程，不会发生死锁问题？</p>
+<table>
+<thead>
+<tr>
+<th>进程</th>
+<th>最大需求量（R1、R2、R3）</th>
+<th>已分配资源数（R1、R2、R3）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1</td>
+<td>6 5 2</td>
+<td>1 2 1</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>2 2 1</td>
+<td>2 1 1</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>8 1 1</td>
+<td>2 1 0</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>1 2 1</td>
+<td>1 2 0</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>3 4 4</td>
+<td>1 1 3</td>
+</tr>
+</tbody></table>
+<p>首先分析首次需求的资源，<strong>系统剩余可用资源数分别是 2、1、0</strong>，各进程需要的资源数如下表所示。</p>
+<ul>
+<li>资源 R1 的剩余可用资源数 = 9 - 1 - 2 - 2 - 1 - 1 = 2。</li>
+<li>资源 R2 的剩余可用资源数 = 8 - 2 - 1 - 1 - 2 - 1 = 1。</li>
+<li>资源 R3 的剩余可用资源数 = 5 - 1 - 1 - 0 - 0 - 3 = 0。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>进程</th>
+<th>最大需求量</th>
+<th>已分配资源数</th>
+<th>首次分配需要的资源数（前者-后者）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1</td>
+<td>6 5 2</td>
+<td>1 2 1</td>
+<td>5 3 1</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>2 2 1</td>
+<td>2 1 1</td>
+<td>0 1 0</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>8 1 1</td>
+<td>2 1 0</td>
+<td>6 0 1</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>1 2 1</td>
+<td>1 2 0</td>
+<td>0 0 1</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>3 4 4</td>
+<td>1 1 3</td>
+<td>2 3 1</td>
+</tr>
+</tbody></table>
+<p>根据银行家算法不负荷原则【一个进程的最大需求量不超过系统拥有的总资源数，才会被接纳执行】，优先给进程 P2 执行，因为剩余的 0 1 0 资源够让 P2 执行。</p>
+<p>经过一系列分析和资源试分配后… 得到安全执行顺序为 <code>p2 =&gt; p4 =&gt; p5 =&gt; p1 =&gt; p3</code> 或 <code>p2 =&gt; p4 =&gt; p5 =&gt; p3 =&gt; p1</code>。</p>
+<p>银行家算法的核心思想，就是在分配给进程资源前，首先判断这个进程的安全性，也就是预执行，判断分配后是否产生死锁现象。如果系统当前资源能满足其执行，则尝试分配，如果不满足则让该进程等待。</p>
+<p><strong>通过不断检查剩余可用资源是否满足某个进程的最大需求，如果可以则加入安全序列，并把该进程当前持有的资源回收；不断重复这个过程，看最后能否实现让所有进程都加入安全序列</strong>。安全序列一定不会发生死锁，但没有死锁不一定是安全序列。</p>
+<h2 id="17-乐观锁和悲观锁有什么区别？"><a href="#17-乐观锁和悲观锁有什么区别？" class="headerlink" title="17. 乐观锁和悲观锁有什么区别？"></a>17. 乐观锁和悲观锁有什么区别？</h2><p><strong>乐观锁</strong>（不加锁、匹配版本号或时间戳、适用读多写少、无锁编程）：</p>
+<ul>
+<li>基本思想：乐观锁假设多个事务之间很少发生冲突，因此在读取数据时不会加锁，而是在更新数据时检查数据的版本（如使用版本号或时间戳），如果版本匹配则执行更新操作，否则认为发生了冲突。</li>
+<li>使用场景：乐观锁适用于读多写少的场景，可以减少锁的竞争，提高并发性能。例如，数据库中的乐观锁机制可以用于处理并发更新同一行数据的情况。</li>
+</ul>
+<p><strong>悲观锁</strong>（加锁、适用写多）：</p>
+<ul>
+<li>基本思想：悲观锁假设多个事务之间会频繁发生冲突，因此在读取数据时会加锁，防止其他事务对数据进行修改，直到当前事务完成操作后才释放锁。</li>
+<li>使用场景：悲观锁适用于写多的场景，通过加锁保证数据的一致性。例如，数据库中的行级锁机制可以用于处理并发更新同一行数据的情况。</li>
+</ul>
+<p>乐观锁适用于读多写少的场景，通过版本控制来处理冲突；而悲观锁适用于写多的场景，通过加锁来避免冲突。</p>
+<p>互斥锁、自旋锁、读写锁，都是属于悲观锁。</p>
+<blockquote>
+<p>这里举一个场景例子：在线文档。</p>
+<p>我们都知道在线文档可以同时多人编辑的，如果使用了悲观锁，那么只要有一个用户正在编辑文档，此时其他用户就无法打开相同的文档了，这用户体验当然不好了。</p>
+<p>那实现多人同时编辑，实际上是用了乐观锁，它允许多个用户打开同一个文档进行编辑，编辑完提交之后才验证修改的内容是否有冲突。</p>
+<p>怎么样才算发生冲突？这里举个例子，比如用户 A 先在浏览器编辑文档，之后用户 B 在浏览器也打开了相同的文档进行编辑，但是用户 B 比用户 A 提交早，这一过程用户 A 是不知道的，当 A 提交修改完的内容时，那么 A 和 B 之间并行修改的地方就会发生冲突。</p>
+<p>服务端要怎么验证是否冲突了呢？通常方案如下：</p>
+<ul>
+<li>由于发生冲突的概率比较低，所以先让用户编辑文档，但是浏览器在下载文档时会记录下服务端返回的文档版本号；</li>
+<li>当用户提交修改时，发给服务端的请求会带上原始文档版本号，服务器收到后将它与当前版本号进行比较，如果版本号不一致则提交失败，如果版本号一致则修改成功，然后服务端版本号更新到最新的版本号。</li>
+</ul>
+<p>实际上，我们常见的 SVN 和 Git 也是用了乐观锁的思想，先让用户编辑代码，然后提交的时候，通过版本号来判断是否产生了冲突，发生了冲突的地方，需要我们自己修改后，再重新提交。</p>
+<p>乐观锁虽然去除了加锁解锁的操作，但是一旦发生冲突，重试的成本非常高，所以只有在冲突概率非常低，且加锁成本非常高的场景时，才考虑使用乐观锁。</p>
+</blockquote>
+<h2 id="18-虚拟内存？虚拟地址空间？使用虚拟内存的优点？"><a href="#18-虚拟内存？虚拟地址空间？使用虚拟内存的优点？" class="headerlink" title="18. 虚拟内存？虚拟地址空间？使用虚拟内存的优点？"></a>18. 虚拟内存？虚拟地址空间？使用虚拟内存的优点？</h2><p>虚拟内存是一种内存管理技术，它会使程序自己认为自己拥有一块很大且连续的内存，而实际上这些内存可能分布在物理内存和磁盘上，在需要时进行数据交换。</p>
+<ul>
+<li><p><strong>优点</strong>：</p>
+<ul>
+<li>通过分页和交换技术，将暂时不用的内存页暂存到磁盘，可以弥补物理内存大小的不足；</li>
+<li>保证进程之间的隔离性和安全性（检测并防止内存访问越界等）；</li>
+<li>虚拟内存空间连续，简化了编程和内存管理，无需关心物理内存的实际分布情况；</li>
+<li>支持共享内存，不同进程的虚拟地址可映射到相同的物理内存页，实现高效的数据共享。</li>
+</ul>
+</li>
+<li><p><strong>缺点</strong>：</p>
+<ul>
+<li>当系统物理内存不足时，操作系统需要将部分页面写入磁盘（换出）并从磁盘中加载需要的页面（换入），这会带来较高的磁盘 I/O 开销，严重时会导致“抖动”，使系统响应速度下降；</li>
+<li>虚拟内存还需要维护页表来管理虚拟地址与物理地址之间的映射，这也会占用一定的内存和 CPU 资源。</li>
+</ul>
+</li>
+</ul>
+<p>虚拟地址空间是针对于每个单一进程所能访问的内存地址范围，通常被划分为代码段、数据段、堆、栈和内存映射区域等部分。</p>
+<h2 id="19-介绍一下操作系统内存管理"><a href="#19-介绍一下操作系统内存管理" class="headerlink" title="19. 介绍一下操作系统内存管理"></a>19. 介绍一下操作系统内存管理</h2><p>操作系统设计了虚拟内存，每个进程都有自己的独立的虚拟内存，我们所写的程序不会直接与物理内打交道。Linux 是通过对内存分页的方式来管理内存，分页是把整个虚拟和物理内存空间切成一段段固定尺寸的大小，每一页的大小为 4KB，虚拟地址与物理地址之间通过页表来映射，页表是存储在内存里的，内存管理单元 （MMU）就做将虚拟内存地址转换成物理地址的工作。而当进程访问的虚拟地址在页表中查不到时，系统会产生一个缺页异常，进入系统内核空间分配物理内存、更新进程页表，最后再返回用户空间，恢复进程的运行。</p>
+<h2 id="20-程序的内存布局是怎样的？"><a href="#20-程序的内存布局是怎样的？" class="headerlink" title="20. 程序的内存布局是怎样的？"></a>20. 程序的内存布局是怎样的？</h2><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010011266.png" alt="image-20240725233029022"></p>
+<p>通过这张图你可以看到，用户空间内存，从低到高分别是 6 种不同的内存段：</p>
+<ul>
+<li><p>代码段：包括二进制可执行代码，通常只读，还可共享（多个进程运行同一程序时只存一份）；</p>
+<blockquote>
+<p>静态存储区：数据段 + BSS 段</p>
+</blockquote>
+</li>
+<li><p>数据段：包括已初始化的静态常量和全局变量；</p>
+</li>
+<li><p>BSS 段：包括未初始化的静态变量和全局变量；</p>
+</li>
+<li><p>堆（比如 <code>malloc/new</code>）：包括动态分配的内存，从低地址开始向上增长，程序员负责管理，容易泄露；</p>
+</li>
+<li><p>文件映射区（比如 <code>mmap</code>）：包括共享库、文件映射、匿名映射、共享内存等；</p>
+</li>
+<li><p>栈：包括局部变量和函数调用的上下文（参数、返回地址）等，函数调用或返回会自动分配与释放后。栈的大小是固定的，一般是 8 MB。当然系统也提供了参数，以便我们自定义大小；</p>
+</li>
+<li><p>内核空间（对用户程序不可见）</p>
+</li>
+</ul>
+<p>上图中的内存布局可以看到，代码段下面还有一段内存空间的（灰色部分），这一块区域是「保留区」，之所以要有保留区这是因为在大多数的系统里，我们认为比较小数值的地址不是一个合法地址，例如，我们通常在 C 的代码里会将无效的指针赋值为 NULL。因此，这里会出现一段不可访问的内存保留区，防止程序因为出现 bug，导致读或写了一些小内存地址的数据，而使得程序跑飞。</p>
+<p>🔥 在这 7 个内存段中，堆和文件映射段的内存是动态分配的。比如说，使用 C 标准库的 <code>malloc()</code> 或者 <code>mmap()</code>，就可以分别在堆和文件映射段动态分配内存。</p>
+<h2 id="21-堆与栈的区别，以及各自优缺点？"><a href="#21-堆与栈的区别，以及各自优缺点？" class="headerlink" title="21. 堆与栈的区别，以及各自优缺点？"></a>21. 堆与栈的区别，以及各自优缺点？</h2><p>栈由编译器自动管理，内存分配和释放通过指针的移动完成，速度极快。它用于存储局部变量、函数参数和返回地址，数据遵循后进先出的顺序，生命周期与函数调用周期一致，函数结束时自动释放。栈的大小通常有限，过度使用可能导致栈溢出。</p>
+<p>堆由程序员手动管理，内存分配和释放需要显式操作，速度相对较慢。它用于动态分配的内存，生命周期由程序员控制，数据无需遵循特定顺序，但管理不当可能导致内存泄漏或碎片化。堆的大小受系统虚拟内存限制，容量远大于栈。</p>
+<p>栈的优点是高效且无碎片，但容量有限且灵活性低；堆的优点是容量大且灵活，但管理复杂且容易引发错误。</p>
+<h2 id="22-fork-会复制哪些东西"><a href="#22-fork-会复制哪些东西" class="headerlink" title="22. fork() 会复制哪些东西"></a>22. <code>fork()</code> 会复制哪些东西</h2><p>当调用 <code>fork()</code> 创建子进程时，操作系统会复制父进程的整个<strong>虚拟地址空间</strong>（包括代码、数据、堆和栈）、执行上下文（如寄存器状态）、打开的文件描述符表、信号处理设置、进程权限属性以及资源限制配置，形成一份几乎完全相同的副本。不过，子进程会拥有独立的进程 ID 和父进程 ID，且不会继承父进程的未决信号、定时器或文件锁。</p>
+<p>现代系统通过写时复制 COW 技术优化性能：初始时父子进程共享物理内存页，仅当任一进程尝试修改某页时，内核才为该页创建实际副本，从而避免不必要的内存复制开销。</p>
+<h2 id="23-写时复制是什么？节省了哪些资源？"><a href="#23-写时复制是什么？节省了哪些资源？" class="headerlink" title="23. 写时复制是什么？节省了哪些资源？"></a>23. 写时复制是什么？节省了哪些资源？</h2><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010024167.png" alt="img"></p>
+<p>写时复制（Copy-on-Write, COW）是一种高效的内存管理优化技术，其核心思想是允许多个进程或线程共享同一份物理内存数据，直到其中某个进程试图修改这些数据时，系统才会为该进程分配新的物理内存并复制原始数据，从而避免不必要的提前复制开销。</p>
+<p>在具体实现中，当父进程调用 <code>fork()</code> 创建子进程时，操作系统并不会立即复制父进程的整个地址空间到新的物理内存中，而是让子进程共享父进程的物理内存页，同时将这些页标记为写时复制状态。此时，父子进程的页表项均指向相同的物理内存页，但权限被设置为只读。当任一进程（父进程或子进程）尝试对共享页进行写操作时，会触发页错误异常（page fault），内核中的页错误处理程序会识别这是由写时复制引起的，随后为执行写操作的进程分配一个新的物理页，复制原始数据内容，并更新该进程的页表以指向新页且恢复可写权限，最后重新执行导致异常的写指令。</p>
+<p>写时复制技术显著减少了进程创建（如 <code>fork()</code>）和内存复制（如 <code>mmap()</code> 私有映射）的开销，尤其在大内存进程中效果明显，因为它延迟了实际复制操作到真正需要时才发生，节省了时间和物理内存资源。典型的应用场景包括快速进程创建、内存快照、虚拟机管理及某些数据结构（如字符串实现中的共享缓冲区）。</p>
+<h2 id="24-malloc-1KB-和-1MB-有什么区别？"><a href="#24-malloc-1KB-和-1MB-有什么区别？" class="headerlink" title="24. malloc 1KB 和 1MB 有什么区别？"></a>24. malloc 1KB 和 1MB 有什么区别？</h2><p>1KB（小内存）：通常通过 glibc 的 <code>ptmalloc</code> 分配器从<strong>线程的本地缓存（fast bins 或 small bins）</strong> 中直接分配，这些缓存来源于预先从堆（heap）中申请的内存块（chunk）。分配速度快，无需直接与内核交互。</p>
+<p>1MB（大内存）：可能超过 <code>mmap</code> 阈值（默认一般为 128KB），分配器会直接使用 <code>mmap</code> 系统调用从操作系统中申请独立的内存映射区域，而非从堆区分配。释放时同样通过 <code>munmap</code> 直接返还操作系统。</p>
+<h2 id="25-free-释放内存会归还给操作系统吗？"><a href="#25-free-释放内存会归还给操作系统吗？" class="headerlink" title="25. free 释放内存会归还给操作系统吗？"></a>25. free 释放内存会归还给操作系统吗？</h2><p><code>free()</code> 的行为并不是由 C 语言标准直接规定的，而是由底层的内存管理器（通常是 <code>glibc</code> 的 <code>malloc</code> 实现，即 <code>ptmalloc2</code>）决定的。它的核心目标是平衡性能（减少系统调用和锁竞争）和内存效率。</p>
+<ul>
+<li>当我们调用 <code>free</code> 函数释放一块动态分配的内存时，这个过程并非简单直接地将内存交还给操作系统，而是由底层的内存管理器（如 glibc 中的 <code>ptmalloc</code>）负责处理。具体来说，内存管理器会将被释放的内存块标记为空闲状态，并保留在进程的堆空间中，<code>ptmalloc</code> 将其加入到自己的空闲内存双向链表中。这样做的目的是为了优化性能：如果程序后续再次申请类似大小的内存，管理器可以迅速从空闲链表中分配一块，避免了频繁向操作系统申请内存的系统调用开销，同时 <code>ptmalloc</code> 也会尝试对小块内存进行合并，避免过多的内存碎片。</li>
+<li><strong>只有在某些特定条件下，内存管理器才会将内存真正归还给操作系统</strong>。例如，当释放的内存块非常大（比如超过 <code>128KB</code>，这类大块内存通常由 <code>mmap</code> 分配而非堆分配）时，管理器可能会直接使用 <code>munmap</code> 系统调用将其释放回操作系统。此外，如果堆顶（即堆空间的末端）存在大量连续的空闲内存，管理器也可能通过 <code>sbrk</code> 系统调用来降低堆顶指针，从而缩减进程的堆空间，将这部分空闲内存返还给系统。但需要注意的是，由于内存碎片的存在，堆中部即使有空闲内存也难以被归还，因为操作系统要求归还的内存必须是地址连续的。因此，<code>free</code> 的行为是内存管理器在性能和系统资源占用之间的一种权衡策略。</li>
+</ul>
+<h2 id="26-malloc-是如何分配内存的（介绍一下-brk-和-mmap）？"><a href="#26-malloc-是如何分配内存的（介绍一下-brk-和-mmap）？" class="headerlink" title="26. malloc 是如何分配内存的（介绍一下 brk 和 mmap）？"></a>26. malloc 是如何分配内存的（介绍一下 brk 和 mmap）？</h2><p><code>malloc</code> 是 C 标准库中用于动态分配内存的函数，其具体实现依赖于底层的内存分配器（如 glibc 的 <code>ptmalloc</code>）。它的分配通过多级缓存和堆/<code>mmap</code> 混合策略优化不同尺寸的内存分配，在用户态管理内存池以减少系统调用次数，同时尝试平衡性能与碎片化问题。</p>
+<p>以下是其核心分配机制：</p>
+<h3 id="1-小内存分配（通常-≤-128KB）"><a href="#1-小内存分配（通常-≤-128KB）" class="headerlink" title="1. 小内存分配（通常 ≤ 128KB）"></a>1. 小内存分配（通常 ≤ 128KB）</h3><ul>
+<li><strong>线程本地缓存（Tcache）</strong>：首先检查线程本地缓存（每个线程独享的无锁结构），从中快速获取所需大小的内存块。若命中则直接返回，避免全局锁竞争。</li>
+<li><strong>Fast Bins / Small Bins</strong>：若 Tcache 未命中，则根据请求大小从对应的 Fast Bins（小内存单链表，LIFO）或 Small Bins（固定大小链表）中查找空闲块。Fast Bins 通常不合并碎片以提升分配速度。</li>
+<li><strong>堆区分配</strong>：若以上缓存均无可用块，分配器会通过 <code>brk()</code> 系统调用扩展进程的堆空间，从堆顶申请一大块内存，并将其分割为所需尺寸返回给用户。</li>
+</ul>
+<h3 id="2-大内存分配（通常-128KB）"><a href="#2-大内存分配（通常-128KB）" class="headerlink" title="2. 大内存分配（通常 > 128KB）"></a>2. 大内存分配（通常 &gt; 128KB）</h3><ul>
+<li>直接使用 <code>mmap()</code> 系统调用：分配器会绕过堆管理，直接通过 <code>mmap</code> 从操作系统申请独立的内存映射区域。此类内存释放时通过 <code>munmap</code> 立即归还系统，避免堆碎片化。</li>
+</ul>
+<h3 id="3-分配器的优化策略"><a href="#3-分配器的优化策略" class="headerlink" title="3. 分配器的优化策略"></a>3. 分配器的优化策略</h3><ul>
+<li><strong>内存块（chunk）对齐</strong>：返回的内存块通常按 16 字节对齐（64 位系统），满足硬件和算法效率需求。</li>
+<li><strong>碎片管理</strong>：释放后的内存块会根据邻居是否空闲进行合并，减少内存碎片。但 Fast Bins 中的块暂不合并以加速小内存分配。</li>
+<li><strong>多级缓存</strong>：通过 Tcache、Fast Bins、Unsorted Bins、Small Bins、Large Bins 等多级链表缓存不同尺寸的空闲块，适配不同分配模式。</li>
+</ul>
+<h3 id="4-brk-与-mmap"><a href="#4-brk-与-mmap" class="headerlink" title="4. brk 与 mmap"></a>4. brk 与 mmap</h3><ul>
+<li><code>brk()</code>：用于扩展或收缩堆空间，频繁调用可能引发内存碎片。</li>
+<li><code>mmap()</code>：用于大内存或匿名映射，每次调用涉及内核态切换，开销较大但隔离性好。</li>
+</ul>
+<blockquote>
+<p>brk</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010031653.png" alt="img"></p>
+<blockquote>
+<p>mmap</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010032024.png" alt="img"></p>
+<h2 id="27-操作系统内存不足的时候会发生什么（如何避免预读失效和缓存污染）"><a href="#27-操作系统内存不足的时候会发生什么（如何避免预读失效和缓存污染）" class="headerlink" title="27. 操作系统内存不足的时候会发生什么（如何避免预读失效和缓存污染）"></a>27. 操作系统内存不足的时候会发生什么（如何避免预读失效和缓存污染）</h2><ol>
+<li><strong>触发内核回收机制</strong><ul>
+<li><strong>页面回收（Page Reclaim）</strong>：内核优先回收<strong>干净页</strong>（Clean Page，如文件读缓存）和<strong>空闲页</strong>，直接丢弃或重新关联。</li>
+<li><strong>脏页回写（Writeback Dirty Pages）</strong>：将<strong>脏页</strong>（Dirty Page，被修改过的缓存）异步写入磁盘，然后回收为空闲页。</li>
+<li><strong>交换（Swapping）</strong>：将不活跃的匿名页（进程堆栈数据）换出到磁盘交换分区（Swap），释放物理内存。</li>
+</ul>
+</li>
+<li><strong>OOM Killer（Out-of-Memory Killer）</strong>：若回收后仍不足，内核根据进程的 <code>oom_score</code>（基于内存占用、优先级等）强制终止某些进程，释放内存。</li>
+</ol>
+<hr>
+<p>应用程序通过 <code>malloc</code> 函数申请内存的时候，实际上申请的是虚拟内存，此时并不会分配物理内存。</p>
+<p>当应用程序读写了这块虚拟内存，CPU 就会去访问这个虚拟内存， 这时会发现这个虚拟内存没有映射到物理内存， CPU 就会产生缺页中断，进程会从用户态切换到内核态，并将缺页中断交给内核的 Page Fault Handler（缺页中断函数）处理。</p>
+<p>缺页中断处理函数会看是否有空闲的物理内存，如果有，就直接分配物理内存，并建立虚拟内存与物理内存之间的映射关系。</p>
+<p>如果没有空闲的物理内存，那么内核就会开始进行回收内存的工作，回收的方式主要是两种：直接内存回收和后台内存回收。</p>
+<ul>
+<li>后台内存回收（kswapd）：在物理内存紧张的时候，会唤醒 kswapd 内核线程来回收内存，这个回收内存的过程异步的，不会阻塞进程的执行。</li>
+<li>直接内存回收（direct reclaim）：如果后台异步回收跟不上进程内存申请的速度，就会开始直接回收，这个回收内存的过程是同步的，会阻塞进程的执行。</li>
+</ul>
+<p>如果直接内存回收后，空闲的物理内存仍然无法满足此次物理内存的申请，那么内核就会放最后的大招了 —— 触发 OOM（Out of Memory）机制。</p>
+<p>OOM Killer 机制会根据算法选择一个占用物理内存较高的进程，然后将其杀死，以便释放内存资源，如果物理内存依然不足，OOM Killer 会继续杀死占用物理内存较高的进程，直到释放足够的内存位置。</p>
+<p>申请物理内存的过程如下图：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010044860.png" alt="img"></p>
+<p>系统内存紧张的时候，就会进行回收内存的工作，那具体哪些内存是可以被回收的呢？</p>
+<p>🔥 主要有两类内存可以被回收，而且它们的回收方式也不同。</p>
+<ul>
+<li>文件页（File-backed Page）：内核缓存的磁盘数据（Buffer）和内核缓存的文件数据（Cache）都叫作文件页。大部分文件页，都可以直接释放内存，以后有需要时，再从磁盘重新读取就可以了。而那些被应用程序修改过，并且暂时还没写入磁盘的数据（也就是脏页），就得先写入磁盘，然后才能进行内存释放。所以，回收干净页的方式是直接释放内存，回收脏页的方式是先写回磁盘后再释放内存。</li>
+<li>匿名页（Anonymous Page）：这部分内存没有实际载体，不像文件缓存有硬盘文件这样一个载体，比如<strong>堆</strong>、<strong>栈</strong>数据等。这部分内存很可能还要再次被访问，所以不能直接释放内存，它们回收的方式是通过 Linux 的 Swap 机制，Swap 会把不常访问的内存先写到磁盘中，然后释放这些内存，给其他更需要的进程使用。再次访问这些内存时，重新从磁盘读入内存就可以了。</li>
+</ul>
+<p><strong>文件页和匿名页的回收都是基于 LRU 算法，也就是优先回收不常访问的内存。LRU 回收算法，实际上维护着 <code>active</code> 和 <code>inactive</code> 两个双向链表</strong>，其中：</p>
+<ul>
+<li>active_list 活跃内存页链表，这里存放的是最近被访问过（活跃）的内存页；</li>
+<li>inactive_list 不活跃内存页链表，这里存放的是很少被访问（非活跃）的内存页（<strong>预取页</strong>）；</li>
+</ul>
+<p>有了这两个 LRU 链表后，预读页就只需要加入到 inactive_list 区域的头部，当页被真正访问的时候，才将页插入 active_list 的头部，同时将 active_list 尾部页淘汰到 inactive_list 头部中；如果预读的页一直没有被访问，就会从 inactive_list 移除，这样就不会影响 active_list 中的热点数据。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505092142975.png" alt="img"></p>
+<p>越接近链表尾部，就表示内存页越不常访问。这样，在回收内存时，系统就可以根据活跃程度，优先回收不活跃的内存。</p>
+<p>但是如果还是使用「只要数据被访问一次，就将数据加入到活跃 LRU 链表头部」这种方式的话，那么还存在<strong>缓存污染</strong>的问题：当我们在批量读取数据的时候，由于数据被访问了一次，这些大量数据都会被加入到「活跃 LRU 链表」里，然后之前缓存在活跃 LRU 链表里的热点数据全部都被淘汰了，如果这些大量的数据在很长一段时间都不会被访问的话，那么整个活跃 LRU 链表就被污染了。</p>
+<p>前面的 LRU 算法只要数据被访问一次，就将数据加入活跃 LRU 链表，这种 LRU 算法进入活跃 LRU 链表的门槛太低了！正是因为门槛太低，才导致在发生缓存污染的时候，很容易就将原本在活跃 LRU 链表里的热点数据淘汰了。所以，只要我们提高进入到活跃 LRU 链表的门槛，就能有效地保证活跃 LRU 链表里的热点数据不会被轻易替换掉。</p>
+<p>Linux 操作系统是这样提高门槛的：在内存页被访问第二次的时候，才将页从 inactive_list 升级到 active_list 里。</p>
+<p>提高了进入活跃 LRU 链表的门槛后，就很好了避免缓存污染带来的影响。在批量读取数据时候，如果这些大量数据只会被访问一次，那么它们就不会进入到活跃 LRU 链表，也就不会把热点数据淘汰，只会待在非活跃 LRU 链表中，后续很快也会被淘汰。</p>
+<h2 id="28-页面置换算法有哪些？"><a href="#28-页面置换算法有哪些？" class="headerlink" title="28. 页面置换算法有哪些？"></a>28. 页面置换算法有哪些？</h2><p>页面置换算法的功能是，当出现缺页异常，需调入新页面而内存已满时，选择被置换的物理页面，也就是说选择一个物理页面换出到磁盘，然后把需要访问的页面换入到物理页。</p>
+<p>那其算法目标则是尽可能减少页面的换入换出的次数，常见的页面置换算法有如下几种：</p>
+<ul>
+<li>最佳页面置换算法（OPT）</li>
+<li>先进先出置换算法（FIFO）</li>
+<li>最近最久未使用的置换算法（LRU）</li>
+<li>时钟页面置换算法（Clock）</li>
+<li>最不常用置换算法（LFU）</li>
+</ul>
+<h3 id="1️⃣-最佳页面置换算法（OPT）"><a href="#1️⃣-最佳页面置换算法（OPT）" class="headerlink" title="1️⃣ 最佳页面置换算法（OPT）"></a>1️⃣ 最佳页面置换算法（OPT）</h3><p>最佳页面置换算法基本思路是，置换在「未来」最长时间不访问的页面。</p>
+<p>所以，该算法实现需要计算内存中每个逻辑页面的「下一次」访问时间，然后比较，选择未来最长时间不访问的页面。</p>
+<p>我们举个例子，假设一开始有 3 个空闲的物理页，然后有请求的页面序列，那它的置换过程如下图：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010059018.png" alt="最佳页面置换算法"></p>
+<p>在这个请求的页面序列中，缺页共发生了 7 次（空闲页换入 3 次 + 最优页面置换 4 次），页面置换共发生了 4 次。<strong>这很理想，但是实际系统中无法实现，因为程序访问页面时是动态的，我们是无法预知每个页面在「下一次」访问前的等待时间</strong>。所以，最佳页面置换算法作用是为了衡量你的算法的效率，你的算法效率越接近该算法的效率，那么说明你的算法是高效的。</p>
+<h3 id="2️⃣-先进先出置换算法（FIFO）"><a href="#2️⃣-先进先出置换算法（FIFO）" class="headerlink" title="2️⃣ 先进先出置换算法（FIFO）"></a>2️⃣ 先进先出置换算法（FIFO）</h3><p>既然我们无法预知页面在下一次访问前所需的等待时间，那我们可以选择在内存驻留时间很长的页面进行中置换，这个就是「先进先出置换」算法的思想。还是以前面的请求的页面序列作为例子，假设使用先进先出置换算法，则过程如下图：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010100501.png" alt="先进先出置换算法"></p>
+<p>在这个请求的页面序列中，缺页共发生了 10 次（页面置换共发生了 7 次），跟最佳页面置换算法比较起来，性能明显差了很多。</p>
+<h3 id="3️⃣-最近最久未使用的置换算法（LRU）"><a href="#3️⃣-最近最久未使用的置换算法（LRU）" class="headerlink" title="3️⃣ 最近最久未使用的置换算法（LRU）"></a>3️⃣ 最近最久未使用的置换算法（LRU）</h3><p>最近最久未使用（LRU）的置换算法的基本思路是，发生缺页时，选择最长时间没有被访问的页面进行置换，也就是说，该算法假设已经很久没有使用的页面很有可能在未来较长的一段时间内仍然不会被使用。</p>
+<p>这种算法近似最优置换算法，最优置换算法是通过「未来」的使用情况来推测要淘汰的页面，而 LRU 则是通过「历史」的使用情况来推测要淘汰的页面。还是以前面的请求的页面序列作为例子，假设使用最近最久未使用的置换算法，则过程如下图：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010102960.png" alt="最近最久未使用的置换算法"></p>
+<p>在这个请求的页面序列中，缺页共发生了 9 次（页面置换共发生了 6 次），跟先进先出置换算法比较起来，性能提高了一些。</p>
+<p>虽然 LRU 在理论上是可以实现的，但代价很高。为了完全实现 LRU，需要在内存中维护一个所有页面的链表，最近最多使用的页面在表头，最近最少使用的页面在表尾。困难的是，在每次访问内存时都必须要更新「整个链表」。在链表中找到一个页面，删除它，然后把它移动到表头是一个非常费时的操作。所以，LRU 虽然看上去不错，但是由于开销比较大，实际应用中比较少使用。</p>
+<h3 id="4️⃣-时钟页面置换算法（Clock）"><a href="#4️⃣-时钟页面置换算法（Clock）" class="headerlink" title="4️⃣ 时钟页面置换算法（Clock）"></a>4️⃣ 时钟页面置换算法（Clock）</h3><p>那有没有一种即能优化置换的次数，也能方便实现的算法呢？</p>
+<p>时钟页面置换算法就可以两者兼得，它跟 LRU 近似，又是对 FIFO 的一种改进。</p>
+<p>该算法的思路是，把所有的页面都保存在一个类似钟面的「环形链表」中，一个表针指向最老的页面。</p>
+<p>当发生缺页中断时，算法首先检查表针指向的页面：</p>
+<ul>
+<li>如果它的访问位位是 0 就淘汰该页面，并把新的页面插入这个位置，然后把表针前移一个位置；</li>
+<li>如果访问位是 1 就清除访问位，并把表针前移一个位置，重复这个过程直到找到了一个访问位为 0 的页面为止；</li>
+</ul>
+<p>时钟页面置换算法的工作流程图：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010103584.png" alt="时钟页面置换算法"></p>
+<h3 id="5️⃣-最不常用置换算法（LFU）"><a href="#5️⃣-最不常用置换算法（LFU）" class="headerlink" title="5️⃣ 最不常用置换算法（LFU）"></a>5️⃣ 最不常用置换算法（LFU）</h3><p>最不常用（LFU）算法，这名字听起来很调皮，但是它的意思不是指这个算法不常用，而是当发生缺页中断时，选择「访问次数」最少的那个页面，并将其淘汰。</p>
+<p>它的实现方式是，对每个页面设置一个「访问计数器」，每当一个页面被访问时，该页面的访问计数器就累加 1。在发生缺页中断时，淘汰计数器值最小的那个页面。</p>
+<p>看起来很简单，每个页面加一个计数器就可以实现了，但是在操作系统中实现的时候，我们需要考虑效率和硬件成本的。</p>
+<p>要增加一个计数器来实现，这个硬件成本是比较高的，另外如果要对这个计数器查找哪个页面访问次数最小，查找链表本身，如果链表长度很大，是非常耗时的，效率不高。</p>
+<p>但还有个问题，LFU 算法只考虑了频率问题，没考虑时间的问题，比如有些页面在过去时间里访问的频率很高，但是现在已经没有访问了，而当前频繁访问的页面由于没有这些页面访问的次数高，在发生缺页中断时，就会可能会误伤当前刚开始频繁访问，但访问次数还不高的页面。</p>
+<p>那这个问题的解决的办法还是有的，可以定期减少访问的次数，比如当发生时间中断时，把过去时间访问的页面的访问次数除以 2，也就说，随着时间的流失，以前的高访问次数的页面会慢慢减少，相当于加大了被置换的概率。</p>
+<h2 id="29-什么是中断？"><a href="#29-什么是中断？" class="headerlink" title="29. 什么是中断？"></a>29. 什么是中断？</h2><p>中断是计算机系统中一种重要的事件处理机制，当硬件设备或软件程序需要处理器立即处理某个事件时，会向 CPU 发送一个信号，强制暂停当前正在执行的程序，转而去执行与该事件相关的特定处理程序（称为中断处理程序或中断服务例程），待该程序执行完毕后再恢复之前被暂停的任务。</p>
+<p>中断的核心目的是提高处理器的效率，使其不必持续轮询设备状态，而是由外设在需要时主动通知 CPU，从而实现异步事件处理和并发执行。中断可分为两类：</p>
+<ol>
+<li><strong>硬件中断</strong>：由外部设备（如键盘、鼠标、磁盘控制器、网卡）通过物理信号线触发，例如用户按下键盘按键或网卡接收到数据包时，会立即向 CPU 发送中断请求（IRQ），CPU 根据中断编号查找并执行对应的驱动处理程序。</li>
+<li><strong>软件中断</strong>：由程序执行特定指令（如系统调用、陷阱或异常）触发，例如应用程序请求操作系统服务（如读写文件）时通过软中断陷入内核，或发生除零错误等异常时强制切换处理流程。</li>
+</ol>
+<p>中断处理过程涉及保存当前执行上下文（如寄存器状态）、跳转到中断向量表指定的地址、执行处理程序，最后恢复上下文并返回原任务。这一机制是现代操作系统实现多任务、设备驱动和实时响应的基础。</p>
+<h2 id="30-讲讲中断的流程"><a href="#30-讲讲中断的流程" class="headerlink" title="30. 讲讲中断的流程"></a>30. 讲讲中断的流程</h2><ul>
+<li>中断触发：硬件设备（如键盘、网卡）或软件（通过 int 指令）发出中断信号。硬件中断通过中断控制器（如 APIC）汇总后发送给 CPU。</li>
+<li>中断响应：CPU 在每个指令执行结束后检查是否有中断请求。若有且未被屏蔽（可屏蔽中断），则暂停当前程序，保存当前执行上下文（包括程序计数器 PC、寄存器等状态到内核栈），并关闭中断（防止嵌套中断干扰现场保存）。</li>
+<li>中断路由：CPU 根据中断号查询中断描述符表（IDT），找到对应的中断服务程序（ISR） 的入口地址。</li>
+<li>执行中断处理程序：跳转到 ISR 执行具体的中断处理逻辑（如从键盘缓冲区读取按键值、处理网络数据包）。此时可能分为两部分：<ul>
+<li>上半部：在中断关闭状态下执行紧急任务（如响应硬件、拷贝数据），要求快速完成。</li>
+<li>下半部：通过软中断、任务队列或工作队列等机制延迟处理非紧急任务（如数据处理），此时会重新开启中断。</li>
+</ul>
+</li>
+<li>恢复现场：ISR 执行完毕后，从内核栈恢复之前保存的上下文（寄存器等状态）。</li>
+</ul>
+<h2 id="31-中断的类型有哪些？"><a href="#31-中断的类型有哪些？" class="headerlink" title="31. 中断的类型有哪些？"></a>31. 中断的类型有哪些？</h2><p>中断可以根据其来源和触发方式分为以下几类：</p>
+<ol>
+<li><p>硬件中断：由外部硬件设备触发，通过中断请求线（IRQ）向 CPU 发送信号。例如键盘输入、鼠标移动、磁盘 I/O 完成或网络数据包到达。硬件中断可进一步分为：</p>
+<ul>
+<li>可屏蔽中断：可通过设置 CPU 标志位（如 IF 位）临时屏蔽，例如大多数外设中断。</li>
+<li>非可屏蔽中断：用于处理硬件紧急事件（如内存错误、电源故障），无法通过软件屏蔽。</li>
+</ul>
+</li>
+<li><p>软件中断：由程序执行特定指令主动触发，用于实现系统调用或异常处理。例如：</p>
+<ul>
+<li>系统调用：用户程序通过 <code>int 0x80</code> 或 <code>syscall</code> 指令陷入内核，请求操作系统服务。</li>
+<li>陷阱：用于调试（如断点中断 <code>int 3</code>）或功能调用。</li>
+</ul>
+</li>
+<li><p>异常：由 CPU 在执行指令时检测到错误或特殊条件时自动触发，属于同步中断。例如：</p>
+<ul>
+<li>故障：可修复的错误（如缺页异常），处理后可重新执行指令。</li>
+<li>陷阱：执行后继续下一条指令（如调试断点）。</li>
+<li>中止：严重错误（如硬件故障），导致进程终止。</li>
+</ul>
+</li>
+<li><p>伪中断：由硬件错误或信号干扰导致的无效中断请求，中断控制器需过滤此类信号。</p>
+</li>
+</ol>
+<h2 id="32-你了解过哪些-I-O-模型？"><a href="#32-你了解过哪些-I-O-模型？" class="headerlink" title="32. 你了解过哪些 I/O 模型？"></a>32. 你了解过哪些 I/O 模型？</h2><ol>
+<li>阻塞 I/O：这是最基础的模型。当应用程序发起一个 I/O 操作（如 read 系统调用）时，线程会被挂起（阻塞），直到操作系统内核将数据完全准备好并复制到用户空间缓冲区后，线程才被唤醒继续执行。在此期间，该线程无法执行任何其他任务。模型简单，但并发性能差，需要为每个连接创建大量线程。</li>
+<li>非阻塞 I/O：应用程序发起 I/O 操作后，如果数据尚未就绪，内核会立即返回一个错误（如 EWOULDBLOCK），而不是阻塞线程。应用程序需要不断地轮询（polling）内核，询问数据是否准备就绪。这种方式避免了线程阻塞，但轮询会消耗大量 CPU 资源，效率低下。</li>
+<li>I/O 多路复用：这是目前高并发网络应用中最主流的模型。应用程序通过调用 <code>select</code>, <code>poll</code>, 或 <code>epoll</code> 等系统函数，将一个或多个文件描述符（socket）的监听委托给内核。内核会监视这些描述符，当其中任何一个有数据就绪时，就通知应用程序。应用程序收到通知后再进行实际的 I/O 操作（如 recv）。这使得一个线程可以同时管理多个 I/O 连接，极大地提高了系统的并发能力。它常被称为 Reactor 模式。</li>
+<li>信号驱动 I/O：应用程序通过 fcntl 系统调用为一个文件描述符开启信号驱动模式，并指定一个信号（如 SIGIO）。当内核数据就绪时，它会向应用程序发送一个信号。应用程序在信号处理函数中进行 I/O 操作。这种方式避免了轮询，但信号处理本身比较复杂，且在大流量场景中信号队列可能溢出，因此并不常用。</li>
+<li>异步 I/O：这是真正的异步模型。应用程序发起一个 I/O 操作（如 aio_read）后立即返回，内核会负责完成包括数据准备和从内核空间拷贝到用户空间在内的所有工作。整个操作完成后，内核会通过信号或回调函数通知应用程序。这与信号驱动 I/O 的关键区别在于：信号驱动 I/O 是内核通知我们“何时可以开始”进行 I/O 操作，而异步 I/O 是内核通知我们“I/O 操作已经完成”。Linux 原生 AIO 支持有限，更多使用像 <code>io_uring</code> 这样的新一代异步接口。</li>
+</ol>
+<h2 id="33-讲一讲-I-O-多路复用，以及-select、poll、epoll-的区别？"><a href="#33-讲一讲-I-O-多路复用，以及-select、poll、epoll-的区别？" class="headerlink" title="33. 讲一讲 I/O 多路复用，以及 select、poll、epoll 的区别？"></a>33. 讲一讲 I/O 多路复用，以及 select、poll、epoll 的区别？</h2><blockquote>
+<p>wxg 一面</p>
+<p>视频链接：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1gN411e7gd/?spm_id_from=333.337.search-card.all.click&amp;vd_source=187e83a375c910488a1ad25cc2465299"><strong>腾讯面试:请描述 select、poll、epoll 这三种 I/O 多路复用技术的执行原理</strong></a></p>
+<p>推荐阅读：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/OmRdUgO1guMX76EdZn11UQ"><strong>图解 | 深入揭秘 epoll 是如何实现 IO 多路复用的！</strong></a></p>
+</blockquote>
+<p>I/O 多路复用是一种 I/O 的处理方式，指的是<strong>复用一个线程处理多个 socket 中的事件</strong>。能够复用资源，防止创建过多线程导致的上下文切换的开销。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010129252.png" alt="img"></p>
+<p>我们熟悉的 select/poll/epoll 内核提供给用户态的<strong>多路复用系统调用</strong>，进程可以通过一个系统调用函数从内核中获取多个事件。</p>
+<p>select/poll/epoll 是如何获取网络事件的呢？在获取事件时，先把所有连接（文件描述符）传给内核，再由内核返回产生了事件的连接，然后在用户态中再处理这些连接对应的请求即可。</p>
+<h3 id="select、poll"><a href="#select、poll" class="headerlink" title="select、poll"></a>select、poll</h3><blockquote>
+<p>✅ select 图解</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010215740.png" alt="image-20250501021504644"></p>
+<blockquote>
+<p>✅ poll 图解</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010216153.png" alt="image-20250501021646782"></p>
+<p>select 实现多路复用的方式是，将已连接的 Socket 都放到一个文件描述符集合，然后调用 select 函数将文件描述符集合拷贝到内核里，让内核来检查是否有网络事件产生，检查的方式很粗暴，就是通过遍历文件描述符集合的方式，当检查到有事件产生后，将此 Socket 标记为可读或可写， 接着再把整个文件描述符集合拷贝回用户态里，然后用户态还需要再通过遍历的方法找到可读或可写的 Socket，然后再对其处理。</p>
+<p>所以，对于 select 这种方式，需要进行 2 次「遍历」文件描述符集合，一次是在内核态里，一个次是在用户态里 ，而且还会发生 2 次「拷贝」文件描述符集合，先从用户空间传入内核空间，由内核修改后，再传出到用户空间中。</p>
+<p><code>select</code> 使用固定长度的 BitsMap，表示文件描述符集合，而且所支持的文件描述符的个数是有限制的，在 Linux 系统中，由内核中的 FD_SETSIZE 限制， 默认最大值为 1024，只能监听 0~1023 的文件描述符。</p>
+<p><code>poll</code> 不再用 BitsMap 来存储所关注的文件描述符，取而代之用动态数组，以链表形式来组织，突破了 select 的文件描述符个数限制，当然还会受到系统文件描述符限制。</p>
+<p><strong>但是 poll 和 select 并没有太大的本质区别，都是使用「线性结构」存储进程关注的 Socket 集合</strong>，因此都需要遍历文件描述符集合来找到可读或可写的 Socket，时间复杂度为 O(n)，而且也需要在用户态与内核态之间拷贝文件描述符集合，这种方式随着并发数上来，性能的损耗会呈指数级增长。</p>
+<h3 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h3><p>Linux 2.6 版本诞生了 epoll 模型，彻底解决了 select/poll 性能不足的问题</p>
+<blockquote>
+<p>✅ epoll 图解</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010232627.png" alt="image-20250501023238509"></p>
+<p>先复习下 <code>epoll</code> 的用法。如下的代码中，先用 <code>epoll_create</code> 创建一个 epoll 对象 <code>epoll_fd</code>，再通过 <code>epoll_ctl</code> 将需要监视的 socket 添加到 <code>epoll_fd</code> 中，最后调用 <code>epoll_wait</code> 等待数据。</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> s = <span class="built_in">socket</span>(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"><span class="built_in">bind</span>(s, ...);</span><br><span class="line"><span class="built_in">listen</span>(s, ...);</span><br><span class="line"></span><br><span class="line"><span class="comment">// epoll_fd</span></span><br><span class="line"><span class="type">int</span> epfd = <span class="built_in">epoll_create</span>(...);</span><br><span class="line"><span class="built_in">epoll_ctl</span>(epfd, ...); <span class="comment">//将所有需要监听的socket添加到epfd中</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span>(<span class="number">1</span>) {</span><br><span class="line">    <span class="type">int</span> n = <span class="built_in">epoll_wait</span>(...);</span><br><span class="line">    <span class="keyword">for</span>(接收到数据的socket){</span><br><span class="line">        <span class="comment">//处理</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>epoll 通过两个方面，很好解决了 select/poll 的问题：</p>
+<ul>
+<li>第一点，<strong>epoll 在内核里使用「红黑树」来跟踪进程所有待检测的文件描述字</strong>，把需要监控的 socket 通过 <code>epoll_ctl()</code> 函数加入内核中的红黑树里，红黑树是个高效的数据结构，增删改一般时间复杂度是 $O(logn)$。而 select/poll 内核里没有类似 epoll 红黑树这种保存所有待检测的 socket 的数据结构，所以 select/poll 每次操作时都传入整个 socket 集合给内核，而 epoll 因为在内核维护了红黑树，可以保存所有待检测的 socket ，所以只需要传入一个待检测的 socket，减少了内核和用户空间大量的数据拷贝和内存分配。</li>
+<li>第二点，<strong>epoll 使用事件驱动的机制</strong>，内核里维护了一个链表来记录就绪事件，当某个 socket 有事件发生时，内核通过<strong>回调函数</strong>将其加入到这个就绪事件列表中，当用户调用 <code>epoll_wait()</code> 函数时，只会返回有事件发生的文件描述符的个数，不需要像 select/poll 那样轮询扫描整个 socket 集合，大大提高了检测的效率。</li>
+</ul>
+<p>从下图你可以看到 epoll 相关的接口作用：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010200863.png" alt="img"></p>
+<p>epoll 的方式即使监听的 Socket 数量越多的时候，效率不会大幅度降低，能够同时监听的 Socket 的数目也非常的多了，上限就为系统定义的进程打开的最大文件描述符个数。因而，epoll 被称为解决 C10K 问题（服务器同时处理10,000个客户端连接的挑战）的利器。</p>
+<h2 id="34-epoll-的边缘触发和水平触发有什么区别？"><a href="#34-epoll-的边缘触发和水平触发有什么区别？" class="headerlink" title="34. epoll 的边缘触发和水平触发有什么区别？"></a>34. epoll 的边缘触发和水平触发有什么区别？</h2><p>epoll 支持两种事件触发模式，分别是边缘触发（edge-triggered，ET）和水平触发（level-triggered，LT）。</p>
+<p>这两个术语还挺抽象的，其实它们的区别还是很好理解的。</p>
+<ul>
+<li>使用边缘触发模式时，当被监控的 Socket 描述符上有可读事件发生时，<strong>服务器端只会从 <code>epoll_wait</code> 中苏醒一次，即使进程没有调用 <code>read</code> 函数从内核读取数据，也依然只苏醒一次，因此我们程序要保证一次性将内核缓冲区的数据读取完</strong>；</li>
+<li>使用水平触发模式时，当被监控的 Socket 上有可读事件发生时，<strong>服务器端不断地从 <code>epoll_wait</code> 中苏醒，直到内核缓冲区数据被 <code>read</code> 函数读完才结束</strong>，目的是告诉我们有数据需要读取；</li>
+</ul>
+<blockquote>
+<p>举个例子，你的快递被放到了一个快递箱里，如果快递箱只会通过短信通知你一次，即使你一直没有去取，它也不会再发送第二条短信提醒你，这个方式就是边缘触发；如果快递箱发现你的快递没有被取出，它就会不停地发短信通知你，直到你取出了快递，它才消停，这个就是水平触发的方式。</p>
+</blockquote>
+<p>这就是两者的区别，边缘触发的意思是只有第一次满足条件的时候才触发，之后就不会再传递同样的事件了；水平触发的意思是只要满足事件的条件，比如内核中有数据需要读，就一直不断地把这个事件传递给用户。</p>
+<p>如果使用边缘触发模式，I/O 事件发生时只会通知一次，而且我们不知道到底能读写多少数据，所以在收到通知后应尽可能地读写数据，以免错失读写的机会。因此，我们会循环从文件描述符读写数据，那么如果文件描述符是阻塞的，没有数据可读写时，进程会阻塞在读写函数那里，程序就没办法继续往下执行。所以，边缘触发模式一般和非阻塞 I/O 搭配使用，程序会一直执行 I/O 操作，直到系统调用（如 read 和 write）返回错误，错误类型为 EAGAIN 或 EWOULDBLOCK。</p>
+<p>如果使用水平触发模式，当内核通知文件描述符可读写时，接下来还可以继续去检测它的状态，看它是否依然可读或可写。所以在收到通知后，没必要一次执行尽可能多的读写操作。</p>
+<p>一般来说，边缘触发的效率比水平触发的效率要高，因为边缘触发可以减少 epoll_wait 的系统调用次数，系统调用也是有一定的开销的的，毕竟也存在上下文的切换。</p>
+<h2 id="35-coredump-是什么，什么时候触发-coredump"><a href="#35-coredump-是什么，什么时候触发-coredump" class="headerlink" title="35. coredump 是什么，什么时候触发 coredump"></a>35. coredump 是什么，什么时候触发 coredump</h2><p><code>coredump</code> 是程序由于异常或者 bug 在运行时异常退出或者终止，在一定的条件下生成的一个叫做 core 的文件，这个 core 文件会记录程序在运行时的内存，寄存器状态，内存指针和函数堆栈信息等等。对这个文件进行分析可以定位到程序异常的时候对应的堆栈调用信息。</p>
+<p>coredump 产生的条件：</p>
+<ol>
+<li>shell 资源控制限制，使用 ulimit -c 命令查看 shell 执行程序时的资源 ，如果为 0，则不会产生 coredump。可以用 ulimit -c unlimited 设置为不限大小。</li>
+<li>读写越界，包括：数组访问越界，指针指向错误的内存，字符串读写越界</li>
+<li>使用了线程不安全的函数，读写未加锁保护</li>
+<li>错误使用指针转换</li>
+<li>堆栈溢出</li>
+</ol>
+<h2 id="36-什么是零拷贝？"><a href="#36-什么是零拷贝？" class="headerlink" title="36. 什么是零拷贝？"></a>36. 什么是零拷贝？</h2><p>传统 IO 的工作方式，从硬盘读取数据，然后再通过网卡向外发送，我们需要进行 4 上下文切换，和 4 次数据拷贝，其中 2 次数据拷贝发生在内存里的缓冲区和对应的硬件设备之间，这个是由 DMA 完成，另外 2 次则发生在内核态和用户态之间，这个数据搬移工作是由 CPU 完成的。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010246557.png" alt="img"></p>
+<p>为了提高文件传输的性能，于是就出现了零拷贝技术，它通过一次系统调用（<code>sendfile</code> 方法）合并了磁盘读取与网络发送两个操作，降低了上下文切换次数。另外，拷贝数据都是发生在内核中的，天然就降低了数据拷贝的次数。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505010248223.png" alt="img"></p>
+<p>零拷贝技术的文件传输方式相比传统文件传输的方式，减少了 2 次上下文切换和数据拷贝次数，只需要 2 次上下文切换和数据拷贝次数，就可以完成文件的传输，而且 2 次的数据拷贝过程，都不需要通过 CPU，2 次都是由 DMA 来搬运。</p>
+<p>总体来看，零拷贝技术可以把文件传输的性能提高至少一倍以上。</p>
+<h2 id="37-Linux-I-O-栈"><a href="#37-Linux-I-O-栈" class="headerlink" title="37. Linux I/O 栈"></a>37. Linux I/O 栈</h2><blockquote>
+<p>参考链接：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/435406445">Linux 系统中 I/O 操作的数据读写流程介绍</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_39802680/article/details/117707098">Linux I/O 栈｜读写流程</a></li>
+</ul>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503290106690.png" alt="Linux 的IO栈"></p>
+<blockquote>
+<p>程序的内存分布，其中包括内核空间（在内存中），联想一下即可理解。</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202503290041746.png" alt="image-20240725233029022"></p>
+<p>linux I/O 存储栈分为 7 层:</p>
+<ul>
+<li>VFS 虚拟文件层: 在各个具体的文件系统上建立一个抽象层，屏蔽不同文件系统的差异。</li>
+<li>PageCache 层: 为了缓解内核与磁盘速度的巨大差异。</li>
+<li>映射层 Mapping Layer: 内核必须从块设备上读取数据，Mapping layer 要确定在物理设备上的位置。</li>
+<li>通用块设备层: 通用块层处理来自系统其他组件发出的块设备请求，包含了块设备操作的一些通用函数和数据结构。</li>
+<li>I/O 调度层： IO 调度层主要是为了减少磁盘 IO 的次数，增大磁盘整体的吞吐量，队列中多个 bio 进行排序和合并。</li>
+<li>块设备驱动层: 每一类设备都有其驱动程序，负责设备的读写。</li>
+<li>物理设备层: 物理设备层有 HDD、SSD、Nvme 等磁盘设备。</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250820-VwrRqM.png" alt="img"></p>
+<h2 id="38-一次完整的-I-O-读请求处理链路"><a href="#38-一次完整的-I-O-读请求处理链路" class="headerlink" title="38. 一次完整的 I/O 读请求处理链路"></a>38. 一次完整的 I/O 读请求处理链路</h2><p>🔥 下面是一个完整的、详细的 I/O 请求处理链路（以一次文件读取操作为例）：</p>
+<ol>
+<li>应用调用 <code>read()</code> → 触发系统调用进入内核。</li>
+<li>VFS 根据文件类型调用文件系统的 <code>read_iter</code> 方法。</li>
+<li>文件系统检查 Page Cache：<ul>
+<li><strong>命中</strong>：直接拷贝数据到用户缓冲区。</li>
+<li><strong>未命中</strong>：创建 <code>bio</code> 请求，提交到块层。</li>
+</ul>
+</li>
+<li>I/O 调度器合并/排序请求后，下发到 SCSI 中层。</li>
+<li>设备驱动将请求转换为硬件命令，提交给控制器。</li>
+<li>设备通过 DMA 读取数据到内存，触发中断通知完成。</li>
+<li>中断处理程序唤醒原始请求，数据被填入 Page Cache 并返回用户态。</li>
+</ol>
+<h3 id="1-系统调用接口（VFS-层）"><a href="#1-系统调用接口（VFS-层）" class="headerlink" title="1. 系统调用接口（VFS 层）"></a>1. 系统调用接口（VFS 层）</h3><ul>
+<li><strong>作用</strong>：为用户空间（如 <code>libc</code> 库）提供统一的系统调用接口（如 <code>read()</code>, <code>write()</code>, <code>io_uring_enter</code>）。</li>
+<li><strong>关键组件</strong>：<strong>虚拟文件系统（VFS）</strong>。它抽象了所有文件系统和设备的操作，为上层提供统一的 <code>file_operations</code> 函数指针接口（如 <code>read_iter</code>, <code>write_iter</code>）。</li>
+</ul>
+<h3 id="2-文件系统层"><a href="#2-文件系统层" class="headerlink" title="2. 文件系统层"></a>2. 文件系统层</h3><ul>
+<li><strong>作用</strong>：处理与特定文件系统（如 ext4、XFS、Btrfs）相关的逻辑，如路径解析、权限检查、元数据管理。</li>
+<li><strong>关键步骤</strong>：<ul>
+<li>将文件的偏移量和大小转换为<strong>块设备</strong>上的逻辑块地址（LBA）。</li>
+<li>通过 <strong>Page Cache</strong> 缓存文件和目录数据，减少直接磁盘访问。</li>
+<li>若请求的数据已在 Page Cache 中（缓存命中），则直接返回；否则触发缺页异常，发起 I/O 请求。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-块-I-O-层"><a href="#3-块-I-O-层" class="headerlink" title="3. 块 I/O 层"></a>3. 块 I/O 层</h3><ul>
+<li><strong>作用</strong>：管理 I/O 调度、合并请求，并转换为统一的块 I/O 请求（<code>struct bio</code>）。</li>
+<li><strong>关键组件</strong>：<ul>
+<li><strong>Page Cache</strong>：通过 <code>address_space</code> 操作与文件系统交互。</li>
+<li><strong>I/O 调度器</strong>（如 mq-deadline、Kyber、BFQ）：对 I/O 请求进行排序、合并（Merge）、重排（Sort），以减少磁盘寻道时间并保证公平性。</li>
+<li><strong>块设备映射</strong>：处理分区、软件 RAID（如 mdadm）或逻辑卷（LVM）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-SCSI-设备映射层"><a href="#4-SCSI-设备映射层" class="headerlink" title="4. SCSI/设备映射层"></a>4. SCSI/设备映射层</h3><ul>
+<li><strong>作用</strong>：将块 I/O 请求转换为特定设备驱动可理解的格式。</li>
+<li><strong>关键组件</strong>：<ul>
+<li><strong>SCSI 子系统</strong>：为 SATA、SAS、NVMe 等设备提供统一的中层抽象（即使是非 SCSI 设备也通常接入此框架）。</li>
+<li><strong>设备映射器</strong>（Device Mapper）：支持加密（dm-crypt）、快照（dm-snapshot）、多路径（dm-multipath）等高级功能。</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-设备驱动层"><a href="#5-设备驱动层" class="headerlink" title="5. 设备驱动层"></a>5. 设备驱动层</h3><ul>
+<li><strong>作用</strong>：直接与物理硬件控制器（如 NVMe、SATA AHCI）交互，通过 DMA 将数据从内存传输到设备。</li>
+<li><strong>关键步骤</strong>：<ul>
+<li>将 I/O 请求转换为设备特定的命令描述符。</li>
+<li>通过写入控制器的寄存器或门铃（Doorbell）来提交命令。</li>
+<li>处理设备完成中断，并向上层通知 I/O 完成。</li>
+</ul>
+</li>
+</ul>
+<h3 id="6-硬件层"><a href="#6-硬件层" class="headerlink" title="6. 硬件层"></a>6. 硬件层</h3><ul>
+<li><strong>物理设备</strong>：如 NVMe SSD、SATA HDD、网络存储（通过 iSCSI 等）。</li>
+<li><strong>数据传输</strong>：通常通过 DMA（直接内存访问）在设备和内存之间传输数据，无需 CPU 参与。</li>
+</ul>
+<hr>
+<h3 id="新范式：io-uring"><a href="#新范式：io-uring" class="headerlink" title="新范式：io_uring"></a>新范式：io_uring</h3><ul>
+<li><strong>作用</strong>：提供高性能异步 I/O 接口，<strong>绕过传统内核路径的部分开销</strong>。</li>
+<li><strong>核心机制</strong>：<ul>
+<li>通过一对<strong>环形队列</strong>（提交队列 SQ 和完成队列 CQ）在用户态和内核态之间传递请求和结果。</li>
+<li>支持轮询模式（Polling），避免中断开销，进一步降低延迟。</li>
+</ul>
+</li>
+</ul>
+<h2 id="39-write-怎么保证写入的持久性？"><a href="#39-write-怎么保证写入的持久性？" class="headerlink" title="39. write 怎么保证写入的持久性？"></a>39. write 怎么保证写入的持久性？</h2><p>在 Linux 中，一个简单的 <code>write()</code> 系统调用并不能保证数据真正持久化到物理存储设备上。要确保写入的持久性，必须理解内核的缓存机制并显式地采取额外措施。</p>
+<h3 id="1-为什么-write-不能保证持久性？"><a href="#1-为什么-write-不能保证持久性？" class="headerlink" title="1. 为什么 write() 不能保证持久性？"></a>1. 为什么 <code>write()</code> 不能保证持久性？</h3><ol>
+<li>Page Cache 缓冲：<code>write()</code> 系统调用默认会将数据写入内核的 Page Cache 后就立即返回成功。这意味着数据并未立刻写入磁盘，而是停留在易失性内存中。</li>
+<li>延迟写入 Write Back：内核通过“延迟写入”策略来优化性能：定期（由 <code>dirty_writeback_centisecs</code> 控制）或根据内存压力，将脏页异步刷回磁盘。在此期间若系统崩溃（断电、内核恐慌），这些数据会丢失。</li>
+</ol>
+<h3 id="2-如何保证写入持久性？"><a href="#2-如何保证写入持久性？" class="headerlink" title="2. 如何保证写入持久性？"></a>2. 如何保证写入持久性？</h3><h4 id="方法-1：同步写入（O-SYNC）"><a href="#方法-1：同步写入（O-SYNC）" class="headerlink" title="方法 1：同步写入（O_SYNC）"></a>方法 1：同步写入（O_SYNC）</h4><p>在打开文件时使用 <code>O_SYNC</code> 标志：  </p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fd = open(<span class="string">"file.txt"</span>, O_WRONLY | O_SYNC);</span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li>作用：每次 <code>write()</code> 都会阻塞调用者，直到数据及其元数据（如 inode 大小、修改时间）<strong>完全写入物理磁盘</strong>后才返回。</li>
+<li>缺点：性能极差，每次写入都需等待磁盘 I/O 完成（延迟通常为毫秒级）。</li>
+</ul>
+<h4 id="方法-2：显式刷盘（fsync-fdatasync-）"><a href="#方法-2：显式刷盘（fsync-fdatasync-）" class="headerlink" title="方法 2：显式刷盘（fsync() / fdatasync()）"></a>方法 2：显式刷盘（fsync() / fdatasync()）</h4><p>在 <code>write()</code> 后调用：  </p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">write(fd, data, size);</span><br><span class="line">fsync(fd);  <span class="comment">// 或 fdatasync(fd);</span></span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li><strong><code>fsync()</code></strong>：确保文件数据和元数据都持久化到磁盘。  </li>
+<li><strong><code>fdatasync()</code></strong>：仅保证数据持久化，元数据（如访问时间）可能不立即刷盘，性能稍好。  </li>
+<li>优点：可批量写入后一次性刷盘，比 <code>O_SYNC</code> 性能更好。</li>
+</ul>
+<h4 id="方法-3：直接-I-O（O-DIRECT）"><a href="#方法-3：直接-I-O（O-DIRECT）" class="headerlink" title="方法 3：直接 I/O（O_DIRECT）"></a>方法 3：直接 I/O（O_DIRECT）</h4><p>在打开文件时使用 <code>O_DIRECT</code> 标志：  </p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fd = open(<span class="string">"file.txt"</span>, O_WRONLY | O_DIRECT);</span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li>作用：绕过 Page Cache，直接与磁盘交换数据。但需用户自行处理对齐限制（缓冲区地址、大小需对齐磁盘扇区，通常 512B/4KB）。</li>
+<li>注意：<code>O_DIRECT</code> 仅避免缓存，但写入成功返回仅表示数据已提交到磁盘驱动器的缓存（可能仍在易失性缓存中）。若要真正持久化，仍需结合 <code>fsync()</code>。</li>
+</ul>
+<h2 id="40-Linux-内存布局"><a href="#40-Linux-内存布局" class="headerlink" title="40. Linux 内存布局"></a>40. Linux 内存布局</h2><blockquote>
+<p>Linux 进程内存分布</p>
+</blockquote>
+<p>在 Linux 操作系统中，虚拟地址空间的内部又被分为内核空间和用户空间两部分，不同位数的系统，地址空间的范围也不同。比如最常见的 32 位和 64 位系统，如下所示。通过这里可以看出：</p>
+<ul>
+<li>32 位系统的内核空间占用 1G，位于最高处，剩下的 3G 是用户空间；</li>
+<li>64 位系统的内核空间和用户空间都是 128T，分别占据整个内存空间的最高和最低处，剩下的中间部分是未定义的。</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505011505174.jpeg" alt="图片"></p>
+<p>虽然每个进程都各自有独立的虚拟内存，<strong>但是每个虚拟内存中的内核地址，其实关联的都是相同的物理内存</strong>。这样，进程切换到内核态后，就可以很方便地访问内核空间内存。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505011506844.jpeg" alt="图片"></p>
+<p>接下来，进一步了解虚拟空间的划分情况，用户空间和内核空间划分的方式是不同的，内核空间的分布情况就不多说了。我们看看用户空间分布的情况，以 32 位系统为例，用一张图来表示它们的关系：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505011506976.png" alt="虚拟内存空间划分"></p>
+<p>通过这张图你可以看到，用户空间内存<strong>从低到高</strong>分别是 6 种不同的内存段：</p>
+<ul>
+<li>代码段，包括二进制可执行代码；</li>
+<li>数据段，包括已初始化的静态常量和全局变量；</li>
+<li>BSS 段，包括未初始化的静态变量和全局变量；</li>
+<li>堆段，包括动态分配的内存，从低地址开始向上增长；</li>
+<li>文件映射段，包括动态库、共享内存等，从低地址开始向上增长（跟硬件和内核版本有关 (opens new window)）；</li>
+<li>栈段，包括局部变量和函数调用的上下文等。栈的大小是固定的，一般是 8 MB。当然系统也提供了参数，以便我们自定义大小；</li>
+</ul>
+<p>上图中的内存布局可以看到，代码段下面还有一段内存空间的（灰色部分），这一块区域是「保留区」，之所以要有保留区这是因为在大多数的系统里，我们认为比较小数值的地址不是一个合法地址，例如，我们通常在 C 的代码里会将无效的指针赋值为 NULL。因此，这里会出现一段不可访问的内存保留区，防止程序因为出现 bug，导致读或写了一些小内存地址的数据，而使得程序跑飞。</p>
+<p>在这 7 个内存段中，<strong>堆和文件映射段的内存是动态分配的</strong>。比如说，<strong>使用 C 标准库的 <code>malloc()</code> 或者 <code>mmap()</code> ，就可以分别在堆和文件映射段动态分配内存</strong>。</p>
+<h2 id="41-malloc-分配的是物理内存吗？"><a href="#41-malloc-分配的是物理内存吗？" class="headerlink" title="41. malloc 分配的是物理内存吗？"></a>41. malloc 分配的是物理内存吗？</h2><p>不是的，<strong><code>malloc()</code> 分配的是虚拟内存</strong>。</p>
+<p><strong>如果分配后的虚拟内存没有被访问的话，虚拟内存是不会映射到物理内存的，这样就不会占用物理内存了</strong>。</p>
+<p>只有在访问已分配的虚拟地址空间的时候，操作系统通过查找页表，发现虚拟内存对应的页没有在物理内存中，就会触发缺页中断，然后操作系统会建立虚拟内存和物理内存之间的映射关系。</p>
+<h2 id="42-在-4GB-物理内存的机器上，申请-8GB-内存会发生什么？"><a href="#42-在-4GB-物理内存的机器上，申请-8GB-内存会发生什么？" class="headerlink" title="42. 在 4GB 物理内存的机器上，申请 8GB 内存会发生什么？"></a>42. 在 4GB 物理内存的机器上，申请 8GB 内存会发生什么？</h2><blockquote>
+<p>腾讯 CSIG 一面</p>
+</blockquote>
+<p>在 32位/64位 操作系统环境下，申请的虚拟内存超过物理内存后会怎么样？</p>
+<ul>
+<li>在 32 位操作系统，因为进程最大只能申请 3 GB 大小的虚拟内存，所以直接申请 8G 内存，会申请失败。</li>
+<li>在 64 位操作系统，因为进程最大只能申请 128 TB 大小的虚拟内存，即使物理内存只有 4GB，申请 8G 内存也是没问题，因为申请的内存是虚拟内存。</li>
+</ul>
+<p>程序申请的虚拟内存，如果没有被使用，它是不会占用物理空间的。当访问这块虚拟内存后，操作系统才会进行物理内存分配。</p>
+<p>如果申请物理内存大小超过了空闲物理内存大小，就要看操作系统有没有开启 <em>Swap</em> 机制：</p>
+<ul>
+<li>如果没有开启 <strong>Swap</strong> 机制，程序就会直接 <strong>OOM</strong>；</li>
+<li>如果有开启 Swap 机制，程序可以正常运行。</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505091537400.png" alt="img"></p>
+<h2 id="43-生产者消费者问题"><a href="#43-生产者消费者问题" class="headerlink" title="43. 生产者消费者问题"></a>43. 生产者消费者问题</h2><blockquote>
+<p>腾讯 WXG 一面</p>
+<p>下面讨论的是「单生产者单消费者」问题，那如果是「多生产者多消费者」问题呢？</p>
+<ul>
+<li>生产者之间的竞争（互斥）：多个生产者可能同时尝试向缓冲区写入数据。</li>
+<li>消费者之间的竞争（互斥）：多个消费者可能同时尝试从缓冲区读取数据。</li>
+</ul>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100014972.jpg" alt="生产者-消费者模型"></p>
+<p>生产者-消费者问题描述：</p>
+<ul>
+<li>生产者在生成数据后，放在一个缓冲区中；</li>
+<li>消费者从缓冲区取出数据处理；</li>
+<li>任何时刻，只能有一个生产者或消费者可以访问缓冲区；</li>
+<li>缓冲区空时，消费者必须等待生产者生成数据；</li>
+<li>缓冲区满时，生产者必须等待消费者取出数据。说明生产者和消费者需要同步。</li>
+</ul>
+<p>那么我们需要三个信号量，分别是：</p>
+<ul>
+<li>互斥信号量 <code>mutex</code>：用于互斥访问缓冲区，初始化值为 1；</li>
+<li>资源信号量 <code>fullBuffers</code>：用于消费者询问缓冲区是否有数据，有数据则读取数据，初始化值为 0（表明缓冲区一开始为空）；</li>
+<li>资源信号量 <code>emptyBuffers</code>：用于生产者询问缓冲区是否有空位，有空位则生成数据，初始化值为 n （缓冲区大小）；</li>
+</ul>
+<blockquote>
+<p>代码</p>
+</blockquote>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100017799.jpg" alt="img"></p>
+<h2 id="44-哲学家就餐问题"><a href="#44-哲学家就餐问题" class="headerlink" title="44. 哲学家就餐问题"></a>44. 哲学家就餐问题</h2><h3 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h3><p>只要有一个哲学家进入了「临界区」，也就是准备要拿叉子时，其他哲学家都不能动，只有这位哲学家用完叉子了，才能轮到下一个哲学家进餐。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100030243.jpg" alt="img"></p>
+<h3 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h3><p>让偶数编号的哲学家「先拿左边的叉子后拿右边的叉子」，奇数编号的哲学家「先拿右边的叉子后拿左边的叉子」。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100039373.jpg" alt="img"></p>
+<h2 id="45-读者-写者问题"><a href="#45-读者-写者问题" class="headerlink" title="45. 读者-写者问题"></a>45. 读者-写者问题</h2><p>前面的「哲学家进餐问题」对于互斥访问有限的竞争问题（如 I/O 设备）一类的建模过程十分有用。</p>
+<p>另外，还有个著名的问题是「读者-写者」，它为数据库访问建立了一个模型。</p>
+<p>读者-写者的问题描述：</p>
+<ul>
+<li>「读-读」允许：同一时刻，允许多个读者同时读</li>
+<li>「读-写」互斥：没有写者时读者才能读，没有读者时写者才能写</li>
+<li>「写-写」互斥：没有其他写者时，写者才能写</li>
+</ul>
+<h3 id="读者优先"><a href="#读者优先" class="headerlink" title="读者优先"></a>读者优先</h3><p>使用信号量的方式来尝试解决：</p>
+<ul>
+<li>信号量 wMutex：控制写操作的互斥信号量，初始值为 1；</li>
+<li>读者计数 rCount：正在进行读操作的读者个数，初始化为 0；</li>
+<li>信号量 rCountMutex：控制对 rCount 读者计数器的互斥修改，初始值为 1；</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100100726.jpg" alt="img"></p>
+<p>上面的这种实现，是读者优先的策略，因为只要有读者正在读的状态，后来的读者都可以直接进入，如果读者持续不断进入，则写者会处于饥饿状态。</p>
+<h3 id="写者优先"><a href="#写者优先" class="headerlink" title="写者优先"></a>写者优先</h3><p>那既然有读者优先策略，自然也有写者优先策略：</p>
+<ul>
+<li>只要有写者准备要写入，写者应尽快执行写操作，后来的读者就必须阻塞；</li>
+<li>如果有写者持续不断写入，则读者就处于饥饿；</li>
+</ul>
+<p>在方案一的基础上新增如下变量：</p>
+<ul>
+<li>信号量 rMutex：控制读者进入的互斥信号量，初始值为 1；</li>
+<li>信号量 wDataMutex：控制写者写操作的互斥信号量，初始值为 1；</li>
+<li>写者计数 wCount：记录写者数量，初始值为 0；</li>
+<li>信号量 wCountMutex：控制 wCount 互斥修改，初始值为 1；</li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100118027.jpg" alt="img"></p>
+<h2 id="46-磁盘调度算法"><a href="#46-磁盘调度算法" class="headerlink" title="46. 磁盘调度算法"></a>46. 磁盘调度算法</h2><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100133104.jpg" alt="磁盘的结构"></p>
+<p>每个扇区是 <code>512</code> 字节，多个具有相同编号的磁道形成一个圆柱，称之为磁盘的柱面。</p>
+<p>磁盘调度算法的目的很简单，就是为了提高磁盘的访问性能，一般是通过优化磁盘的访问请求顺序来做到的。</p>
+<p>寻道的时间是磁盘访问最耗时的部分，如果请求顺序优化的得当，必然可以节省一些不必要的寻道时间，从而提高磁盘的访问性能。</p>
+<p>假设有下面一个请求序列，每个数字代表磁道的位置：</p>
+<p><code>98，183，37，122，14，124，65，67</code></p>
+<p>初始磁头当前的位置是在第 53 磁道。</p>
+<p>接下来，分别对以上的序列，作为每个调度算法的例子，那常见的磁盘调度算法有：</p>
+<ul>
+<li>先来先服务算法</li>
+<li>最短寻道时间优先算法</li>
+<li>扫描算法</li>
+<li>循环扫描算法</li>
+<li>LOOK 与 C-LOOK 算法</li>
+</ul>
+<h3 id="1️⃣-先来先服务"><a href="#1️⃣-先来先服务" class="headerlink" title="1️⃣ 先来先服务"></a>1️⃣ 先来先服务</h3><p>先来先服务（First-Come，First-Served，FCFS），顾名思义，先到来的请求，先被服务。</p>
+<p>请求顺序：<code>98，183，37，122，14，124，65，67</code></p>
+<p>先来先服务算法总共移动了 640 个磁道的距离，这么一看这种算法，比较简单粗暴，但是如果大量进程竞争使用磁盘，请求访问的磁道可能会很分散，那先来先服务算法在性能上就会显得很差，因为寻道时间过长。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100139091.png" alt="先来先服务"></p>
+<h3 id="2️⃣-最短寻道时间优先"><a href="#2️⃣-最短寻道时间优先" class="headerlink" title="2️⃣ 最短寻道时间优先"></a>2️⃣ 最短寻道时间优先</h3><p>最短寻道时间优先（Shortest Seek First，SSF）算法的工作方式是，优先选择从当前磁头位置所需寻道时间最短的请求</p>
+<p>请求顺序：<code>65，67，37，14，98，122，124，183</code></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100140052.png" alt="最短寻道时间优先"></p>
+<p>磁头移动的总距离是 236 磁道，相比先来先服务性能提高了不少。</p>
+<p>但这个算法可能存在某些请求的饥饿，因为本次例子我们是静态的序列，看不出问题，假设是一个动态的请求，如果后续来的请求都是小于 183 磁道的，那么 183 磁道可能永远不会被响应，于是就产生了饥饿现象，这里产生饥饿的原因是磁头在一小块区域来回移动。</p>
+<h3 id="3️⃣-扫描算法"><a href="#3️⃣-扫描算法" class="headerlink" title="3️⃣ 扫描算法"></a>3️⃣ 扫描算法</h3><p>最短寻道时间优先算法会产生饥饿的原因在于：磁头有可能再一个小区域内来回得移动。</p>
+<p>为了防止这个问题，可以规定：磁头在一个方向上移动，访问所有未完成的请求，直到磁头到达该方向上的最后的磁道，才调换方向，这就是扫描（Scan）算法。</p>
+<p>这种算法也叫做<strong>电梯调度算法</strong>，比如电梯保持按一个方向移动，直到在那个方向上没有请求为止，然后改变方向。</p>
+<p>那么，假设扫描调度算先朝磁道号减少的方向移动，具体请求则会是下列从左到右的顺序：<code>37，14，0，65，67，98，122，124，183</code></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100142620.png" alt="扫描算法"></p>
+<p>磁头先响应左边的请求，直到到达最左端（0 磁道）后，才开始反向移动，响应右边的请求。</p>
+<p>扫描调度算法性能较好，不会产生饥饿现象，但是存在这样的问题，中间部分的磁道会比较占便宜，中间部分相比其他部分响应的频率会比较多，也就是说每个磁道的响应频率存在差异。</p>
+<h3 id="4️⃣-循环扫描算法"><a href="#4️⃣-循环扫描算法" class="headerlink" title="4️⃣ 循环扫描算法"></a>4️⃣ 循环扫描算法</h3><p>扫描算法使得每个磁道响应的频率存在差异，那么要优化这个问题的话，可以总是按相同的方向进行扫描，使得每个磁道的响应频率基本一致。</p>
+<p>循环扫描（Circular Scan, CSCAN ）规定：只有磁头朝某个特定方向移动时，才处理磁道访问请求，而<strong>返回时直接快速移动至最靠边缘的磁道，也就是复位磁头，这个过程是很快的，并且返回中途不处理任何请求</strong>，该算法的特点，就是磁道只响应一个方向上的请求。</p>
+<p>请求顺序：<code>65，67，98，122，124，183，199，0，14，37</code></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100146962.png" alt="循环扫描算法"></p>
+<p>磁头先响应了右边的请求，直到碰到了最右端的磁道 199，就立即回到磁盘的开始处（磁道 0），但这个返回的途中是不响应任何请求的，直到到达最开始的磁道后，才继续顺序响应右边的请求。</p>
+<p>循环扫描算法相比于扫描算法，对于各个位置磁道响应频率相对比较平均。</p>
+<h3 id="5️⃣-LOOK-与-C-LOOK-算法"><a href="#5️⃣-LOOK-与-C-LOOK-算法" class="headerlink" title="5️⃣ LOOK 与 C-LOOK 算法"></a>5️⃣ LOOK 与 C-LOOK 算法</h3><p>我们前面说到的扫描算法和循环扫描算法，都是磁头移动到磁盘「最始端或最末端」才开始调换方向。</p>
+<p>那这其实是可以优化的，优化的思路就是磁头在移动到「最远的请求」位置，然后立即反向移动。</p>
+<p>那<strong>针对 SCAN 算法的优化则叫 LOOK 算法</strong>，它的工作方式，磁头在每个方向上仅仅移动到最远的请求位置，然后立即反向移动，而不需要移动到磁盘的最始端或最末端，反向移动的途中会响应请求。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100148456.png" alt="LOOK 算法"></p>
+<p>而<strong>针对 C-SCAN 算法的优化则叫 C-LOOK</strong>，它的工作方式，磁头在每个方向上仅仅移动到最远的请求位置，然后立即反向移动，而不需要移动到磁盘的最始端或最末端，反向移动的途中不会响应请求。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/Wu-yikun/OSS/PicGo/202505100148106.png" alt="C-LOOK 算法"></p>
+<h2 id="47-内存对齐？内存对齐发生在哪一层？我可以不对齐吗？"><a href="#47-内存对齐？内存对齐发生在哪一层？我可以不对齐吗？" class="headerlink" title="47. 内存对齐？内存对齐发生在哪一层？我可以不对齐吗？"></a>47. 内存对齐？内存对齐发生在哪一层？我可以不对齐吗？</h2><blockquote>
+<p>字节跳动 · 基础架构一面</p>
+<p>腾讯 TEG 一面</p>
+</blockquote>
+<p>内存对齐的本质目的是：为了让 CPU 访问内存时更加高效，避免跨越多个存储单元（比如 cache line 或总线周期），减少访问次数和性能开销。</p>
+<p>不对齐会导致：</p>
+<ul>
+<li>读取数据跨多个内存块或 cache line；</li>
+<li>可能需要多次访存、数据拼接；</li>
+<li>某些平台（如 ARM）甚至直接报错。</li>
+</ul>
+<blockquote>
+<p>为什么内存对齐能减少访存次数？</p>
+</blockquote>
+<p>现代 CPU 是以“块”单位读取数据的，比如 64 字节的 cache line。</p>
+<p>如果数据起始地址对齐，就能在一个 cache line 内读完，<strong>一次访问就搞定</strong>；但如果不对齐，数据可能跨两个块，就会导致：</p>
+<ul>
+<li>CPU 需要 <strong>两次访问</strong> 才拿到完整数据；</li>
+<li>多占用一次 cache、总线带宽；</li>
+<li>增加延迟、降低效率。</li>
+</ul>
+<p>所以对齐能保证数据落在一个块内，提高命中率，减少访存。</p>
+<blockquote>
+<p>内存对齐是在哪一存储层次对齐的？</p>
+</blockquote>
+<p>主要是在这两个层次【🔥<strong>字节面试官说是在 L1 Cache，主要还是为了在同一个 cacheline 中访问</strong>】：</p>
+<ol>
+<li><p><strong>内存 → Cache（尤其是 L1 Cache）之间</strong>：为了避免数据跨多个 cache line（通常是 64 字节）导致多次 cache 访问</p>
+</li>
+<li><p><strong>总线传输层（memory bus）</strong>：CPU 和内存之间的数据传输有对齐要求，总线通常按 4 字节、8 字节或更大位宽传输数据，不对齐可能增加传输次数或触发异常</p>
+</li>
+</ol>
+<p>不是针对寄存器本身，寄存器只是最终使用数据的地方。对齐主要作用在<strong>数据加载阶段（load from memory）</strong>，不是计算阶段。</p>
+<h2 id="48-CPU-读取数据的工作流？"><a href="#48-CPU-读取数据的工作流？" class="headerlink" title="48. CPU 读取数据的工作流？"></a>48. CPU 读取数据的工作流？</h2><p>CPU 读取数据时，首先在高速缓存（L1/L2/L3）中查找，若命中则直接返回；若未命中，则通过内存管理单元（MMU）将虚拟地址转换为物理地址，并访问主存（DRAM）加载数据块（缓存行），同时将其填入缓存。</p>
+<p>若数据不在主存，会触发缺页异常，由操作系统从磁盘交换空间调入所需内存页，再重新执行访问。</p>
+<h2 id="49-计算机存储层次结构各层的典型访问粒度和时延"><a href="#49-计算机存储层次结构各层的典型访问粒度和时延" class="headerlink" title="49. 计算机存储层次结构各层的典型访问粒度和时延"></a>49. 计算机存储层次结构各层的典型访问粒度和时延</h2><table>
+<thead>
+<tr>
+<th align="left">存储层次</th>
+<th align="left">访问粒度</th>
+<th align="left">访问时延</th>
+<th align="left">备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>CPU 寄存器</strong></td>
+<td align="left">4-8 字节</td>
+<td align="left">~0.3-0.5 ns</td>
+<td align="left">直接与ALU交互，速度最快</td>
+</tr>
+<tr>
+<td align="left"><strong>L1 缓存</strong></td>
+<td align="left">64 字节（缓存行）</td>
+<td align="left">~0.5-1 ns</td>
+<td align="left">分指令与数据缓存，核心独享</td>
+</tr>
+<tr>
+<td align="left"><strong>L2 缓存</strong></td>
+<td align="left">64 字节（缓存行）</td>
+<td align="left">~3-10 ns</td>
+<td align="left">通常为核心独享或共享</td>
+</tr>
+<tr>
+<td align="left"><strong>L3 缓存</strong></td>
+<td align="left">64 字节（缓存行）</td>
+<td align="left">~10-20 ns</td>
+<td align="left">多核心共享，容量更大</td>
+</tr>
+<tr>
+<td align="left"><strong>主存 (DRAM)</strong></td>
+<td align="left">4KB (页) / 64字节</td>
+<td align="left">~50-100 ns</td>
+<td align="left">通过内存总线访问，需MMU转换虚拟地址</td>
+</tr>
+<tr>
+<td align="left"><strong>SSD (NVMe)</strong></td>
+<td align="left">4KB (页)</td>
+<td align="left">~10-100 μs</td>
+<td align="left">需通过PCIe总线，涉及驱动和中断处理</td>
+</tr>
+<tr>
+<td align="left"><strong>HDD (磁盘)</strong></td>
+<td align="left">512B-4KB (扇区)</td>
+<td align="left">~5-10 ms</td>
+<td align="left">含寻道时间和旋转延迟，机械操作慢</td>
+</tr>
+<tr>
+<td align="left"><strong>网络存储</strong></td>
+<td align="left">可变 (通常≥1KB)</td>
+<td align="left">~1-100 ms</td>
+<td align="left">受网络延迟和协议开销影响极大</td>
+</tr>
+</tbody></table>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>License</span></div>
+      <div class="body"><p>本文由 <a target="_blank" rel="noopener" href="https://github.com/Wu-yikun">Yikun Wu</a> 原创，采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    
+    <section id="share">
+      <div class="header"><span>Share</span></div>
+      <div class="body">
+        <div class="link"><input class="copy-area" readonly="true" id="copy-link" value="https://wu-yikun.com/post/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/2025-os/"></div>
+        <div class="social-wrap dis-select"><a class="social share-item wechat" onclick="util.toggle(&quot;qrcode-wechat&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/b32ef3da1162a.svg"></a><a class="social share-item weibo" target="_blank" rel="external nofollow noopener noreferrer" href="https://service.weibo.com/share/share.php?url=https://wu-yikun.com/post/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/2025-os/&amp;title=✍️ 八股文 @ 操作系统 - Coredump&amp;pics=https://cdn.jsdelivr.net/gh/Wu-yikun/OSS@master/uPic/20250823-2j2LWn.png&amp;summary=记录面经高频操作系统题，实时更新中..."><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/80c07e4dbb303.svg"></a><a class="social share-item email" href="mailto:?subject=✍️ 八股文 @ 操作系统 - Coredump&amp;body=https://wu-yikun.com/post/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/2025-os/"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/a1b00e20f425d.svg"></a><a class="social share-item link" onclick="util.copy(&quot;copy-link&quot;, &quot;Copied!&quot;)"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/8411ed322ced6.svg"></a></div>
+        
+        <div class="qrcode" id="qrcode-wechat" style="opacity:0;height:0">
+          <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&amp;data=https://wu-yikun.com/post/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/2025-os/">
+        </div>
+        
+      </div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">Prev</div><a href="/post/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/2025-autumn-recruitment/">2025 互联网秋招进行时指南</a></div><div class="item" id="next"><div class="note">Next</div><a href="/post/%E7%A7%8B%E6%8B%9B%E6%8C%87%E5%8D%97/2025-cpp/">✍️ 八股文 @ C++</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class="header cmt-title cap theme">
+      <p>Join discussion～</p>
+
+    </section>
+    <section class="body cmt-body giscus">
+      
+
+<svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Wu-yikun/wu-yikun.github.io" data-repo-id="R_kgDONub1yw" data-category="Q&amp;A" data-category-id="DIC_kwDONub1y84CmRgy" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="en" data-loading="lazy" crossorigin="anonymous"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><script defer="" src="https://vercount.one/js"></script>
+<p><span id="busuanzi_container_site_pv">本站总访问量 <span id="busuanzi_value_site_pv"></span> 次</span></p>
+<span class="totalcount">本站共发表 125 篇文章 · </span><span class="post-count">总计 532.1k 字</span><div><span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span></div></div></footer>
+
+
+<script async="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+  function createtime() {
+    var now = new Date();
+    var grt= new Date("01/25/2025 00:00:00");
+    now.setTime(now.getTime() + 250);
+    days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+    hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+    if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+    mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+    seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+    snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+    document.getElementById("timeDate").innerHTML = "本站已运行 "+dnum+" 天 ";
+    document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+  };
+  setInterval("createtime()",250);
+</script>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%BF%9B%E7%A8%8B%E3%80%81%E7%BA%BF%E7%A8%8B%E3%80%81%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">1. 进程、线程、协程的区别？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B"><span class="toc-text">进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B"><span class="toc-text">线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E7%A8%8B"><span class="toc-text">协程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E7%9A%84%E6%96%B9%E5%BC%8F%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">2. 进程通信的方式是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%BA%BF%E7%A8%8B%E9%80%9A%E4%BF%A1-%E5%90%8C%E6%AD%A5%E7%9A%84%E6%96%B9%E5%BC%8F%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">3. 线程通信/同步的方式是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%BF%9B%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%87%E6%8D%A2%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88%EF%BC%9F%E8%BF%9B%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%87%E6%8D%A2%E5%9C%BA%E6%99%AF%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="toc-text">4. 进程上下文切换会发生什么？进程上下文切换场景有哪些？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%B9%B3%E6%97%B6%E4%BC%9A%E7%9C%8B%E5%93%AA%E4%BA%9B%E7%B3%BB%E7%BB%9F%E6%8C%87%E6%A0%87%EF%BC%9F"><span class="toc-text">5. 平时会看哪些系统指标？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-CPU-%E4%B8%AD%E6%96%AD%E6%95%B0%E9%87%8F%E6%80%8E%E4%B9%88%E7%9C%8B%EF%BC%9F%E5%A6%82%E6%9E%9C-CPU-%E4%B8%AD%E6%96%AD%E6%95%B0%E9%87%8F%E5%88%86%E9%85%8D%E4%B8%8D%E5%9D%87%E5%8C%80%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="toc-text">6. CPU 中断数量怎么看？如果 CPU 中断数量分配不均匀怎么办？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E4%B8%AD%E6%96%AD%E6%95%B0%E9%87%8F%EF%BC%9F"><span class="toc-text">一、如何查看中断数量？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E2%80%9C%E4%B8%AD%E6%96%AD%E4%B8%8D%E5%9D%87%E5%8C%80%E2%80%9D%EF%BC%9F"><span class="toc-text">二、什么是“中断不均匀”？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3%E4%B8%AD%E6%96%AD%E4%B8%8D%E5%9D%87%E5%8C%80%EF%BC%9F"><span class="toc-text">三、怎么解决中断不均匀？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E7%94%A8%E6%88%B7%E6%80%81%E5%92%8C%E5%86%85%E6%A0%B8%E6%80%81%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">7. 用户态和内核态的区别？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E4%BD%A0%E8%AF%B4%E5%88%B0%E8%BF%9B%E7%A8%8B%E6%98%AF%E5%88%86%E9%85%8D%E8%B5%84%E6%BA%90%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8D%95%E4%BD%8D%EF%BC%8C%E9%82%A3%E4%B9%88%E8%BF%99%E4%B8%AA%E8%B5%84%E6%BA%90%E6%8C%87%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">8. 你说到进程是分配资源的基本单位，那么这个资源指的是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E8%BF%9B%E7%A8%8B%E5%88%87%E6%8D%A2%E5%92%8C%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">9. 进程切换和线程切换的区别？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E8%BF%9B%E7%A8%8B%E7%9A%84%E4%BA%94%E7%A7%8D%E7%8A%B6%E6%80%81%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%EF%BC%88%E8%BF%9B%E7%A8%8B%E7%8A%B6%E6%80%81%E5%9B%BE%EF%BC%89%EF%BC%9F"><span class="toc-text">10. 进程的五种状态如何切换（进程状态图）？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-64-bits-%E7%9A%84-Linux-%E9%BB%98%E8%AE%A4%E6%A0%88%E5%A4%A7%E5%B0%8F%EF%BC%9F"><span class="toc-text">11. 64 bits 的 Linux 默认栈大小？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="toc-text">12. 进程调度算法有哪些？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E5%85%88%E6%9D%A5%E5%85%88%E6%9C%8D%E5%8A%A1%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="toc-text">1️⃣ 先来先服务调度算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E6%9C%80%E7%9F%AD%E4%BB%BB%E5%8A%A1%E4%BC%98%E5%85%88%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="toc-text">2️⃣ 最短任务优先调度算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E9%AB%98%E5%93%8D%E5%BA%94%E6%AF%94%E4%BC%98%E5%85%88%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="toc-text">3️⃣ 高响应比优先调度算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3-%E6%97%B6%E9%97%B4%E7%89%87%E8%BD%AE%E8%BD%AC%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="toc-text">4️⃣ 时间片轮转调度算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%B8%8F%E2%83%A3-%E6%9C%80%E9%AB%98%E4%BC%98%E5%85%88%E7%BA%A7%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="toc-text">5️⃣ 最高优先级调度算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%EF%B8%8F%E2%83%A3-%E5%A4%9A%E7%BA%A7%E5%8F%8D%E9%A6%88%E9%98%9F%E5%88%97%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="toc-text">6️⃣ 多级反馈队列调度算法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-%E9%99%A4%E4%BA%86%E4%BA%92%E6%96%A5%E9%94%81%E4%BD%A0%E8%BF%98%E7%9F%A5%E9%81%93%E4%BB%80%E4%B9%88%E9%94%81%EF%BC%9F%E5%88%86%E5%88%AB%E5%BA%94%E7%94%A8%E4%BA%8E%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="toc-text">13. 除了互斥锁你还知道什么锁？分别应用于什么场景？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E6%AD%BB%E9%94%81%E5%8F%91%E7%94%9F%E6%9D%A1%E4%BB%B6%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">14. 死锁发生条件是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E6%AD%BB%E9%94%81%EF%BC%9F"><span class="toc-text">15. 如何避免死锁？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-%E8%81%8A%E4%B8%80%E8%81%8A%E9%93%B6%E8%A1%8C%E5%AE%B6%E7%AE%97%E6%B3%95"><span class="toc-text">16. 聊一聊银行家算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-%E4%B9%90%E8%A7%82%E9%94%81%E5%92%8C%E6%82%B2%E8%A7%82%E9%94%81%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">17. 乐观锁和悲观锁有什么区别？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#18-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%EF%BC%9F%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%EF%BC%9F%E4%BD%BF%E7%94%A8%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%9A%84%E4%BC%98%E7%82%B9%EF%BC%9F"><span class="toc-text">18. 虚拟内存？虚拟地址空间？使用虚拟内存的优点？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#19-%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%8B%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-text">19. 介绍一下操作系统内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#20-%E7%A8%8B%E5%BA%8F%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84%EF%BC%9F"><span class="toc-text">20. 程序的内存布局是怎样的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#21-%E5%A0%86%E4%B8%8E%E6%A0%88%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%8C%E4%BB%A5%E5%8F%8A%E5%90%84%E8%87%AA%E4%BC%98%E7%BC%BA%E7%82%B9%EF%BC%9F"><span class="toc-text">21. 堆与栈的区别，以及各自优缺点？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-fork-%E4%BC%9A%E5%A4%8D%E5%88%B6%E5%93%AA%E4%BA%9B%E4%B8%9C%E8%A5%BF"><span class="toc-text">22. fork() 会复制哪些东西</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-%E5%86%99%E6%97%B6%E5%A4%8D%E5%88%B6%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E8%8A%82%E7%9C%81%E4%BA%86%E5%93%AA%E4%BA%9B%E8%B5%84%E6%BA%90%EF%BC%9F"><span class="toc-text">23. 写时复制是什么？节省了哪些资源？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#24-malloc-1KB-%E5%92%8C-1MB-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">24. malloc 1KB 和 1MB 有什么区别？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#25-free-%E9%87%8A%E6%94%BE%E5%86%85%E5%AD%98%E4%BC%9A%E5%BD%92%E8%BF%98%E7%BB%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%97%EF%BC%9F"><span class="toc-text">25. free 释放内存会归还给操作系统吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#26-malloc-%E6%98%AF%E5%A6%82%E4%BD%95%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%9A%84%EF%BC%88%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%8B-brk-%E5%92%8C-mmap%EF%BC%89%EF%BC%9F"><span class="toc-text">26. malloc 是如何分配内存的（介绍一下 brk 和 mmap）？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%B0%8F%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%EF%BC%88%E9%80%9A%E5%B8%B8-%E2%89%A4-128KB%EF%BC%89"><span class="toc-text">1. 小内存分配（通常 ≤ 128KB）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%A4%A7%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%EF%BC%88%E9%80%9A%E5%B8%B8-128KB%EF%BC%89"><span class="toc-text">2. 大内存分配（通常 &gt; 128KB）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%88%86%E9%85%8D%E5%99%A8%E7%9A%84%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-text">3. 分配器的优化策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-brk-%E4%B8%8E-mmap"><span class="toc-text">4. brk 与 mmap</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#27-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E5%AD%98%E4%B8%8D%E8%B6%B3%E7%9A%84%E6%97%B6%E5%80%99%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88%EF%BC%88%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E9%A2%84%E8%AF%BB%E5%A4%B1%E6%95%88%E5%92%8C%E7%BC%93%E5%AD%98%E6%B1%A1%E6%9F%93%EF%BC%89"><span class="toc-text">27. 操作系统内存不足的时候会发生什么（如何避免预读失效和缓存污染）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#28-%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="toc-text">28. 页面置换算法有哪些？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E6%9C%80%E4%BD%B3%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95%EF%BC%88OPT%EF%BC%89"><span class="toc-text">1️⃣ 最佳页面置换算法（OPT）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E5%85%88%E8%BF%9B%E5%85%88%E5%87%BA%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95%EF%BC%88FIFO%EF%BC%89"><span class="toc-text">2️⃣ 先进先出置换算法（FIFO）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E6%9C%80%E8%BF%91%E6%9C%80%E4%B9%85%E6%9C%AA%E4%BD%BF%E7%94%A8%E7%9A%84%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95%EF%BC%88LRU%EF%BC%89"><span class="toc-text">3️⃣ 最近最久未使用的置换算法（LRU）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3-%E6%97%B6%E9%92%9F%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95%EF%BC%88Clock%EF%BC%89"><span class="toc-text">4️⃣ 时钟页面置换算法（Clock）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%B8%8F%E2%83%A3-%E6%9C%80%E4%B8%8D%E5%B8%B8%E7%94%A8%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95%EF%BC%88LFU%EF%BC%89"><span class="toc-text">5️⃣ 最不常用置换算法（LFU）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#29-%E4%BB%80%E4%B9%88%E6%98%AF%E4%B8%AD%E6%96%AD%EF%BC%9F"><span class="toc-text">29. 什么是中断？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#30-%E8%AE%B2%E8%AE%B2%E4%B8%AD%E6%96%AD%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="toc-text">30. 讲讲中断的流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#31-%E4%B8%AD%E6%96%AD%E7%9A%84%E7%B1%BB%E5%9E%8B%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="toc-text">31. 中断的类型有哪些？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-%E4%BD%A0%E4%BA%86%E8%A7%A3%E8%BF%87%E5%93%AA%E4%BA%9B-I-O-%E6%A8%A1%E5%9E%8B%EF%BC%9F"><span class="toc-text">32. 你了解过哪些 I/O 模型？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-%E8%AE%B2%E4%B8%80%E8%AE%B2-I-O-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%EF%BC%8C%E4%BB%A5%E5%8F%8A-select%E3%80%81poll%E3%80%81epoll-%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">33. 讲一讲 I/O 多路复用，以及 select、poll、epoll 的区别？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#select%E3%80%81poll"><span class="toc-text">select、poll</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#epoll"><span class="toc-text">epoll</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-epoll-%E7%9A%84%E8%BE%B9%E7%BC%98%E8%A7%A6%E5%8F%91%E5%92%8C%E6%B0%B4%E5%B9%B3%E8%A7%A6%E5%8F%91%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">34. epoll 的边缘触发和水平触发有什么区别？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#35-coredump-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%8C%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%A7%A6%E5%8F%91-coredump"><span class="toc-text">35. coredump 是什么，什么时候触发 coredump</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#36-%E4%BB%80%E4%B9%88%E6%98%AF%E9%9B%B6%E6%8B%B7%E8%B4%9D%EF%BC%9F"><span class="toc-text">36. 什么是零拷贝？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#37-Linux-I-O-%E6%A0%88"><span class="toc-text">37. Linux I/O 栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#38-%E4%B8%80%E6%AC%A1%E5%AE%8C%E6%95%B4%E7%9A%84-I-O-%E8%AF%BB%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86%E9%93%BE%E8%B7%AF"><span class="toc-text">38. 一次完整的 I/O 读请求处理链路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E6%8E%A5%E5%8F%A3%EF%BC%88VFS-%E5%B1%82%EF%BC%89"><span class="toc-text">1. 系统调用接口（VFS 层）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82"><span class="toc-text">2. 文件系统层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%9D%97-I-O-%E5%B1%82"><span class="toc-text">3. 块 I/O 层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-SCSI-%E8%AE%BE%E5%A4%87%E6%98%A0%E5%B0%84%E5%B1%82"><span class="toc-text">4. SCSI/设备映射层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E5%B1%82"><span class="toc-text">5. 设备驱动层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E7%A1%AC%E4%BB%B6%E5%B1%82"><span class="toc-text">6. 硬件层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E8%8C%83%E5%BC%8F%EF%BC%9Aio-uring"><span class="toc-text">新范式：io_uring</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#39-write-%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E5%86%99%E5%85%A5%E7%9A%84%E6%8C%81%E4%B9%85%E6%80%A7%EF%BC%9F"><span class="toc-text">39. write 怎么保证写入的持久性？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88-write-%E4%B8%8D%E8%83%BD%E4%BF%9D%E8%AF%81%E6%8C%81%E4%B9%85%E6%80%A7%EF%BC%9F"><span class="toc-text">1. 为什么 write() 不能保证持久性？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E5%86%99%E5%85%A5%E6%8C%81%E4%B9%85%E6%80%A7%EF%BC%9F"><span class="toc-text">2. 如何保证写入持久性？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#40-Linux-%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-text">40. Linux 内存布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#41-malloc-%E5%88%86%E9%85%8D%E7%9A%84%E6%98%AF%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E5%90%97%EF%BC%9F"><span class="toc-text">41. malloc 分配的是物理内存吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-%E5%9C%A8-4GB-%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%9A%84%E6%9C%BA%E5%99%A8%E4%B8%8A%EF%BC%8C%E7%94%B3%E8%AF%B7-8GB-%E5%86%85%E5%AD%98%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">42. 在 4GB 物理内存的机器上，申请 8GB 内存会发生什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#43-%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E9%97%AE%E9%A2%98"><span class="toc-text">43. 生产者消费者问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#44-%E5%93%B2%E5%AD%A6%E5%AE%B6%E5%B0%B1%E9%A4%90%E9%97%AE%E9%A2%98"><span class="toc-text">44. 哲学家就餐问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E4%B8%80"><span class="toc-text">方案一</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E4%BA%8C"><span class="toc-text">方案二</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#45-%E8%AF%BB%E8%80%85-%E5%86%99%E8%80%85%E9%97%AE%E9%A2%98"><span class="toc-text">45. 读者-写者问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E8%80%85%E4%BC%98%E5%85%88"><span class="toc-text">读者优先</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E8%80%85%E4%BC%98%E5%85%88"><span class="toc-text">写者优先</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#46-%E7%A3%81%E7%9B%98%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="toc-text">46. 磁盘调度算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E5%85%88%E6%9D%A5%E5%85%88%E6%9C%8D%E5%8A%A1"><span class="toc-text">1️⃣ 先来先服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E6%9C%80%E7%9F%AD%E5%AF%BB%E9%81%93%E6%97%B6%E9%97%B4%E4%BC%98%E5%85%88"><span class="toc-text">2️⃣ 最短寻道时间优先</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E6%89%AB%E6%8F%8F%E7%AE%97%E6%B3%95"><span class="toc-text">3️⃣ 扫描算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3-%E5%BE%AA%E7%8E%AF%E6%89%AB%E6%8F%8F%E7%AE%97%E6%B3%95"><span class="toc-text">4️⃣ 循环扫描算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%B8%8F%E2%83%A3-LOOK-%E4%B8%8E-C-LOOK-%E7%AE%97%E6%B3%95"><span class="toc-text">5️⃣ LOOK 与 C-LOOK 算法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#47-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%EF%BC%9F%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E5%8F%91%E7%94%9F%E5%9C%A8%E5%93%AA%E4%B8%80%E5%B1%82%EF%BC%9F%E6%88%91%E5%8F%AF%E4%BB%A5%E4%B8%8D%E5%AF%B9%E9%BD%90%E5%90%97%EF%BC%9F"><span class="toc-text">47. 内存对齐？内存对齐发生在哪一层？我可以不对齐吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#48-CPU-%E8%AF%BB%E5%8F%96%E6%95%B0%E6%8D%AE%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%EF%BC%9F"><span class="toc-text">48. CPU 读取数据的工作流？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#49-%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AD%98%E5%82%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%E5%90%84%E5%B1%82%E7%9A%84%E5%85%B8%E5%9E%8B%E8%AE%BF%E9%97%AE%E7%B2%92%E5%BA%A6%E5%92%8C%E6%97%B6%E5%BB%B6"><span class="toc-text">49. 计算机存储层次结构各层的典型访问粒度和时延</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"></path></g></svg><span>Scroll to Top</span></a><a class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.46 1.25h3.08c1.603 0 2.86 0 3.864.095c1.023.098 1.861.3 2.6.752a5.75 5.75 0 0 1 1.899 1.899c.452.738.654 1.577.752 2.6c.095 1.004.095 2.261.095 3.865v1.067c0 1.141 0 2.036-.05 2.759c-.05.735-.153 1.347-.388 1.913a5.75 5.75 0 0 1-3.112 3.112c-.805.334-1.721.408-2.977.43a10.81 10.81 0 0 0-.929.036c-.198.022-.275.054-.32.08c-.047.028-.112.078-.224.232c-.121.166-.258.396-.476.764l-.542.916c-.773 1.307-2.69 1.307-3.464 0l-.542-.916a10.605 10.605 0 0 0-.476-.764c-.112-.154-.177-.204-.224-.232c-.045-.026-.122-.058-.32-.08c-.212-.023-.49-.03-.93-.037c-1.255-.021-2.171-.095-2.976-.429A5.75 5.75 0 0 1 1.688 16.2c-.235-.566-.338-1.178-.389-1.913c-.049-.723-.049-1.618-.049-2.76v-1.066c0-1.604 0-2.86.095-3.865c.098-1.023.3-1.862.752-2.6a5.75 5.75 0 0 1 1.899-1.899c.738-.452 1.577-.654 2.6-.752C7.6 1.25 8.857 1.25 10.461 1.25M6.739 2.839c-.914.087-1.495.253-1.959.537A4.25 4.25 0 0 0 3.376 4.78c-.284.464-.45 1.045-.537 1.96c-.088.924-.089 2.11-.089 3.761v1c0 1.175 0 2.019.046 2.685c.045.659.131 1.089.278 1.441a4.25 4.25 0 0 0 2.3 2.3c.515.214 1.173.294 2.429.316h.031c.398.007.747.013 1.037.045c.311.035.616.104.909.274c.29.17.5.395.682.645c.169.232.342.525.538.856l.559.944a.52.52 0 0 0 .882 0l.559-.944c.196-.331.37-.624.538-.856c.182-.25.392-.476.682-.645c.293-.17.598-.24.909-.274c.29-.032.639-.038 1.037-.045h.032c1.255-.022 1.913-.102 2.428-.316a4.25 4.25 0 0 0 2.3-2.3c.147-.352.233-.782.278-1.441c.046-.666.046-1.51.046-2.685v-1c0-1.651 0-2.837-.089-3.762c-.087-.914-.253-1.495-.537-1.959a4.25 4.25 0 0 0-1.403-1.403c-.464-.284-1.045-.45-1.96-.537c-.924-.088-2.11-.089-3.761-.089h-3c-1.651 0-2.837 0-3.762.089" clip-rule="evenodd"></path><path fill="currentColor" d="M9 11a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"></path></svg><span>Join Discussion</span></a></div></widget>
+</div></aside><div class="float-panel blur">
+  <button type="button" style="display:none" class="laptop-only rightbar-toggle mobile" onclick="sidebar.rightbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" style="display:none" class="mobile-only leftbar-toggle mobile" onclick="sidebar.leftbar()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `Just`,
+      min: `minutes ago`,
+      hour: `hours ago`,
+      day: `days ago`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer=""></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `Switched to Light Mode`,
+      dark: `Switched to Dark Mode`,
+      auto: `Switched to Auto Mode`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script type="module">
+  const el = document.querySelector('#comments #giscus');
+  util.viewportLazyload(el, load_discus, false);
+
+  function load_discus() {
+    if (!el) return;
+    try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.error(error);
+      }
+      const script = document.createElement('script');
+      script.async = true;
+      for (const key of Object.keys(el.attributes)) {
+        const attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+  }
+</script>
+
+
+
+
+<script defer="">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"giscus":{"js":"/js/services/giscus_new.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer="" src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+    processEscapes: true
+  }
+});
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  }
+});
+MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for(i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+</div>
+</body></html><script>var posts=["post/OI-Wiki/wiki/","post/公务员/civil-servant-examination-preparation-plan/","post/Python/python-wiki/","post/公务员/how-to-improve-essay-writing/","post/Golang/golang-wiki/","post/博客开发/building-a-personal-blog-from-scratch/","post/博客开发/hexo-stellar-deployment-guide/","post/小吳日寄/2025-04-09/","post/小吳日寄/2025-06-11/","post/小吳日寄/2025-06-14/","post/小吳日寄/2025-06-17/","post/小吳日寄/2025-06-18/","post/小吳日寄/2025-06-28/","post/小吳日寄/2025-07-08/","post/AI-Infra/ai-infra-in-the-era-of-llm/","post/AI-Infra/ai-infra-vs-traditional-infra/","post/AI-Infra/animated-pictures-to-easily-understand-self-attention/","post/AI-Infra/how-does-chatgpt-handle-text-input/","post/AI-Infra/recommendation-system-architecture/","post/AI-Infra/the-soul-of-chatgpt-attention-mechanism/","post/年终总结/「2021」passion/","post/年终总结/「2022」life-is-a-field-not-a-track/","post/开发工具/docker-and-k8s/","post/年终总结/「2023」feel-the-journey/","post/开发工具/git-undo/","post/年终总结/「2024」the-world-points-to-wherever-I-want-to-go/","post/开发工具/docker-intro/","post/开发工具/tips-for-precise-search-on-github/","post/开发工具/git-workflow/","post/开发工具/understanding-.git-folder/","post/开发工具/nat/","post/开发工具/markdown-mathjax-basic-tutorial-and-quick-reference/","post/数据结构与算法/advanced-algorithms/","post/数据结构与算法/constructing-binary-tree/","post/数据结构与算法/binary-tree-matching/","post/数据结构与算法/interview-linked-list/","post/数据结构与算法/difference-array/","post/数据结构与算法/kuaishou-merge-k-ascending-linked-lists/","post/数据结构与算法/interview-add-two/","post/数据结构与算法/monotonic-stack/","post/数据结构与算法/modulo/","post/数据结构与算法/maximum-product-of-subarray-or-subsequence/","post/数据结构与算法/priority_queue/","post/数据结构与算法/qpow/","post/数据结构与算法/sort-algorithm/","post/数据结构与算法/sieve-of-prime-number/","post/数据结构与算法/tackle-without-sort-library/","post/数据结构与算法/tecent-wxg-russian-doll-envelope/","post/数据结构与算法/union-search/","post/未来世界的幸存者/choose-one-sentence/","post/未来世界的幸存者/don't-limit-your-future-imagination-with-your-current-abilities/","post/未来世界的幸存者/how-can-undergraduates-enter-bat/","post/未来世界的幸存者/technical-writing-experience/","post/未来世界的幸存者/the-future-world/","post/C++/cpp-stl/","post/C++/cpp-wiki/","post/C++/effective-c++/","post/C++/cpp-copy-constructor/","post/C++/from-double-free-to-shared_ptr/","post/C++/from-posix-pthread-to-c++11-thread/","post/C++/when-nanoseconds-matter-ultrafas-trading-systems-in-C++/","post/C++/network-programming-and-io-multiplexing/","post/摄影日志/chengdu_2024-07-14/","post/摄影日志/camera-and-photography/","post/摄影日志/dongshandao_2024-10-30/","post/摄影日志/fjnu_2023-06-14/","post/摄影日志/fuzhou_2024-10-01/","post/摄影日志/fuzhou_2025-06-14/","post/摄影日志/guangzhou_2024-11-29/","post/摄影日志/hangzhou_2023-04-28/","post/摄影日志/hangzhou_2024-06-15/","post/摄影日志/quanzhou_2024-01-28/","post/摄影日志/shenzhen_2023-10-27/","post/摄影日志/shot/","post/摄影日志/wuhan_2023-04-04/","post/摄影日志/xi'an_2024-06-24/","post/摄影日志/xiamen_2023-12-24/","post/摄影日志/yinchuan_2024-07-27/","post/摄影日志/zhangzhou_2024-05-01/","post/科研/eurosys-24-volley/","post/科研/fast-20-empirical-guide-of-pm/","post/科研/fast-24-term/","post/科研/fast-25-gogetafs/","post/科研/osdi-23-smart/","post/科研/osdi-23-chardonnay/","post/科研/osdi-24-atlas/","post/藏书阁/siddhartha/","post/计算机网络/does-restarting-mean-shutting-down-and-power-on/","post/计算机网络/network-ip/","post/计算机网络/reverse-proxy/","post/秋招指南/2025-autumn-recruitment/","post/秋招指南/2025-brainteaser/","post/秋招指南/2025-interview-hand-tear/","post/秋招指南/2025-network/","post/秋招指南/2025-scenario-questions/","post/秋招指南/20250405-meituan/","post/秋招指南/2025-cpp/","post/秋招指南/20250412-eleme/","post/秋招指南/20250424-gbits/","post/秋招指南/20250521-huawei/","post/秋招指南/26-top-talent/","post/秋招指南/20250809-netease-leihuo/","post/秋招指南/2025-os/","post/秋招指南/internet-companies-or-state-owned-enterprises/","post/秋招指南/reverse-interview/","post/秋招指南/cpp-acm-input-output/","post/秋招指南/salary-negotiation/","post/系统与体系结构/analysis-of-trace-processing/","post/系统与体系结构/a-study-of-linux-file-system-evolution/","post/系统与体系结构/debugging-with-gdb/","post/秋招指南/job-hunting-guide-for-technical-personnel/","post/系统与体系结构/distributed-systems-theoretical-foundations/","post/系统与体系结构/distributed-systems-paxos.md/","post/秋招指南/intern-interview/","post/系统与体系结构/distributed-systems-raft/","post/系统与体系结构/how-to-ensure-crash-consistency-in-distributed-systems/","post/系统与体系结构/linux-disk-automatic-mounting/","post/系统与体系结构/duckdb's-adaptive-radix-tree-source-code/","post/系统与体系结构/linux-partition/","post/系统与体系结构/madam-for-all-flash-array/","post/系统与体系结构/linux-kernel-io-path/","post/系统与体系结构/nvm-top-lab/","post/系统与体系结构/pmdk-programming-guidelines/","post/系统与体系结构/persistent-memory-research-report/","post/系统与体系结构/mmap-vs-read-write/"];function toRandomPost(){ var randomPath = posts[Math.floor(Math.random()*posts.length)]; var encodedPath = encodeURIComponent(randomPath); window.open('/' + encodedPath, "_self"); };</script>
